@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MerchantStatus {
+  ACTIVE
+  PENDING
+  DISCONNECTED
+}
+
+enum ListingStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+model Merchant {
+  id              String         @id @default(uuid())
+  name            String
+  myshopifyDomain String         @unique
+  accessToken     String?
+  status          MerchantStatus @default(PENDING)
+  storeLogo       String?
+  totalProducts   Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  listings Listing[]
+  syncLogs SyncLog[]
+
+  @@map("merchants")
+}
+
+model Listing {
+  id                String        @id @default(uuid())
+  slotNumber        String        @unique // e.g. SLOT #001
+  title             String
+  description       String        @db.Text
+  category          String
+  price             Float
+  compareAtPrice    Float?
+  inventoryQuantity Int           @default(0)
+  status            ListingStatus @default(AVAILABLE)
+  shopifyProductId  String        @unique
+  shopifyVariantId  String
+  merchantId        String
+  merchant          Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  tags              String[]
+  images            String[]
+  variants          Json?         // JSON array of variant options
+  sku               String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("listings")
+}
+
+model SyncLog {
+  id           String   @id @default(uuid())
+  merchantId   String
+  merchant     Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  eventType    String   // e.g. products/create, products/update, inventory_levels/update
+  status       String   // SUCCESS, FAILED, PENDING
+  payload      Json?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@map("sync_logs")
+}
