@@ -82,15 +82,14 @@ export default function MarketplaceHomePage() {
       if (selectedCategory !== "All Products" && slot.category !== selectedCategory) {
         return false;
       }
-      // Search query (Title, Slot Number, SKU, Tags, Vendor)
+      // Search query (Title, SKU, Tags, Vendor)
       if (searchQuery.trim() !== "") {
         const q = searchQuery.toLowerCase();
         const matchesTitle = slot.title.toLowerCase().includes(q);
-        const matchesSlot = slot.slotNumber.toLowerCase().includes(q);
         const matchesSKU = slot.sku.toLowerCase().includes(q);
         const matchesTags = slot.tags.some((t) => t.toLowerCase().includes(q));
         const matchesVendor = slot.merchant.myshopifyDomain.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesSlot && !matchesSKU && !matchesTags && !matchesVendor) {
+        if (!matchesTitle && !matchesSKU && !matchesTags && !matchesVendor) {
           return false;
         }
       }
@@ -104,7 +103,7 @@ export default function MarketplaceHomePage() {
   }, [slots, selectedVendorId, selectedCategory, searchQuery, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#090A0F] text-zinc-100 selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-black text-zinc-100 selection:bg-amber-500 selection:text-black">
       
       {/* Scrollable Ambient Background Video */}
       <BackgroundVideo
@@ -126,7 +125,7 @@ export default function MarketplaceHomePage() {
       {/* Clean Product-Centric Hero Section */}
       <Hero />
 
-      {/* Product Filter Bar with Search Bar */}
+      {/* Product Filter Bar with Search Bar & Product Count */}
       <VendorFilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -155,10 +154,10 @@ export default function MarketplaceHomePage() {
           </div>
         ) : (
           <div className="glass-panel p-16 rounded-3xl text-center space-y-4 max-w-xl mx-auto my-12 border border-white/10 shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-zinc-500">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-amber-400">
               ⚡
             </div>
-            <h3 className="text-xl font-bold text-white font-mono">No Matching Product Slots</h3>
+            <h3 className="text-xl font-bold text-white font-mono">No Matching Products</h3>
             <p className="text-sm text-zinc-400 font-sans">
               No products found matching "{searchQuery}". Try clearing search or selecting a different category.
             </p>
@@ -168,7 +167,7 @@ export default function MarketplaceHomePage() {
                 setSelectedVendorId("all");
                 setSelectedCategory("All Products");
               }}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold hover:bg-emerald-500/30 transition-all"
+              className="px-5 py-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-mono font-bold hover:bg-amber-500/30 transition-all"
             >
               Reset Filters & Search
             </button>
@@ -177,13 +176,13 @@ export default function MarketplaceHomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-10 relative z-10 bg-[#090A0F]/90 backdrop-blur-md">
+      <footer className="border-t border-white/10 py-10 relative z-10 bg-black/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-zinc-500">
           <div>
-            © 2026 DELOREAN MARKETPLACE x MASTERS' UNION ENGINE • PRODUCT CATALOG MARKETPLACE
+            © 2026 MASTERS' UNION MARKETPLACE ENGINE • PRODUCT CATALOG MARKETPLACE
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-emerald-400">SHOPIFY STOREFRONT API v2024.04</span>
+            <span className="text-amber-400 font-bold">SHOPIFY STOREFRONT API v2024.04</span>
             <span>•</span>
             <span>WEBHOOK SECURED</span>
           </div>

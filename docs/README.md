@@ -1,6 +1,6 @@
 # Comprehensive Technical Documentation Suite
 
-Welcome to the official developer documentation suite for the **DeLorean x Masters' Union Shopify Marketplace Platform**.
+Welcome to the official developer documentation suite for the **Masters' Union Shopify Marketplace Platform**.
 
 ---
 
@@ -9,14 +9,15 @@ Welcome to the official developer documentation suite for the **DeLorean x Maste
 1. 🚀 [**Getting Started Guide**](./GETTING_STARTED.md)
    - Local prerequisites (Node.js, PostgreSQL)
    - Step-by-step installation & environment variable breakdown (`.env.local`)
+   - Custom asset placement (`public/assets/masters_union_dropshipping_v1.mp4` & `public/assets/logoanimationblack.gif`)
    - Database schema setup with Prisma ORM
    - Development workflow & ngrok local webhook testing
 
 2. 🏛️ [**System Architecture & Technical Specifications**](./ARCHITECTURE.md)
    - High-level event-driven architecture & sequence diagrams
    - Database schema models (`Merchant`, `Listing`, `SyncLog`) with indexes
-   - Component hierarchy & state management
-   - Invariant error handling & graceful fallback strategy
+   - Component hierarchy & directory structure
+   - Invariant error handling & fallback strategy
 
 3. 🔑 [**Shopify API & Webhook Integration Deep-Dive**](./SHOPIFY_INTEGRATION.md)
    - Storefront GraphQL queries & direct buyer checkout mutation (`cartCreate`)
@@ -32,7 +33,7 @@ Welcome to the official developer documentation suite for the **DeLorean x Maste
      - `POST /api/webhooks/shopify`
 
 5. 🎨 [**Design System Specification**](./DESIGN_SYSTEM.md)
-   - DeLorean x Masters' Union obsidian color tokens & glassmorphic CSS utilities
+   - Cyber Gold & Pure Black color tokens (`#f59e0b` & `#000000`)
    - Monospaced typography rules (`font-mono`)
-   - Scroll-reactive ambient background video formulas
+   - Ambient background video positioning & scroll opacity formulas
    - Component interface & prop contracts reference

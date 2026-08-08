@@ -1,6 +1,6 @@
-# DeLorean x Masters' Union Shopify Multi-Vendor Marketplace
+# Masters' Union Shopify Multi-Vendor Marketplace
 
-> High-performance, obsidian dark-mode marketplace platform inspired by **DeLorean Marketplace** and **Masters' Union** design systems. Aggregates and lists products/assets from multiple connected Shopify stores via Shopify Storefront GraphQL & Admin APIs.
+> High-performance, pure obsidian dark-mode marketplace platform with Cyber Gold accents and an ambient video canvas. Aggregates and lists products/assets from multiple connected Shopify stores via Shopify Storefront GraphQL & Admin APIs.
 
 ![Next.js](https://img.shields.io/badge/Framework-Next.js%2014-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?style=flat-square&logo=typescript)
@@ -13,12 +13,13 @@
 
 ## ⚡ Key Features
 
-- 🌌 **High-Contrast DeLorean Obsidian Dark Theme**: Deep obsidian `#090A0F` background, glassmorphic card containers (`#13151D`), elevated surfaces (`#181A24`), and translucent borders (`border-white/10`).
-- 🎬 **Scrollable Ambient Background Video**: Integrated high-tech dark video canvas with scroll-reactive opacity/parallax depth transitions and floating ON/OFF toggle controls.
-- 📦 **Product-Centric Marketplace Grid**: High-density slot cards with monospaced technical metadata (`SLOT #001`, SKUs, Prices, Stock Levels, Shopify Product & Variant GIDs).
-- 🔍 **Dedicated Product Search & Streamlined Filters**: Integrated product search bar (titles, SKUs, tags, slot numbers), category pills, vendor storefront dropdown, and sort controls.
-- 📱 **Framer Motion Slide-Out Drawer**: 3-Tab detail drawer (`Product Specs`, `Shopify & Inventory GIDs`, `Webhook Sync Logs`) with direct buyer checkout link generation (`cartCreate` mutation).
-- 🔐 **Shopify OAuth 2.0 & Webhook Pipeline**: Complete OAuth connection routes (`/api/shopify/auth` & `/api/shopify/callback`), HMAC SHA256 signature verification, and automated catalog re-syncing (`/api/shopify/sync`).
+- 🖤 **Pure Black & Cyber Gold Aesthetic**: High-contrast pure black `#000000` background, glassmorphic card containers (`#121216`), and vibrant Cyber Gold / Amber Yellow (`#f59e0b`) accent glows.
+- 🎬 **Scrollable Ambient Background Video Canvas**: Integrated ambient video (`/assets/masters_union_dropshipping_v1.mp4`) with 100% true brightness, scroll-reactive opacity depth transforms, and floating ON/OFF toggle controls.
+- 🖼️ **Clickable Header Animated GIF Logo**: Top-left animated logo (`/assets/logoanimationblack.gif`) wrapped in a Next.js `Link` for seamless 1-click homepage navigation.
+- 📦 **Product-Centric Catalog Grid**: High-density product cards showcasing crisp product images, bold titles, and direct inspection link buttons.
+- 🔍 **Dedicated Product Search & Filter Bar**: Instant client-side search (titles, SKUs, tags), category pills with product count indicator (`9 Products`), vendor store selector, and sort controls.
+- 📱 **3-Tab Framer Motion Detail Drawer**: Slide-out drawer (`Product Specs`, `Shopify & Inventory GIDs`, `Webhook Sync Logs`) with direct buyer storefront checkout integration.
+- 🔐 **Shopify OAuth 2.0 & Real-Time Webhooks**: Complete OAuth flow (`/api/shopify/auth` & `/api/shopify/callback`), HMAC SHA256 signature verification, and automated catalog re-syncing (`/api/shopify/sync`).
 
 ---
 
@@ -29,6 +30,17 @@
 - **Database & ORM**: PostgreSQL managed via Prisma ORM (`Merchant`, `Listing`, `SyncLog`)
 - **API Integration**: Shopify Storefront GraphQL API & Admin REST/GraphQL APIs
 - **Development Fallback**: Built-in mock dataset loader (`data/mock-slots.ts`) for offline testing
+
+---
+
+## 📂 Custom Asset Placement Guide
+
+Place your custom media assets inside the `public/assets/` directory:
+
+| Asset Name | Target Location | Description |
+|---|---|---|
+| `masters_union_dropshipping_v1.mp4` | `public/assets/masters_union_dropshipping_v1.mp4` | Scrollable ambient background video |
+| `logoanimationblack.gif` | `public/assets/logoanimationblack.gif` | Animated black header logo |
 
 ---
 
@@ -49,7 +61,7 @@ npm install
 
 ### 3. Environment Configuration
 
-Create a `.env.local` file in the project root (see [`.env.example`](./.env.example) for template):
+Create a `.env.local` file in the project root:
 
 ```env
 # Database Connection
@@ -88,25 +100,6 @@ Open [http://localhost:3000](http://localhost:3000) to view the marketplace.
 
 ---
 
-## 🗄️ Database Schema Summary
-
-- `Merchant`: Stores connected Shopify domain, OAuth access token, logo, and status (`ACTIVE`, `PENDING`).
-- `Listing` (Slots): Stores slot number (`SLOT #001`), title, price, compare-at price, inventory quantity, status (`AVAILABLE`, `RESERVED`, `SOLD`), tags, images, variants, and Shopify GIDs.
-- `SyncLog`: Stores audit logs for `products/create`, `products/update`, `products/delete`, and `inventory_levels/update` webhook events.
-
----
-
-## 📡 API Endpoint Index
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/shopify/auth` | Initiate Shopify OAuth 2.0 authorization |
-| `GET` | `/api/shopify/callback` | Handle OAuth callback, exchange token & register webhooks |
-| `POST` | `/api/shopify/sync` | Re-sync merchant product catalog |
-| `POST` | `/api/webhooks/shopify` | Ingest HMAC-verified Shopify webhooks |
-
----
-
 ## 📚 Complete Technical Documentation (`docs/`)
 
 Explore the dedicated documentation guides inside the [`docs/`](./docs) folder:
@@ -119,18 +112,6 @@ Explore the dedicated documentation guides inside the [`docs/`](./docs) folder:
 
 ---
 
-## 🧪 Verification & Build
-
-```bash
-# Run TypeScript compilation check
-npx tsc --noEmit
-
-# Production build
-npm run build
-```
-
----
-
 ## 📄 License
 
-MIT © 2026 DeLorean Marketplace x Masters' Union Engine
+MIT © 2026 Masters' Union Engine

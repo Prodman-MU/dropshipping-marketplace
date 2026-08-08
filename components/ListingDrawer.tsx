@@ -54,7 +54,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-[#090A0F]/80 backdrop-blur-md"
+          className="absolute inset-0 bg-black/80 backdrop-blur-md"
         />
 
         {/* Slide-over Drawer Panel */}
@@ -65,25 +65,21 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="absolute inset-y-0 right-0 max-w-full flex pl-10"
         >
-          <div className="w-screen max-w-2xl bg-[#13151D] border-l border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden">
+          <div className="w-screen max-w-2xl bg-[#121216] border-l border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden">
             
             {/* Top Fixed Header */}
-            <div className="p-6 border-b border-white/10 bg-[#090A0F]/90 backdrop-blur-md">
+            <div className="p-6 border-b border-white/10 bg-black/90 backdrop-blur-md">
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-mono font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/30 font-mono-glow">
-                    {slot.slotNumber}
-                  </span>
-
                   {isAvailable && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                       AVAILABLE
                     </span>
                   )}
                   {isReserved && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
                       RESERVED
                     </span>
                   )}
@@ -108,7 +104,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
               </h2>
 
               <div className="flex items-center gap-2 mt-2 text-xs font-mono text-zinc-400">
-                <Store className="w-3.5 h-3.5 text-emerald-400" />
+                <Store className="w-3.5 h-3.5 text-amber-400" />
                 <span>Vendor Domain:</span>
                 <span className="text-white font-bold">{slot.merchant.myshopifyDomain}</span>
               </div>
@@ -119,7 +115,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                   onClick={() => setActiveTab("specs")}
                   className={`px-4 py-2 rounded-xl font-bold transition-all ${
                     activeTab === "specs"
-                      ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
                       : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
                   }`}
                 >
@@ -129,7 +125,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                   onClick={() => setActiveTab("shopify")}
                   className={`px-4 py-2 rounded-xl font-bold transition-all ${
                     activeTab === "shopify"
-                      ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
                       : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
                   }`}
                 >
@@ -139,7 +135,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                   onClick={() => setActiveTab("webhooks")}
                   className={`px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
                     activeTab === "webhooks"
-                      ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
                       : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
                   }`}
                 >
@@ -158,7 +154,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                   {/* Image Gallery */}
                   {slot.images && slot.images.length > 0 && (
                     <div>
-                      <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-[#090A0F] border border-white/10 mb-3">
+                      <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-black border border-white/10 mb-3">
                         <img
                           src={slot.images[selectedImageIndex] || slot.images[0]}
                           alt={slot.title}
@@ -173,7 +169,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                               onClick={() => setSelectedImageIndex(idx)}
                               className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
                                 selectedImageIndex === idx
-                                  ? "border-emerald-400 scale-105"
+                                  ? "border-amber-400 scale-105"
                                   : "border-white/10 opacity-60 hover:opacity-100"
                               }`}
                             >
@@ -190,7 +186,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                     <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
                       Product Overview & Details
                     </h4>
-                    <p className="text-sm text-zinc-300 leading-relaxed bg-[#090A0F]/60 p-4 rounded-xl border border-white/5 font-sans">
+                    <p className="text-sm text-zinc-300 leading-relaxed bg-black/60 p-4 rounded-xl border border-white/5 font-sans">
                       {slot.description}
                     </p>
                   </div>
@@ -208,14 +204,14 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                             onClick={() => setSelectedVariant(v)}
                             className={`p-3 rounded-xl border text-left font-mono transition-all ${
                               currentVariant.id === v.id
-                                ? "bg-emerald-500/10 border-emerald-500/40 text-white"
-                                : "bg-[#090A0F]/60 border-white/10 text-zinc-400 hover:text-white"
+                                ? "bg-amber-500/10 border-amber-500/40 text-white"
+                                : "bg-black/60 border-white/10 text-zinc-400 hover:text-white"
                             }`}
                           >
                             <div className="text-xs font-bold text-white">{v.title}</div>
                             <div className="flex items-center justify-between mt-1 text-[11px]">
                               <span>SKU: {v.sku}</span>
-                              <span className="text-emerald-400 font-bold">{formatCurrency(v.price)}</span>
+                              <span className="text-amber-400 font-bold">{formatCurrency(v.price)}</span>
                             </div>
                           </button>
                         ))}
@@ -229,7 +225,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                       Category & Tags
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      <span className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono">
+                      <span className="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono">
                         {slot.category}
                       </span>
                       {slot.tags.map((t) => (
@@ -246,8 +242,8 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
               {activeTab === "shopify" && (
                 <div className="space-y-6">
                   {/* Shopify API Metadata Box */}
-                  <div className="bg-[#090A0F]/80 p-5 rounded-2xl border border-white/10 space-y-4">
-                    <h4 className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                  <div className="bg-black/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                    <h4 className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
                       <Cpu className="w-4 h-4" />
                       <span>SHOPIFY STOREFRONT GRAPHQL IDENTIFIERS</span>
                     </h4>
@@ -255,14 +251,14 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                     <div className="space-y-3 font-mono text-xs">
                       <div>
                         <span className="text-zinc-500 block text-[10px] uppercase">Shopify Product GID</span>
-                        <span className="text-white bg-black/60 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
+                        <span className="text-white bg-black/90 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
                           {slot.shopifyProductId}
                         </span>
                       </div>
 
                       <div>
                         <span className="text-zinc-500 block text-[10px] uppercase">Selected Variant GID</span>
-                        <span className="text-white bg-black/60 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
+                        <span className="text-white bg-black/90 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
                           {currentVariant.id}
                         </span>
                       </div>
@@ -270,7 +266,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                       <div className="grid grid-cols-2 gap-3 pt-2">
                         <div>
                           <span className="text-zinc-500 block text-[10px] uppercase">Stock SKU</span>
-                          <span className="text-emerald-400 font-bold">{currentVariant.sku}</span>
+                          <span className="text-amber-400 font-bold">{currentVariant.sku}</span>
                         </div>
                         <div>
                           <span className="text-zinc-500 block text-[10px] uppercase">Available Inventory</span>
@@ -295,12 +291,12 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                             <th className="p-3">Stock</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5 bg-[#090A0F]/60">
+                        <tbody className="divide-y divide-white/5 bg-black/60">
                           {slot.variants.map((v) => (
                             <tr key={v.id} className="hover:bg-white/5 transition-colors">
                               <td className="p-3 font-bold text-white">{v.title}</td>
                               <td className="p-3 text-zinc-400">{v.sku}</td>
-                              <td className="p-3 text-emerald-400 font-bold">{formatCurrency(v.price)}</td>
+                              <td className="p-3 text-amber-400 font-bold">{formatCurrency(v.price)}</td>
                               <td className="p-3 text-zinc-300">{v.inventoryQuantity} Units</td>
                             </tr>
                           ))}
@@ -314,15 +310,15 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
               {/* TAB 3: WEBHOOK SYNC LOGS */}
               {activeTab === "webhooks" && (
                 <div className="space-y-6">
-                  <div className="bg-[#090A0F]/80 p-5 rounded-2xl border border-white/10">
+                  <div className="bg-black/80 p-5 rounded-2xl border border-white/10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                        <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
                         <h4 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
                           REAL-TIME SHOPIFY WEBHOOK LOGS
                         </h4>
                       </div>
-                      <span className="text-[11px] font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+                      <span className="text-[11px] font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
                         HMAC VERIFIED
                       </span>
                     </div>
@@ -332,10 +328,10 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                       {slot.syncLogs.map((log) => (
                         <div
                           key={log.id}
-                          className="p-3.5 rounded-xl bg-[#13151D] border border-white/10 space-y-1.5"
+                          className="p-3.5 rounded-xl bg-[#121216] border border-white/10 space-y-1.5"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">
+                            <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">
                               {log.eventType}
                             </span>
                             <span className="text-zinc-500 text-[11px] flex items-center gap-1">
@@ -354,7 +350,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
             </div>
 
             {/* Bottom Sticky Action Footer */}
-            <div className="p-6 border-t border-white/10 bg-[#090A0F]/90 backdrop-blur-md flex items-center justify-between gap-4">
+            <div className="p-6 border-t border-white/10 bg-black/90 backdrop-blur-md flex items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] font-mono text-zinc-500 uppercase block">Selected Price</span>
                 <span className="text-2xl font-black text-white font-mono">
@@ -367,7 +363,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
                   href={`https://${slot.merchant.myshopifyDomain}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 shadow-lg shadow-emerald-500/20 transition-all"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-black font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 shadow-lg shadow-amber-500/20 transition-all"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span>Buy on Shopify Storefront</span>

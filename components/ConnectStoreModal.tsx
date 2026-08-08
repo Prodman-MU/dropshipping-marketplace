@@ -44,7 +44,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-[#090A0F]/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
           />
 
           {/* Modal Container */}
@@ -52,14 +52,14 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative w-full max-w-lg bg-[#13151D] border border-white/10 rounded-2xl p-6 shadow-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-lg bg-[#121216] border border-white/10 rounded-2xl p-6 shadow-2xl z-10 overflow-hidden"
           >
             {/* Top Accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600" />
 
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
                   <Store className="w-5 h-5" />
                 </div>
                 <div>
@@ -80,7 +80,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="p-3 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  className="p-3 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30"
                 >
                   <CheckCircle2 className="w-10 h-10" />
                 </motion.div>
@@ -102,7 +102,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
                       required
-                      className="w-full bg-[#090A0F] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 transition-colors"
                     />
                   </div>
                 </div>
@@ -116,10 +116,10 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                     placeholder="shpat_xxxxxxxxxxxxxxxxxxxx"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full bg-[#090A0F] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 transition-colors"
                   />
                   <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                     Webhooks for inventory_levels/update & products/update will be automatically configured.
                   </p>
                 </div>
@@ -135,7 +135,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                   <button
                     type="submit"
                     disabled={isSubmitting || !domain}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <>

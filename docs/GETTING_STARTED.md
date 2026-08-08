@@ -1,6 +1,6 @@
 # Getting Started Guide
 
-Welcome to the **DeLorean x Masters' Union Shopify Marketplace Platform**. This guide covers local environment setup, configuration, running the development server, and executing database migrations.
+Welcome to the **Masters' Union Shopify Marketplace Platform**. This guide covers local environment setup, configuration, running the development server, and executing database migrations.
 
 ---
 
