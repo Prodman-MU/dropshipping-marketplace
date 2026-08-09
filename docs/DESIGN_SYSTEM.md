@@ -75,26 +75,29 @@ Specific metadata elements strictly use monospaced typography (`font-mono`) to e
 
 ---
 
-## 🌌 3. Scrollable Ambient Background Video Canvas ([`components/BackgroundVideo.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/BackgroundVideo.tsx))
+## 🌌 3. Contained Hero Background Video Canvas ([`components/BackgroundVideo.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/BackgroundVideo.tsx))
 
-The ambient background video component uses Framer Motion `useScroll` and `useTransform` to dynamically react to the vertical scroll position:
+The ambient background video component is rendered as a contained hero card container (`Hero.tsx` & `BackgroundVideo.tsx`) with ambient toggles and video play/pause controls:
 
-### Positioning & Opacity Transforms
+### Container Structure & Overlay Tints
 
 ```typescript
-/* File: components/BackgroundVideo.tsx (Line 21) */
-// top-20 dictates video top offset (80px header height offset)
-<div className="fixed inset-x-0 top-20 bottom-0 pointer-events-none z-0 overflow-hidden select-none">
-
-// Scroll Y transforms: starts at 100% full original brightness (1.0) and smoothly dims on scroll
-const { scrollY } = useScroll();
-const videoOpacity = useTransform(scrollY, [0, 600, 1200], [1.0, 0.75, 0.35]);
-const videoScale = useTransform(scrollY, [0, 1000], [1, 1.05]);
+/* File: components/BackgroundVideo.tsx */
+<div className="relative w-full h-full min-h-[340px] sm:min-h-[420px] rounded-3xl overflow-hidden border border-white/15 bg-zinc-950 shadow-2xl group">
+  {/* Subtle Bottom Fade Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
 ```
 
 ---
 
-## 🧩 4. Component Interface Reference
+## 🎨 4. Product Grid Background & Obsidian Card High Contrast
+
+- **Grid Canvas**: Background color `#FFE082` (`bg-[#FFE082] rounded-3xl p-6 sm:p-8 border border-[#FFE082]/50 shadow-2xl`).
+- **Product Cards**: Solid obsidian surface (`bg-zinc-950/95`), crisp borders (`border-zinc-800`), price badges, and vendor badges for maximum legibility and contrast.
+
+---
+
+## 🧩 5. Component Interface Reference
 
 ### `Header` Props Interface
 ```typescript
@@ -106,6 +109,16 @@ interface HeaderProps {
   isVideoEnabled: boolean;
   onToggleVideo: () => void;
   onAddStore: (domain: string) => void;
+}
+```
+
+### `Hero` Props Interface
+```typescript
+interface HeroProps {
+  isVideoEnabled: boolean;
+  onToggleVideo: () => void;
+  activeVendorCount?: number;
+  totalSyncedProducts?: number;
 }
 ```
 

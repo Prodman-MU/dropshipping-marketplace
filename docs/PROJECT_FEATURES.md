@@ -9,42 +9,45 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 - **Pure Black & Cyber Gold Theme**:
   - High-contrast pure black `#000000` background with elevated glassmorphic card containers (`#121216`).
   - Radiant Cyber Gold & Amber Yellow accent tokens (`#f59e0b` / `#fbbf24`) for buttons, active state badges, glowing borders, and monospace text highlights.
-- **Scrollable Ambient Background Video Canvas**:
-  - Scroll-reactive video background (`public/assets/masters_union_dropshipping_v1.mp4`) with 100% true brightness and scroll opacity transforms (`useTransform`).
-  - Floating bottom-right toggle control bar for turning ambient video **ON/OFF** and pausing/playing the video loop.
-- **Clickable Header Animated GIF Logo**:
-  - Top-left animated logo (`public/assets/logoanimationblack.gif`) wrapped in a Next.js `Link` for 1-click navigation back to the homepage from any view.
+  - Vibrant `#FFE082` backdrop styling for the main product grid container with high-contrast obsidian cards (`bg-zinc-950/95`).
+- **Contained Hero Background Video Canvas**:
+  - Hero container card video (`Hero.tsx` & `BackgroundVideo.tsx`) rendering clean ambient video (`public/assets/masters_union_dropshipping_v1.mp4`).
+  - Floating bottom-right toggle control bar inside hero card for turning ambient video **ON/OFF** and pausing/playing the video loop.
+- **Animated GIF Logo**:
+  - Header animated logo (`public/assets/logoanimationblack.gif`) wrapped in a Next.js `Link` for 1-click homepage navigation.
+  - Top-left animated logo in product inspection drawer header for consistent brand identity.
 
 ---
 
 ## 📦 2. Product Catalog & Marketplace Grid
 
+- **"Dropshipped Products" Section Header**:
+  - Dedicated section text block introducing live marketplace catalog items synchronized from active Shopify storefronts.
 - **Product-Centric Listing Cards**:
-  - Clean card design featuring high-resolution product preview images with smooth hover scale transitions (`group-hover:scale-105`).
-  - Bold product titles and direct product inspection trigger buttons (`INSPECT PRODUCT DETAILS →`).
-  - Completely removed legacy slot numbering and slot count clutter for a pure product discovery experience.
-- **Dynamic Category Pills & Live Product Counter**:
-  - Automatically extracts unique product categories from connected Shopify merchant catalogs.
-  - Live product counter badge displaying matching search results (`9 Products`).
+  - Clean card design featuring high-resolution product preview images with smooth hover scale transitions (`group-hover:scale-105`), vendor badges, and price tags.
+  - Bold product titles and direct product inspection trigger buttons (`INSPECT DETAILS →`).
+- **Yellow `#FFE082` Grid Canvas**:
+  - Product cards rest on a vibrant `#FFE082` rounded backdrop container (`bg-[#FFE082] rounded-3xl p-6 sm:p-8 border border-[#FFE082]/50 shadow-2xl`).
 
 ---
 
-## 🔍 3. Search & Filtering System
+## 🔍 3. Left Filter Sidebar & Search System
 
-- **Primary Header Search Bar**:
-  - Sticky navbar search input for real-time querying across product titles, SKUs, and merchant domains.
-- **Expandable Compact Filter Search Button**:
-  - Secondary search trigger button inside the filter section (`[ 🔍 Search Catalog... ]`).
-  - Expands smoothly on click or focus into an active input field with an `X` collapse button, eliminating visual clutter.
+- **Left Sidebar Filter Pane (`VendorFilterBar.tsx`)**:
+  - Sticky vertical left-hand sidebar pane (`w-full lg:w-72`) hosting catalog search, category dropdown, vendor store dropdown, and sort selectors.
+- **Category Dropdown Filter**:
+  - Category selector styled as a clean `<select>` dropdown menu listing all unique product categories.
 - **Multi-Vendor Storefront Selector**:
   - Dropdown filter to isolate products by specific connected Shopify store domains (`apex-gear.myshopify.com`, `nordic-tech.myshopify.com`, `chrono-craft.myshopify.com`).
-- **Sorting Engine**:
-  - Sort products by Default Order, Price (Low to High), Price (High to Low), and Inventory Stock Levels.
+- **Catalog Search & Sorting Engine**:
+  - Real-time search across titles, SKUs, and vendor domains; sort by Default Order, Price (Low to High), Price (High to Low), and Inventory Stock Levels.
 
 ---
 
 ## 📱 4. Product Inspection Drawer & Backdrop Popout
 
+- **Masters Union Logo Header**:
+  - Animated Masters Union logo displayed at top left of product details drawer header alongside availability status pill.
 - **Connected Shopify Store Popout Backdrop**:
   - When inspecting a product, the left dark blurred backdrop container displays the **connected Shopify merchant store logo**, store name, domain, and `VERIFIED SHOPIFY VENDOR` badge.
   - **Interactive Popout**: Clicking the merchant logo card opens the vendor's live Shopify storefront domain (`https://${merchant.myshopifyDomain}`) in a new tab (`target="_blank"`).

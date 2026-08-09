@@ -85,31 +85,23 @@ export function VendorFilterBar({
           </div>
         </div>
 
-        {/* 2. Categories List */}
-        <div className="space-y-2.5">
+        {/* 2. Category Dropdown Filter */}
+        <div className="space-y-2">
           <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
             <Tag className="w-3.5 h-3.5 text-amber-400" />
-            <span>Categories</span>
+            <span>Category</span>
           </label>
-          <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => onSelectCategory(cat)}
-                  className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-sans flex items-center justify-between transition-all ${
-                    isSelected
-                      ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20"
-                      : "bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white border border-white/5"
-                  }`}
-                >
-                  <span className="truncate">{cat}</span>
-                  {isSelected && <span className="text-[10px] font-mono">●</span>}
-                </button>
-              );
-            })}
-          </div>
+          <select
+            value={selectedCategory}
+            onChange={(e) => onSelectCategory(e.target.value)}
+            className="w-full bg-black border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500/50 cursor-pointer"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat} className="bg-[#121216]">
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* 3. Vendor Store Filter */}

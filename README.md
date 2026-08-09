@@ -13,13 +13,13 @@
 
 ## ⚡ Key Features
 
-- 🖤 **Pure Black & Cyber Gold Aesthetic**: High-contrast pure black `#000000` background, glassmorphic card containers (`#121216`), and vibrant Cyber Gold / Amber Yellow (`#f59e0b`) accent glows.
-- 🎬 **Scrollable Ambient Background Video Canvas**: Integrated ambient video (`/assets/masters_union_dropshipping_v1.mp4`) with 100% true brightness, scroll-reactive opacity depth transforms, and floating ON/OFF toggle controls.
-- 🖼️ **Clickable Header Animated GIF Logo**: Top-left animated logo (`/assets/logoanimationblack.gif`) wrapped in a Next.js `Link` for seamless 1-click homepage navigation.
-- 📦 **Product-Centric Catalog Grid**: High-density product cards showcasing crisp product images, bold titles, and direct inspection link buttons.
-- 🔍 **Dedicated Product Search & Filter Bar**: Instant client-side search (titles, SKUs, tags), category pills with product count indicator (`9 Products`), vendor store selector, and sort controls.
-- 📱 **3-Tab Framer Motion Detail Drawer**: Slide-out drawer (`Product Specs`, `Shopify & Inventory GIDs`, `Webhook Sync Logs`) with direct buyer storefront checkout integration.
-- 🔐 **Shopify OAuth 2.0 & Real-Time Webhooks**: Complete OAuth flow (`/api/shopify/auth` & `/api/shopify/callback`), HMAC SHA256 signature verification, and automated catalog re-syncing (`/api/shopify/sync`).
+- 🖤 **Pure Black & Cyber Gold Aesthetic**: High-contrast pure black `#000000` background, glassmorphic card containers (`#121216`), and vibrant `#FFE082` product grid container styling.
+- 🎬 **Contained Hero Video Canvas**: Contained video hero card (`Hero.tsx` & `BackgroundVideo.tsx`) showcasing clean ambient video (`/assets/masters_union_dropshipping_v1.mp4`) with floating ON/OFF toggle and play/pause controls.
+- 🖼️ **Animated GIF Logo**: Clickable header logo and product popup drawer header logo (`/assets/logoanimationblack.gif`) for instant Masters Union branding.
+- 📦 **"Dropshipped Products" Section**: Dedicated section header block introducing verified inventory & real-time webhook synchronized products from active Shopify storefronts.
+- 🔍 **Left Filter Sidebar Pane**: Sticky vertical left sidebar filter (`VendorFilterBar.tsx`) with catalog search, category dropdown filter, vendor store dropdown selector, and sort controls.
+- 📱 **3-Tab Framer Motion Detail Drawer**: Slide-out drawer (`Product Specs`, `Shopify & Inventory GIDs`, `Webhook Sync Logs`) featuring Masters Union logo, vendor store backdrop popout, and direct buyer storefront checkout.
+- 🔐 **Shopify OAuth 2.0 & Real-Time Webhooks**: Complete OAuth flow (`/api/shopify/auth` & `/api/shopify/callback`), HMAC SHA256 signature verification, admin moderation protocol, and automated catalog re-syncing (`/api/shopify/sync`).
 
 ---
 

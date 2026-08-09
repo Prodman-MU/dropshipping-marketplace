@@ -224,8 +224,8 @@ export default function MarketplaceHomePage() {
             totalResultsCount={filteredSlots.length}
           />
 
-          {/* Yellow Background Product Grid Container */}
-          <div className="flex-1 w-full bg-yellow-400 rounded-3xl p-6 sm:p-8 border border-amber-500/40 shadow-2xl">
+          {/* Product Grid Container with #FFE082 Background */}
+          <div className="flex-1 w-full bg-[#FFE082] rounded-3xl p-6 sm:p-8 border border-[#FFE082]/50 shadow-2xl">
             {filteredSlots.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredSlots.map((slot) => (

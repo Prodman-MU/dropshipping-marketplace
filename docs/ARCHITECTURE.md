@@ -140,11 +140,11 @@ app/
 
 components/
  ├── Header.tsx                # Glassmorphic navbar with clickable GIF logo & store trigger
- ├── Hero.tsx                  # Spacious hero breathing room for background video
- ├── VendorFilterBar.tsx       # Dedicated product search bar, category pills, vendor dropdown, sort
- ├── ListingCard.tsx           # Product card (Image, Title, Inspect Link)
- ├── ListingDrawer.tsx         # Framer Motion 3-Tab slide-out drawer (Specs, Shopify & Stock, Webhooks)
- ├── BackgroundVideo.tsx       # Scroll-reactive ambient video canvas & floating toggle bar
+ ├── Hero.tsx                  # Contained video hero card section
+ ├── VendorFilterBar.tsx       # Left sidebar filter pane (Search, Category dropdown, Vendor dropdown, Sort)
+ ├── ListingCard.tsx           # Obsidian product card (Image, Title, Price, Vendor Badge, Inspect Link)
+ ├── ListingDrawer.tsx         # Framer Motion 3-Tab slide-out drawer featuring Masters Union logo
+ ├── BackgroundVideo.tsx       # Contained hero video component & toggle controls bar
  └── ConnectStoreModal.tsx     # OAuth store connection modal
 
 public/assets/
