@@ -7,7 +7,7 @@ import { X, Store, ShieldCheck, ArrowRight, CheckCircle2, RefreshCw } from "luci
 interface ConnectStoreModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (domain: string) => void;
+  onConnect: (domain: string, token?: string) => Promise<void> | void;
 }
 
 export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreModalProps) {
@@ -16,22 +16,25 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!domain) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      await onConnect(domain, token);
       setIsSubmitting(false);
       setSuccess(true);
       setTimeout(() => {
-        onConnect(domain);
         setSuccess(false);
         setDomain("");
         setToken("");
         onClose();
       }, 1200);
-    }, 1500);
+    } catch (err) {
+      console.error("Store connect error:", err);
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -12,7 +12,7 @@ interface HeaderProps {
   totalSyncedProducts: number;
   isVideoEnabled: boolean;
   onToggleVideo: () => void;
-  onAddStore: (domain: string) => void;
+  onAddStore: (domain: string, token?: string) => Promise<void> | void;
 }
 
 export function Header({

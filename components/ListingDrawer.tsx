@@ -413,7 +413,7 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
 
               <div className="flex items-center gap-3">
                 <a
-                  href={`https://${slot.merchant.myshopifyDomain}`}
+                  href={slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-black font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 shadow-lg shadow-amber-500/20 transition-all"

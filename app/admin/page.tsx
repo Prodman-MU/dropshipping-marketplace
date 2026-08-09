@@ -98,74 +98,38 @@ export default function AdminPage() {
     setSlots(updatedSlots);
   };
 
-  const handleAddStore = (domain: string) => {
-    const newId = `m-${Date.now()}`;
-    const newName = domain.split(".")[0].toUpperCase().replace("-", " ");
-    const newMerchant: MerchantVendor = {
-      id: newId,
-      name: newName,
-      myshopifyDomain: domain,
-      storeLogo: "https://images.unsplash.com/photo-1556742049-0a67daf40974?w=150&auto=format&fit=crop&q=80",
-      status: "ACTIVE",
-      totalProducts: 2,
-      connectedSince: "Just Now",
-      lastWebhookSync: "Just Now",
-    };
+  const handleAddStore = async (domain: string, token?: string) => {
+    try {
+      const res = await fetch("/api/shopify/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain, token }),
+      });
 
-    const newSlot1: SlotListing = {
-      id: `slot-${Date.now()}-1`,
-      slotNumber: `SLOT #${String(slots.length + 1).padStart(3, "0")}`,
-      title: `${newName} Tactical Smart Charger Asset`,
-      description: "Directly fetched product asset, photos, and specs from newly connected Shopify Storefront.",
-      category: "Tactical Tech & EDC",
-      price: 129.00,
-      inventoryQuantity: 50,
-      status: "AVAILABLE",
-      shopifyProductId: `gid://shopify/Product/${Date.now()}1`,
-      shopifyVariantId: `gid://shopify/ProductVariant/${Date.now()}1`,
-      merchant: newMerchant,
-      tags: ["New Sync", "Shopify API"],
-      images: ["https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80"],
-      sku: "NEW-SYNC-01",
-      createdAt: new Date().toISOString(),
-      variants: [
-        { id: `v-${Date.now()}`, title: "Default Variant", price: 129.00, sku: "NEW-SYNC-01", inventoryQuantity: 50, availableForSale: true }
-      ],
-      syncLogs: [
-        { id: `log-${Date.now()}`, eventType: "products/create", status: "SUCCESS", timestamp: new Date().toLocaleTimeString(), details: "Storefront linked & items fetched. Published live." }
-      ]
-    };
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        console.error("Failed to connect store:", data.error);
+        return;
+      }
 
-    const newSlot2: SlotListing = {
-      id: `slot-${Date.now()}-2`,
-      slotNumber: `SLOT #${String(slots.length + 2).padStart(3, "0")}`,
-      title: `${newName} Pro Wireless Comm Dock`,
-      description: "Hi-Fi wireless communication dock with magnetic charging contacts and anodized aluminum chassis.",
-      category: "Audiophile Hardware",
-      price: 219.00,
-      inventoryQuantity: 25,
-      status: "AVAILABLE",
-      shopifyProductId: `gid://shopify/Product/${Date.now()}2`,
-      shopifyVariantId: `gid://shopify/ProductVariant/${Date.now()}2`,
-      merchant: newMerchant,
-      tags: ["Wireless Dock", "Audiophile"],
-      images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"],
-      sku: "NEW-SYNC-02",
-      createdAt: new Date().toISOString(),
-      variants: [
-        { id: `v-${Date.now()}-2`, title: "Stealth Gray", price: 219.00, sku: "NEW-SYNC-02", inventoryQuantity: 25, availableForSale: true }
-      ],
-      syncLogs: [
-        { id: `log-${Date.now()}-2`, eventType: "products/create", status: "SUCCESS", timestamp: new Date().toLocaleTimeString(), details: "Storefront linked & items fetched. Published live." }
-      ]
-    };
+      const { merchant, slots: newSlots } = data;
 
-    const updatedM = [newMerchant, ...merchants];
-    const updatedS = [newSlot1, newSlot2, ...slots];
-    setMerchants(updatedM);
-    setSlots(updatedS);
-    saveMerchants(updatedM);
-    saveSlots(updatedS);
+      const currentM = getInitialMerchants();
+      const currentS = getInitialSlots();
+
+      const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
+      const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
+
+      const updatedM = [merchant, ...filteredM];
+      const updatedS = [...newSlots, ...filteredS];
+
+      setMerchants(updatedM);
+      setSlots(updatedS);
+      saveMerchants(updatedM);
+      saveSlots(updatedS);
+    } catch (error) {
+      console.error("Error in handleAddStore:", error);
+    }
   };
 
   const pendingCount = merchants.filter((m) => m.status === "PENDING").length;

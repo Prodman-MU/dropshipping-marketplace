@@ -7,7 +7,10 @@ export function getInitialMerchants(): MerchantVendor[] {
   if (typeof window === "undefined") return MOCK_MERCHANTS;
   try {
     const saved = localStorage.getItem(MERCHANTS_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed: MerchantVendor[] = JSON.parse(saved);
+      return parsed.filter((m) => !["m-001", "m-002", "m-003", "m-004"].includes(m.id));
+    }
   } catch (e) {
     console.error("Error reading merchants from localStorage", e);
   }
@@ -18,7 +21,10 @@ export function getInitialSlots(): SlotListing[] {
   if (typeof window === "undefined") return MOCK_SLOTS;
   try {
     const saved = localStorage.getItem(SLOTS_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed: SlotListing[] = JSON.parse(saved);
+      return parsed.filter((s) => !s.id.startsWith("slot-0"));
+    }
   } catch (e) {
     console.error("Error reading slots from localStorage", e);
   }
