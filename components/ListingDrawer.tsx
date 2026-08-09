@@ -54,10 +54,53 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
-        />
+          className="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-start pl-8 sm:pl-16 md:pl-24 cursor-pointer"
+        >
+          {/* Clickable Shopify Merchant Store Popout Showcase */}
+          <motion.a
+            href={`https://${slot.merchant.myshopifyDomain}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="hidden md:flex flex-col items-center gap-4 p-8 rounded-3xl bg-black/70 border border-white/10 hover:border-amber-500/50 backdrop-blur-xl shadow-2xl max-w-xs text-center group cursor-pointer transition-all hover:scale-105"
+            title={`Click to open ${slot.merchant.name} live Shopify store`}
+          >
+            <div className="relative">
+              <img
+                src={slot.merchant.storeLogo}
+                alt={slot.merchant.name}
+                className="w-36 h-36 object-cover rounded-2xl shadow-2xl shadow-amber-500/20 border border-white/10 group-hover:border-amber-400/60 transition-all filter brightness-105"
+              />
+              <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-amber-500 border-2 border-black flex items-center justify-center shadow-md">
+                <ExternalLink className="w-3.5 h-3.5 text-black font-bold" />
+              </div>
+            </div>
 
-        {/* Slide-over Drawer Panel */}
+            <div>
+              <div className="flex items-center justify-center gap-1.5">
+                <h3 className="text-xl font-bold text-white tracking-wide font-sans group-hover:text-amber-300 transition-colors">
+                  {slot.merchant.name}
+                </h3>
+                <ExternalLink className="w-4 h-4 text-amber-400 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </div>
+              <p className="text-xs font-mono text-zinc-400 mt-0.5 group-hover:text-zinc-200">
+                {slot.merchant.myshopifyDomain}
+              </p>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 inline-block mt-2 group-hover:bg-amber-500 group-hover:text-black transition-colors">
+                VISIT SHOPIFY STOREFRONT ↗
+              </span>
+            </div>
+
+            <p className="text-[11px] font-mono text-zinc-500 group-hover:text-amber-400/80 transition-colors">
+              Click logo to open store in new tab
+            </p>
+          </motion.a>
+        </motion.div>
+
+        {/* Slide-over Drawer Panel on the Right */}
         <motion.div
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
@@ -69,26 +112,35 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
             
             {/* Top Fixed Header */}
             <div className="p-6 border-b border-white/10 bg-black/90 backdrop-blur-md">
-              <div className="flex items-center justify-between gap-4 mb-3">
-                <div className="flex items-center gap-2.5">
-                  {isAvailable && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      AVAILABLE
-                    </span>
-                  )}
-                  {isReserved && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                      RESERVED
-                    </span>
-                  )}
-                  {isSold && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-zinc-500/10 text-zinc-400 border border-zinc-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                      SOLD OUT
-                    </span>
-                  )}
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  {/* Masters Union Animated Logo */}
+                  <img
+                    src="/assets/logoanimationblack.gif"
+                    alt="Masters Union"
+                    className="h-9 w-auto max-w-[160px] object-contain rounded-lg"
+                  />
+                  <div className="h-4 w-px bg-white/15 hidden sm:block" />
+                  <div className="flex items-center gap-2.5">
+                    {isAvailable && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        AVAILABLE
+                      </span>
+                    )}
+                    {isReserved && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        RESERVED
+                      </span>
+                    )}
+                    {isSold && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-zinc-500/10 text-zinc-400 border border-zinc-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                        SOLD OUT
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <button
@@ -105,8 +157,9 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
 
               <div className="flex items-center gap-2 mt-2 text-xs font-mono text-zinc-400">
                 <Store className="w-3.5 h-3.5 text-amber-400" />
-                <span>Vendor Domain:</span>
-                <span className="text-white font-bold">{slot.merchant.myshopifyDomain}</span>
+                <span>Vendor Store:</span>
+                <span className="text-white font-bold">{slot.merchant.name}</span>
+                <span>({slot.merchant.myshopifyDomain})</span>
               </div>
 
               {/* Drawer Tabs */}

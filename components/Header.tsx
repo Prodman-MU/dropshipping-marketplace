@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Plus, Activity, Cpu, Layers } from "lucide-react";
+import { Search, Plus, Activity, Cpu, Layers, ShieldCheck } from "lucide-react";
 import { ConnectStoreModal } from "@/components/ConnectStoreModal";
 
 interface HeaderProps {
@@ -72,10 +72,20 @@ export function Header({
                 <span className="text-amber-400 font-bold">ONLINE</span>
               </div>
 
+              {/* Access Controlled Admin Portal Link */}
+              <Link
+                href="/admin"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-zinc-400 hover:text-white transition-all"
+                title="Access Controlled Admin Moderation Portal"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span>Admin Portal</span>
+              </Link>
+
               {/* Vendors & Product Ticker */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono">
                 <Layers className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="text-white font-bold">{activeVendorCount} Stores</span>
+                <span className="text-white font-bold">{activeVendorCount} Active Stores</span>
                 <span className="text-zinc-500">•</span>
                 <span className="text-zinc-300">{totalSyncedProducts} Products</span>
               </div>
@@ -104,3 +114,4 @@ export function Header({
     </>
   );
 }
+

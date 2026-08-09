@@ -20,7 +20,7 @@ export interface MerchantVendor {
   name: string;
   myshopifyDomain: string;
   storeLogo: string;
-  status: "ACTIVE" | "PENDING";
+  status: "ACTIVE" | "PENDING" | "REJECTED";
   totalProducts: number;
   connectedSince: string;
   lastWebhookSync: string;
@@ -66,7 +66,7 @@ export const MOCK_MERCHANTS: MerchantVendor[] = [
     status: "ACTIVE",
     totalProducts: 32,
     connectedSince: "2024-03-01",
-    lastWebhookSync: " Just now",
+    lastWebhookSync: "Just now",
   },
   {
     id: "m-003",
@@ -77,6 +77,16 @@ export const MOCK_MERCHANTS: MerchantVendor[] = [
     totalProducts: 19,
     connectedSince: "2024-04-10",
     lastWebhookSync: "12 mins ago",
+  },
+  {
+    id: "m-004",
+    name: "Cyber Dynamics",
+    myshopifyDomain: "cyber-dynamics.myshopify.com",
+    storeLogo: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=150&auto=format&fit=crop&q=80",
+    status: "ACTIVE",
+    totalProducts: 2,
+    connectedSince: "Just Now",
+    lastWebhookSync: "Just Now",
   },
 ];
 
@@ -323,6 +333,59 @@ export const MOCK_SLOTS: SlotListing[] = [
     ],
     syncLogs: [
       { id: "log-10", eventType: "inventory_levels/update", status: "SUCCESS", timestamp: "2026-08-08 13:00:00", details: "Low inventory alert logged" },
+    ],
+  },
+  {
+    id: "slot-010",
+    slotNumber: "SLOT #010",
+    title: "Cyber Dynamics Neural HUD Smart Visor V2",
+    description: "Augmented reality tactical HUD visor with ambient light sensor, dual micro-OLED displays, and integrated bluetooth comms. Fetched from connected Shopify Storefront.",
+    category: "Wearable Wear",
+    price: 349.00,
+    compareAtPrice: 420.00,
+    inventoryQuantity: 30,
+    status: "AVAILABLE",
+    shopifyProductId: "gid://shopify/Product/9842019490",
+    shopifyVariantId: "gid://shopify/ProductVariant/4910284919",
+    merchant: MOCK_MERCHANTS[3],
+    tags: ["AR Visor", "Cyberpunk", "HUD", "Wearable"],
+    images: [
+      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80",
+    ],
+    sku: "CYB-HUD-V2-BLK",
+    createdAt: "2026-08-08",
+    variants: [
+      { id: "v-15", title: "Midnight Matte Black", price: 349.00, sku: "CYB-HUD-BLK", inventoryQuantity: 20, availableForSale: true },
+      { id: "v-16", title: "Cyber Gold Metallic", price: 379.00, sku: "CYB-HUD-GLD", inventoryQuantity: 10, availableForSale: true },
+    ],
+    syncLogs: [
+      { id: "log-11", eventType: "products/create", status: "PENDING", timestamp: "2026-08-08 17:00:00", details: "Store catalog submitted for admin approval" },
+    ],
+  },
+  {
+    id: "slot-011",
+    slotNumber: "SLOT #011",
+    title: "Cyber Dynamics Bio-Metric Haptic Vest",
+    description: "Full-body tactile feedback haptic vest with 16 localized force actuators and wireless ultra-low latency link.",
+    category: "Wearable Wear",
+    price: 499.00,
+    compareAtPrice: 599.00,
+    inventoryQuantity: 15,
+    status: "AVAILABLE",
+    shopifyProductId: "gid://shopify/Product/9842019491",
+    shopifyVariantId: "gid://shopify/ProductVariant/4910284920",
+    merchant: MOCK_MERCHANTS[3],
+    tags: ["Haptic", "Tactile", "Bio-Metric"],
+    images: [
+      "https://images.unsplash.com/photo-1544441893-675973e31985?w=800&auto=format&fit=crop&q=80",
+    ],
+    sku: "CYB-HPT-VST-01",
+    createdAt: "2026-08-08",
+    variants: [
+      { id: "v-17", title: "Standard Size (Adjustable)", price: 499.00, sku: "CYB-HPT-STD", inventoryQuantity: 15, availableForSale: true },
+    ],
+    syncLogs: [
+      { id: "log-12", eventType: "products/create", status: "PENDING", timestamp: "2026-08-08 17:01:00", details: "Store catalog submitted for admin approval" },
     ],
   },
 ];

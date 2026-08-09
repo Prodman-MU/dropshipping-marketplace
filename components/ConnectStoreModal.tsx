@@ -80,14 +80,17 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="p-3 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  className="p-3 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                 >
                   <CheckCircle2 className="w-10 h-10" />
                 </motion.div>
-                <h4 className="text-xl font-bold text-white">Store Connected Successfully!</h4>
-                <p className="text-sm text-zinc-400 font-mono">
-                  Catalog slots synced for {domain}
+                <h4 className="text-xl font-bold text-white">Store Linked & Items Live!</h4>
+                <p className="text-sm text-zinc-300 font-mono max-w-sm">
+                  Fetched item list, photos & descriptions for <span className="text-amber-400 font-bold">{domain}</span>.
                 </p>
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono mt-2">
+                  ✓ Store active! Synced products are now live on the marketplace.
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
