@@ -8,11 +8,13 @@
 !.yarn/releases
 !.yarn/versions
 
-# Next.js Build Output
+# Next.js & Turbopack Build Output
 /.next/
 /out/
 /build
 /dist
+/.turbo
+*.tsbuildinfo
 
 # Testing & Coverage
 /coverage
@@ -32,7 +34,9 @@ yarn-error.log*
 .env.production.local
 !.env.example
 
-# Database & SQLite Dev DBs
+# Docker & Local Database Storage
+postgres_data/
+.docker/
 prisma/*.db
 prisma/*.db-journal
 *.sqlite
@@ -40,9 +44,6 @@ prisma/*.db-journal
 
 # Vercel & Deployment
 .vercel
-
-# TypeScript & Next Type Definitions
-*.tsbuildinfo
 
 # OS & Editor Files
 .DS_Store
@@ -70,3 +71,4 @@ Thumbs.db
 *.crt
 tmp/
 temp/
+scratch/

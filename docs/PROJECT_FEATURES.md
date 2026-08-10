@@ -1,77 +1,88 @@
 # Exhaustive Platform Feature Specification
 
-Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Multi-Vendor Marketplace Platform**.
+Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Multi-Vendor Dropshipping Marketplace Platform**.
 
 ---
 
-## 🎨 1. Aesthetics & User Interface Features
+## 🎨 1. Aesthetics & Bauhaus UI System
 
-- **Pure Black & Cyber Gold Theme**:
-  - High-contrast pure black `#000000` background with elevated glassmorphic card containers (`#121216`).
-  - Radiant Cyber Gold & Amber Yellow accent tokens (`#f59e0b` / `#fbbf24`) for buttons, active state badges, glowing borders, and monospace text highlights.
-  - Vibrant `#FFE082` backdrop styling for the main product grid container with high-contrast obsidian cards (`bg-zinc-950/95`).
-- **Contained Hero Background Video Canvas**:
-  - Hero container card video (`Hero.tsx` & `BackgroundVideo.tsx`) rendering clean ambient video (`public/assets/masters_union_dropshipping_v1.mp4`).
-  - Floating bottom-right toggle control bar inside hero card for turning ambient video **ON/OFF** and pausing/playing the video loop.
-- **Animated GIF Logo**:
-  - Header animated logo (`public/assets/logoanimationblack.gif`) wrapped in a Next.js `Link` for 1-click homepage navigation.
-  - Top-left animated logo in product inspection drawer header for consistent brand identity.
-
----
-
-## 📦 2. Product Catalog & Marketplace Grid
-
-- **"Dropshipped Products" Section Header**:
-  - Dedicated section text block introducing live marketplace catalog items synchronized from active Shopify storefronts.
-- **Product-Centric Listing Cards**:
-  - Clean card design featuring high-resolution product preview images with smooth hover scale transitions (`group-hover:scale-105`), vendor badges, and price tags.
-  - Bold product titles and direct product inspection trigger buttons (`INSPECT DETAILS →`).
-- **Yellow `#FFE082` Grid Canvas**:
-  - Product cards rest on a vibrant `#FFE082` rounded backdrop container (`bg-[#FFE082] rounded-3xl p-6 sm:p-8 border border-[#FFE082]/50 shadow-2xl`).
+- **Bauhaus Design Aesthetics**:
+  - Light-mode `#F4F4F0` canvas paired with `#111111` solid borders (2px/3px/4px) and hard offset block shadows (`shadow-[4px_4px_0px_#111111]`).
+  - Signature `#FFB703` Cyber Gold accents, `#005F73` Deep Teal contrast badges, and `#D62828` Crimson action highlights.
+- **Hero Video Section**:
+  - Contained ambient video hero card (`Hero.tsx` & `BackgroundVideo.tsx`) showcasing clean background video (`/assets/masters_union_dropshipping_v1.mp4`) with floating ON/OFF toggle and play/pause controls.
+- **Header Navigation & Brand Identity**:
+  - Sticky header with icon-only `<ArrowLeft />` back button when inspecting product detail pages.
+  - Header animated logo (`/assets/logoanimationblack.gif`) displaying `/ DROPSHIPPING 2026` text badge (always visible on mobile and desktop).
+  - Ticker pill displaying live approved store counts and live synced product counts.
 
 ---
 
-## 🔍 3. Left Filter Sidebar & Search System
+## 🛍️ 2. Dedicated Product Pages (`/product/[id]`)
 
-- **Left Sidebar Filter Pane (`VendorFilterBar.tsx`)**:
-  - Sticky vertical left-hand sidebar pane (`w-full lg:w-72`) hosting catalog search, category dropdown, vendor store dropdown, and sort selectors.
-- **Category Dropdown Filter**:
-  - Category selector styled as a clean `<select>` dropdown menu listing all unique product categories.
-- **Multi-Vendor Storefront Selector**:
-  - Dropdown filter to isolate products by specific connected Shopify store domains (`apex-gear.myshopify.com`, `nordic-tech.myshopify.com`, `chrono-craft.myshopify.com`).
-- **Catalog Search & Sorting Engine**:
-  - Real-time search across titles, SKUs, and vendor domains; sort by Default Order, Price (Low to High), Price (High to Low), and Inventory Stock Levels.
-
----
-
-## 📱 4. Product Inspection Drawer & Backdrop Popout
-
-- **Masters Union Logo Header**:
-  - Animated Masters Union logo displayed at top left of product details drawer header alongside availability status pill.
-- **Connected Shopify Store Popout Backdrop**:
-  - When inspecting a product, the left dark blurred backdrop container displays the **connected Shopify merchant store logo**, store name, domain, and `VERIFIED SHOPIFY VENDOR` badge.
-  - **Interactive Popout**: Clicking the merchant logo card opens the vendor's live Shopify storefront domain (`https://${merchant.myshopifyDomain}`) in a new tab (`target="_blank"`).
-- **3-Tab Detail Panel (Framer Motion Slide-Out)**:
-  1. **Product Specs**: High-res image gallery, variant selection buttons, detailed overview description, and category/tag pills.
-  2. **Shopify & Inventory**: Live Shopify Storefront Product GIDs, Variant GIDs, SKUs, stock quantities, and variant inventory matrix tables.
-  3. **Webhook Sync Logs**: Audit trail of real-time `products/create`, `products/update`, and `inventory_levels/update` webhook events.
-- **Direct Buyer Checkout**:
-  - Sticky bottom action footer with a `Buy on Shopify Storefront ↗` checkout button.
+- **Full-Page Detail Route**:
+  - Replaced popup modals with a dedicated product page route (`/product/[id]`).
+- **Interactive Multi-Image Gallery**:
+  - Main image viewport with smooth zoom hover transitions and thumb selection bar.
+- **Ordered Product Hierarchy**:
+  - Ordered as Category Tag → Product Title → Full Description Box → Price & MSRP Discount Box → Variant Option Selector → Action CTAs → Fulfilling Merchant Vendor Card.
+- **WhatsApp B2B Inquiry CTA (1st Action)**:
+  - High-impact WhatsApp green (`#25D366`) button with official SVG logo icon.
+  - Generates pre-filled click-to-chat inquiry messages containing store name, product title, SKU, price, and B2B vendor terms request.
+- **Direct Shopify Checkout CTA (2nd Action Box)**:
+  - Direct checkout link opening the product on the merchant's live Shopify storefront.
+- **Copy Specifications Tool**:
+  - 1-click clipboard copy utility for product specs (title, price, category, SKU, store domain, and checkout URL).
+- **Related Products Carousel**:
+  - 4-card related products carousel at the bottom of the detail page.
 
 ---
 
-## 🔐 5. Shopify Admin OAuth 2.0 & Webhook Integration
+## 📱 3. Mobile Optimization & Sticky Filter Bar
 
-- **Shopify Merchant Store Connection Modal**:
-  - Modal form for connecting new Shopify storefronts dynamically (`/api/shopify/auth`).
-- **OAuth 2.0 Access Token Exchange**:
-  - Handles Shopify authorization callbacks (`/api/shopify/callback`), Exchanges code for access tokens, and securely registers mandatory webhooks.
-- **HMAC SHA256 Webhook Pipeline**:
-  - Public route (`/api/webhooks/shopify`) that verifies incoming webhook signatures against `SHOPIFY_WEBHOOK_SECRET` before updating PostgreSQL database listings.
-- **Catalog Re-Sync API**:
-  - On-demand endpoint (`/api/shopify/sync`) to pull updated products, variants, and stock counts.
-- **Built-In Mock Offline Fallback**:
-  - Seamless fallback to `data/mock-slots.ts` when offline or testing without live Shopify Partner credentials.
+- **2-Column Mobile Product Grid**:
+  - Responsive `grid-cols-2` product grid on mobile screens.
+  - Fixed-height title containers (`h-8 sm:h-12`) ensuring store names align on the exact same horizontal baseline across grid rows.
+- **Sticky Bottom Filter Bar (`VendorFilterBar.tsx`)**:
+  - Fixed bottom bar (`sticky bottom-0 z-40`) on mobile screens.
+  - Top row: 1-tap horizontal scrollable category pills (`All Products`, `Tactical Tech & EDC`, etc.).
+  - Bottom row: Fast search input + "Filter Options" button triggering a slide-up sheet drawer for vendor isolation, sort order (`In-Stock First`), and reset actions.
+
+---
+
+## 🏷️ 4. Clean Inventory Status Logic
+
+- **Hidden Numerical Inventory Counts**:
+  - Numerical unit counts (e.g. `18 UNITS IN STOCK`, `18 LEFT`) and `"INVENTORY UNKNOWN"` badges are hidden across all cards and pages.
+- **Conditional Out-of-Stock Badges**:
+  - Items in stock display clean pricing without inventory numbers.
+  - Items out of stock display a prominent, high-contrast **`OUT OF STOCK`** tag right next to the price.
+
+---
+
+## ⚙️ 5. Admin Portal & Website Settings
+
+- **Store Moderation Suite (`/admin`)**:
+  - Tabbed admin portal for approving, rejecting, or disconnecting candidate Shopify storefronts.
+- **Dynamic Site Settings (`settings-manager.ts`)**:
+  - Form to customize global parameters: Dropshipping Year (e.g. `2026`, `2027`), Site Title, Announcement Text, and Catalog Badge Text.
+  - Real-time UI mockup preview and site-wide DOM event synchronization (`"site-settings-changed"`).
+- **Master Vendor Key**:
+  - Super-passcode allowing marketplace admins to inspect any store workspace in `/vendor`.
+
+---
+
+## 🗄️ 6. Cloud Database & Prisma 7 Architecture
+
+- **Decoupled Prisma 7 Schema (`schema.prisma`)**:
+  - Separate `Listing` (Catalog) and `Inventory` models linked by 1-to-1 relationships.
+  - `SiteSetting` model for global website configuration.
+- **Docker Compose Setup**:
+  - `docker-compose.yml` orchestrating PostgreSQL 16 container and Next.js development server with Turbopack HMR.
+- **Supabase Cloud Deployment Setup**:
+  - `DATABASE_URL` (Port 6543 transaction pooler for serverless App Router API routes).
+  - `DIRECT_URL` (Port 5432 session pooler for Prisma CLI migrations).
+  - Automated `prisma generate && next build` pipeline for zero-downtime Vercel deployments.
 
 ---
 
@@ -79,10 +90,10 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 | Document | Description |
 |---|---|
-| 📄 [`README.md`](file:///d:/lab/projects/dropshipping-marketplace/README.md) | High-level summary, tech stack, custom asset placement guide, and quick start instructions |
-| 🚀 [`docs/GETTING_STARTED.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/GETTING_STARTED.md) | Local environment setup, environment variables (`.env.local`), database push, and ngrok webhook testing |
-| 🏛️ [`docs/ARCHITECTURE.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/ARCHITECTURE.md) | Event-driven Next.js architecture, sequence diagrams, Prisma PostgreSQL schema, and component directory tree |
-| 🔑 [`docs/SHOPIFY_INTEGRATION.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/SHOPIFY_INTEGRATION.md) | Shopify Storefront GraphQL queries, OAuth 2.0 protocol, webhook pipeline, HMAC verification, and rate limiting |
+| 📄 [`README.md`](file:///d:/lab/projects/dropshipping-marketplace/README.md) | High-level summary, tech stack, asset placement guide, and quick start instructions |
+| 🚀 [`docs/GETTING_STARTED.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/GETTING_STARTED.md) | Local environment setup, Docker Compose commands, environment variables, and ngrok webhook testing |
+| 🏛️ [`docs/ARCHITECTURE.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/ARCHITECTURE.md) | Event-driven Next.js architecture, sequence diagrams, Prisma 7 schema, and component tree |
+| 🔑 [`docs/SHOPIFY_INTEGRATION.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/SHOPIFY_INTEGRATION.md) | Shopify Storefront GraphQL queries, OAuth 2.0 protocol, webhook pipeline, and domain parsing (`getDomainCandidates`) |
 | 📡 [`docs/API_REFERENCE.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/API_REFERENCE.md) | HTTP endpoint specifications, request parameters, response headers, and sample JSON payloads |
-| 🎨 [`docs/DESIGN_SYSTEM.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/DESIGN_SYSTEM.md) | Cyber Gold & Pure Black design system tokens, CSS glassmorphic utilities, monospace rules, and video transforms |
+| 🎨 [`docs/DESIGN_SYSTEM.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/DESIGN_SYSTEM.md) | Bauhaus visual design tokens, border weights, offset block shadow utilities, and color palettes |
 | ✨ [`docs/PROJECT_FEATURES.md`](file:///d:/lab/projects/dropshipping-marketplace/docs/PROJECT_FEATURES.md) | **(This Document)** Exhaustive feature catalog and functional specification guide |
