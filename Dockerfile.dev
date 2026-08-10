@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install openssl for Prisma engine binaries in alpine
+RUN apk add --no-cache openssl libc6-compat
+
+# Install dependencies based on package-lock.json
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy Prisma schema and generate Prisma Client
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+# Set environment variables for Turbopack hot reloading inside Docker
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV WATCHPACK_POLLING=true
+
+EXPOSE 3000
+
+# Start development server with Turbopack
+CMD ["npx", "next", "dev", "--turbopack", "-H", "0.0.0.0", "-p", "3000"]

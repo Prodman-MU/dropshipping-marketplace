@@ -540,8 +540,10 @@ export async function fetchProductsFromShopifyStore(
         ? (prod.compareAtPriceRange?.minVariantPrice?.amount ? parseFloat(prod.compareAtPriceRange.minVariantPrice.amount) : undefined)
         : (prod.variants?.[0]?.compare_at_price ? parseFloat(prod.variants[0].compare_at_price) : undefined);
 
-      const inventoryQuantity = firstVar?.inventoryQuantity ?? 15;
-      const status = inventoryQuantity > 10 ? "AVAILABLE" : inventoryQuantity > 0 ? "RESERVED" : "SOLD";
+      const rawQty = firstVar?.inventoryQuantity ?? (prod.variants?.[0]?.inventory_quantity);
+      const isUnknownQuantity = rawQty === undefined || rawQty === null;
+      const inventoryQuantity = isUnknownQuantity ? 0 : Number(rawQty);
+      const status = isUnknownQuantity || inventoryQuantity > 0 ? "AVAILABLE" : "SOLD";
       const sku = firstVar?.sku || `SKU-${index + 1}`;
       const shopifyProductId = isGraphQL ? prod.id : `gid://shopify/Product/${prod.id}`;
       const shopifyVariantId = firstVar ? (isGraphQL ? firstVar.id : `gid://shopify/ProductVariant/${firstVar.id}`) : `gid://shopify/ProductVariant/${prod.id}`;
@@ -559,6 +561,7 @@ export async function fetchProductsFromShopifyStore(
         compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : undefined,
         currencyCode,
         inventoryQuantity,
+        isUnknownQuantity,
         status,
         shopifyProductId,
         shopifyVariantId,

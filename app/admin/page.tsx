@@ -559,9 +559,9 @@ export default function AdminPage() {
                                   )}
                                   <div className="min-w-0 flex-1 space-y-1.5 font-mono">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-xs font-black text-[#D62828]">
-                                        {slot.slotNumber}
-                                      </span>
+                                       <span className="text-xs font-black text-[#005F73]">
+                                         SKU: {slot.sku}
+                                       </span>
                                       <span className="text-sm font-black text-[#111111] bg-[#FFB703] px-2 py-0.5 border border-[#111111]">
                                         {formatCurrency(slot.price, slot.currencyCode || "INR")}
                                       </span>
@@ -572,11 +572,12 @@ export default function AdminPage() {
                                     <p className="text-xs text-[#2B2D42] line-clamp-2 leading-relaxed font-sans font-medium">
                                       {slot.description}
                                     </p>
-                                    <div className="flex items-center gap-2 pt-1 text-[11px] font-bold text-[#005F73]">
-                                      <span>SKU: {slot.sku}</span>
-                                      <span>•</span>
-                                      <span>Stock: {slot.inventoryQuantity} units</span>
-                                    </div>
+                                     <div className="flex items-center gap-2 pt-1 text-[11px] font-bold text-[#005F73]">
+                                       <span>SKU: {slot.sku}</span>
+                                       {(!slot.isUnknownQuantity && slot.inventoryQuantity <= 0) && (
+                                         <span className="text-[#D62828] font-black">• Out of Stock</span>
+                                       )}
+                                     </div>
                                   </div>
                                 </div>
                               ))}

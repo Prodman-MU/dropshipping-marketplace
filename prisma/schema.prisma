@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -10,6 +11,7 @@ generator client {
 enum MerchantStatus {
   ACTIVE
   PENDING
+  REJECTED
   DISCONNECTED
 }
 
@@ -27,6 +29,10 @@ model Merchant {
   status          MerchantStatus @default(PENDING)
   storeLogo       String?
   totalProducts   Int            @default(0)
+  whatsappNumber  String?
+  passcode        String?
+  connectedSince  String?
+  lastWebhookSync String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -44,8 +50,6 @@ model Listing {
   category          String
   price             Float
   compareAtPrice    Float?
-  inventoryQuantity Int           @default(0)
-  status            ListingStatus @default(AVAILABLE)
   shopifyProductId  String        @unique
   shopifyVariantId  String
   merchantId        String
@@ -54,10 +58,28 @@ model Listing {
   images            String[]
   variants          Json?         // JSON array of variant options
   sku               String?
+  handle            String?
+  productUrl        String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
+  inventory Inventory?
+
   @@map("listings")
+}
+
+model Inventory {
+  id                String        @id @default(uuid())
+  listingId         String        @unique
+  listing           Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  quantityAvailable Int           @default(0)
+  isUnknownQuantity Boolean       @default(false) // When true, UI displays "Inventory Unknown"
+  status            ListingStatus @default(AVAILABLE)
+  lastSyncedAt      DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("inventory")
 }
 
 model SyncLog {
@@ -71,4 +93,15 @@ model SyncLog {
   createdAt    DateTime @default(now())
 
   @@map("sync_logs")
+}
+
+model SiteSetting {
+  id               String   @id @default("default")
+  dropshippingYear String   @default("2026")
+  siteTitle        String   @default("MASTERS UNION")
+  announcementText String   @default("2026 B2B DIRECT DROPSHIPPING CATALOG")
+  catalogBadgeText String   @default("OFFICIAL CATALOG")
+  updatedAt        DateTime @updatedAt
+
+  @@map("site_settings")
 }

@@ -176,7 +176,7 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
               {isAvailable && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-black bg-emerald-300 text-[#111111] border border-[#111111]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse" />
-                  AVAILABLE ({currentSlot.inventoryQuantity} UNITS)
+                  {currentSlot.isUnknownQuantity ? "INVENTORY UNKNOWN" : `AVAILABLE (${currentSlot.inventoryQuantity} UNITS)`}
                 </span>
               )}
               {isReserved && (
@@ -426,7 +426,9 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
                         </div>
                         <div>
                           <span className="text-[#2B2D42] block text-[9px] uppercase font-bold">Available Inventory</span>
-                          <span className="text-[#111111] font-black">{currentVariant.inventoryQuantity} Units</span>
+                          <span className="text-[#111111] font-black">
+                            {currentSlot.isUnknownQuantity ? "Inventory Unknown" : `${currentVariant.inventoryQuantity} Units`}
+                          </span>
                         </div>
                       </div>
 

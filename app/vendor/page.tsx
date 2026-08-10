@@ -926,7 +926,6 @@ export default function VendorDashboardPage() {
                             </div>
                           )}
                           <div>
-                            <span className="text-[10px] text-[#005F73] font-bold uppercase block">{slot.slotNumber}</span>
                             <h4 className="font-black text-[#111111] group-hover:text-[#D62828] transition-colors line-clamp-1 uppercase">
                               {slot.title}
                             </h4>
@@ -957,9 +956,13 @@ export default function VendorDashboardPage() {
                         {formatCurrency(slot.price, slot.currencyCode || "INR")}
                       </td>
 
-                      {/* Stock Units */}
+                      {/* Stock Availability */}
                       <td className="p-3 font-black text-[#111111]">
-                        {slot.inventoryQuantity} Units
+                        {slot.inventoryQuantity <= 0 && !slot.isUnknownQuantity ? (
+                          <span className="text-[#D62828] font-black">OUT OF STOCK</span>
+                        ) : (
+                          <span className="text-emerald-700 font-bold">IN STOCK</span>
+                        )}
                       </td>
 
                       {/* Status Badge */}

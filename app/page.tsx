@@ -199,8 +199,8 @@ export default function MarketplaceHomePage() {
       </div>
 
       {/* Main Layout: Left Sidebar Filters + Right Product Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 relative z-10">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-12 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
           
           {/* Left Pane Filters */}
           <VendorFilterBar
@@ -274,14 +274,13 @@ export default function MarketplaceHomePage() {
               )}
             </div>
 
-            {/* Dynamic Product Grid */}
+            {/* Dynamic Product Grid - 2 Columns on Mobile */}
             {paginatedSlots.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
                 {paginatedSlots.map((slot) => (
                   <ListingCard
                     key={slot.id}
                     slot={slot}
-                    onSelect={(selected) => setSelectedSlot(selected)}
                   />
                 ))}
               </div>

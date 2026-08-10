@@ -39,6 +39,7 @@ export interface SlotListing {
   compareAtPrice?: number;
   currencyCode?: string;
   inventoryQuantity: number;
+  isUnknownQuantity?: boolean;
   status: "AVAILABLE" | "RESERVED" | "SOLD";
   shopifyProductId: string;
   shopifyVariantId: string;
