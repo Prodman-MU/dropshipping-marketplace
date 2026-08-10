@@ -243,7 +243,8 @@ export async function getMerchants(): Promise<MerchantVendor[]> {
  */
 export async function fetchProductsFromShopifyStore(
   domainInput: string,
-  token?: string
+  token?: string,
+  whatsappNumberInput?: string
 ): Promise<{ merchant: MerchantVendor; slots: SlotListing[]; error?: string }> {
   let cleanDomain = domainInput.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
   if (!cleanDomain.includes(".")) {
@@ -258,15 +259,18 @@ export async function fetchProductsFromShopifyStore(
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
+  const cleanWhatsapp = whatsappNumberInput ? whatsappNumberInput.replace(/[^0-9]/g, "") : undefined;
+
   const merchant: MerchantVendor = {
     id: `m-${cleanDomain.replace(/[^a-z0-9]/gi, "-")}`,
     name: storeName || "Shopify Vendor",
     myshopifyDomain: cleanDomain,
-    storeLogo: `https://${cleanDomain}/favicon.ico`,
-    status: "ACTIVE",
+    storeLogo: `https://icon.horse/icon/${cleanDomain}`,
+    status: "PENDING",
     totalProducts: 0,
     connectedSince: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
     lastWebhookSync: "Just now",
+    whatsappNumber: cleanWhatsapp && cleanWhatsapp.length >= 7 ? cleanWhatsapp : undefined,
   };
 
   let fetchedProducts: any[] = [];
@@ -426,12 +430,15 @@ export async function fetchProductsFromShopifyStore(
         images = ["https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80"];
       }
 
+      const currencyCode = (isGraphQL ? prod.priceRange?.minVariantPrice?.currencyCode : prod.variants?.[0]?.currency) || "INR";
+
       let variants: any[] = [];
       if (isGraphQL && prod.variants?.edges) {
         variants = prod.variants.edges.map((ve: any, vIdx: number) => ({
           id: ve.node.id,
           title: ve.node.title || "Default Variant",
           price: parseFloat(ve.node.priceV2?.amount || "0"),
+          currencyCode: ve.node.priceV2?.currencyCode || currencyCode,
           sku: ve.node.sku || `SKU-${index + 1}-${vIdx + 1}`,
           inventoryQuantity: ve.node.quantityAvailable ?? 15,
           availableForSale: true,
@@ -441,6 +448,7 @@ export async function fetchProductsFromShopifyStore(
           id: String(v.id),
           title: v.title || "Default Variant",
           price: parseFloat(v.price || "0"),
+          currencyCode,
           sku: v.sku || `SKU-${index + 1}-${vIdx + 1}`,
           inventoryQuantity: v.inventory_quantity ?? 15,
           availableForSale: (v.inventory_quantity ?? 15) > 0,
@@ -470,6 +478,7 @@ export async function fetchProductsFromShopifyStore(
         category,
         price,
         compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : undefined,
+        currencyCode,
         inventoryQuantity,
         status,
         shopifyProductId,

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTERS UNION // Dropshipping 2026 — Bauhaus E-Commerce Platform</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Space Grotesk (Bauhaus geometric structure) & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bauhaus: {
+                            red: '#D62828',      /* Iconic Primary Red */
+                            blue: '#005F73',     /* Cobalt / Ultramarine Blue */
+                            yellow: '#FFB703',   /* Primary Cadmium Yellow */
+                            black: '#111111',    /* Pure Bauhaus Stark Black */
+                            cream: '#F4F4F0',    /* Off-white Studio Canvas */
+                            gray: '#E5E5E0',     /* Architectural Neutral Gray */
+                            darkgray: '#2B2D42', /* Dark Slate accent */
+                            border: '#111111'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'bauhaus-sm': '3px 3px 0px #111111',
+                        'bauhaus-md': '6px 6px 0px #111111',
+                        'bauhaus-lg': '10px 10px 0px #111111'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F4F4F0;
+            color: #111111;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Bauhaus Grid & Outline Treatments */
+        .bauhaus-card {
+            background-color: #FFFFFF;
+            border: 2px solid #111111;
+            box-shadow: 5px 5px 0px #111111;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bauhaus-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #111111;
+        }
+
+        .bauhaus-btn {
+            border: 2px solid #111111;
+            box-shadow: 4px 4px 0px #111111;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+        }
+
+        .bauhaus-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #111111;
+        }
+
+        .bauhaus-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #111111;
+        }
+
+        /* Smooth vector transformation for explode animation stage */
+        .layer-transition {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, fill 0.3s ease;
+        }
+
+        /* Grid Background Pattern */
+        .bg-grid-pattern {
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(17, 17, 17, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(17, 17, 17, 0.08) 1px, transparent 1px);
+        }
+
+        /* Toast Animation */
+        .toast-show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-hide {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="selection:bg-bauhaus-yellow selection:text-bauhaus-black">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-bauhaus-black text-bauhaus-cream py-2.5 px-4 text-center font-display text-xs font-bold tracking-wider border-b-2 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto flex items-center justify-center gap-3 flex-wrap">
+            <span class="bg-bauhaus-yellow text-bauhaus-black font-extrabold px-2.5 py-0.5 rounded-none text-[10px] uppercase border border-bauhaus-black">MASTERS UNION</span>
+            <span>DROPSHIPPING 2026 CATALOG // HIGH-MARGIN BAUHAUS DESIGN PRODUCTS</span>
+            <a href="#catalog" class="underline hover:text-bauhaus-yellow transition-colors font-extrabold ml-1">EXPLORE ITEMS &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="sticky top-0 z-40 bg-bauhaus-cream/95 backdrop-blur-md border-b-2 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Store Brand & Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-bauhaus-red border-2 border-bauhaus-black shadow-bauhaus-sm flex items-center justify-center font-display font-black text-xl text-white group-hover:rotate-6 transition-transform">
+                    MU
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-bauhaus-black">
+                        MASTERS UNION<span class="text-bauhaus-red">.</span>
+                    </span>
+                    <span class="font-mono text-[10px] font-bold text-bauhaus-blue tracking-widest uppercase">
+                        DROPSHIPPING 2026
+                    </span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-6 font-display font-bold text-xs uppercase tracking-wider text-bauhaus-black">
+                <a href="#hero-stage" class="hover:bg-bauhaus-yellow px-3 py-1.5 border border-transparent hover:border-bauhaus-black transition-all">01 // Render Stage</a>
+                <a href="#customizer" class="hover:bg-bauhaus-yellow px-3 py-1.5 border border-transparent hover:border-bauhaus-black transition-all">02 // Studio Config</a>
+                <a href="#catalog" class="hover:bg-bauhaus-yellow px-3 py-1.5 border border-transparent hover:border-bauhaus-black transition-all">03 // Catalog 2026</a>
+                <a href="#specs" class="hover:bg-bauhaus-yellow px-3 py-1.5 border border-transparent hover:border-bauhaus-black transition-all">04 // Bauhaus Specs</a>
+            </nav>
+
+            <!-- Actions & Cart Drawer Trigger -->
+            <div class="flex items-center gap-3">
+                <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-bauhaus-gray border border-bauhaus-black font-mono text-[11px] font-bold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>NODE 2026: ACTIVE</span>
+                </div>
+                
+                <button id="cart-toggle-btn" class="px-5 py-2.5 bg-bauhaus-black text-white border-2 border-bauhaus-black bauhaus-btn flex items-center gap-3 font-display text-xs">
+                    <i class="fa-solid fa-cart-flatbed text-bauhaus-yellow text-sm"></i>
+                    <span class="hidden sm:inline">DROPSHIP BAG</span>
+                    <span id="cart-count-badge" class="bg-bauhaus-red text-white font-extrabold px-2 py-0.5 border border-white text-[11px]">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Render Stage Section -->
+    <section id="hero-stage" class="relative bg-bauhaus-cream border-b-2 border-bauhaus-black pt-10 pb-16 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Hero Top Copy -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-8">
+                <div class="lg:col-span-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-bauhaus-yellow border-2 border-bauhaus-black font-mono text-xs font-bold uppercase tracking-wider mb-3 shadow-bauhaus-sm">
+                        <i class="fa-solid fa-shapes"></i>
+                        BAUHAUS 107TH ANNIVERSARY EDITION // DROPSHIPPING 2026
+                    </div>
+                    <h1 class="font-display text-4xl sm:text-6xl md:text-7xl font-black text-bauhaus-black uppercase tracking-tight leading-none">
+                        FORM FOLLOWS <span class="bg-bauhaus-red text-white px-3 py-0.5">FUNCTION</span>
+                    </h1>
+                </div>
+                <div class="lg:col-span-4 text-xs font-medium text-bauhaus-black leading-relaxed">
+                    <p class="border-l-4 border-bauhaus-blue pl-4 py-1">
+                        High-margin architectural & minimalist products curated for Masters Union 2026 dropshippers. Below is our interactive SVG vector render stage ready for 60FPS motion keyframing.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Central Vector Render Stage Card -->
+            <div class="bauhaus-card p-4 sm:p-8 bg-grid-pattern relative min-h-[500px] flex flex-col justify-between overflow-hidden">
+                
+                <!-- Stage Header Overlay -->
+                <div class="flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold border-b-2 border-bauhaus-black pb-4 bg-white/90 p-3 border">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 bg-bauhaus-black text-white font-bold">MODEL: MU-BAUHAUS-2026</span>
+                        <span class="hidden sm:inline text-bauhaus-blue">STAGE: ANIMATION KEYFRAME PREPARED</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-0.5 bg-bauhaus-yellow border border-bauhaus-black" id="stage-layer-mode">
+                            MODE: STATIC VECTOR COMPOSITION
+                        </span>
+                    </div>
+                </div>
+
+                <!-- SVG Vector Render Container (Bauhaus Sculptural Table Lamp / Construct) -->
+                <div id="render-viewport" class="relative my-6 w-full max-w-2xl mx-auto h-72 sm:h-96 flex items-center justify-center">
+                    
+                    <svg id="hero-svg-composition" viewBox="0 0 600 380" class="w-full h-full filter drop-shadow-md">
+                        <!-- Grid Crosshair Overlay Guides -->
+                        <g id="layer-grid" opacity="0.25">
+                            <line x1="300" y1="0" x2="300" y2="380" stroke="#111111" stroke-width="1" stroke-dasharray="4,4" />
+                            <line x1="0" y1="280" x2="600" y2="280" stroke="#111111" stroke-width="1" stroke-dasharray="4,4" />
+                            <circle cx="300" cy="200" r="140" fill="none" stroke="#111111" stroke-width="1" stroke-dasharray="4,4" />
+                        </g>
+
+                        <!-- Layer 0: Cast Shadow Base -->
+                        <g id="layer-shadow" class="layer-transition">
+                            <ellipse cx="300" cy="335" rx="190" ry="20" fill="rgba(17,17,17,0.15)" />
+                        </g>
+
+                        <!-- Layer 1: Heavy Architectural Plinth Base -->
+                        <g id="layer-base" class="layer-transition">
+                            <rect x="180" y="300" width="240" height="30" fill="#111111" stroke="#111111" stroke-width="3" />
+                            <rect x="220" y="280" width="160" height="20" fill="#E5E5E0" stroke="#111111" stroke-width="3" />
+                            <circle cx="300" cy="290" r="6" fill="#D62828" />
+                        </g>
+
+                        <!-- Layer 2: Cantilevered Brass / Steel Column Stem -->
+                        <g id="layer-stem" class="layer-transition">
+                            <!-- Diagonal Support Rod -->
+                            <line x1="300" y1="280" x2="300" y2="120" stroke="#111111" stroke-width="12" stroke-linecap="square" />
+                            <line x1="300" y1="280" x2="300" y2="120" stroke="#FFB703" stroke-width="6" stroke-linecap="square" />
+                            
+                            <!-- Counterweight Sphere -->
+                            <circle cx="190" cy="200" r="28" fill="#005F73" stroke="#111111" stroke-width="3" />
+                            <line x1="190" y1="200" x2="300" y2="200" stroke="#111111" stroke-width="5" />
+                        </g>
+
+                        <!-- Layer 3: Iconic Primary Red Shade Dome -->
+                        <g id="layer-dome" class="layer-transition">
+                            <!-- Half Sphere Dome Shade -->
+                            <path d="M 180,130 A 120,120 0 0,1 420,130 Z" fill="#D62828" stroke="#111111" stroke-width="4" />
+                            <!-- Shade Edge Trim -->
+                            <line x1="170" y1="130" x2="430" y2="130" stroke="#111111" stroke-width="4" />
+                            <!-- Diffuser Glass Disk -->
+                            <ellipse cx="300" cy="130" rx="125" ry="12" fill="#F4F4F0" stroke="#111111" stroke-width="3" />
+                        </g>
+
+                        <!-- Layer 4: Floating Geometric Finial & Apex Ring -->
+                        <g id="layer-apex" class="layer-transition">
+                            <!-- Yellow Apex Sphere -->
+                            <circle cx="300" cy="62" r="16" fill="#FFB703" stroke="#111111" stroke-width="3" />
+                            <!-- Connecting Stem -->
+                            <line x1="300" y1="78" x2="300" y2="10" stroke="#111111" stroke-width="4" />
+                            <!-- Triangular Crest Anchor -->
+                            <polygon points="300,10 280,35 320,35" fill="#005F73" stroke="#111111" stroke-width="3" />
+                        </g>
+                    </svg>
+
+                </div>
+
+                <!-- Stage Controls Bar -->
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t-2 border-bauhaus-black bg-white p-4">
+                    
+                    <!-- Controls Buttons -->
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <button onclick="toggleExplodedStage()" class="px-5 py-2.5 bg-bauhaus-red text-white bauhaus-btn flex items-center justify-center gap-2 text-xs">
+                            <i class="fa-solid fa-cubes text-bauhaus-yellow"></i>
+                            <span id="explode-btn-text">EXPLODE BAUHAUS LAYERS</span>
+                        </button>
+
+                        <button onclick="cycleBauhausPalette()" class="px-5 py-2.5 bg-bauhaus-yellow text-bauhaus-black bauhaus-btn flex items-center justify-center gap-2 text-xs">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>ROTATE TRIAD PALETTE</span>
+                        </button>
+                    </div>
+
+                    <!-- Dropshipping Margin & Product Specs -->
+                    <div class="flex items-center gap-2 font-mono text-xs font-extrabold text-bauhaus-black flex-wrap">
+                        <span class="px-3 py-1.5 bg-bauhaus-cream border border-bauhaus-black">SUPPLIER: $84.00</span>
+                        <span class="px-3 py-1.5 bg-emerald-300 border border-bauhaus-black">RETAIL: $240.00</span>
+                        <span class="px-3 py-1.5 bg-bauhaus-black text-bauhaus-yellow">ROI: 185% NET</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Dropshipping 2026 Metrics Highlight Strip -->
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white border-2 border-bauhaus-black p-4 shadow-bauhaus-sm">
+                    <span class="font-mono text-[10px] text-bauhaus-blue font-bold uppercase block mb-1">01 // MARGIN METRIC</span>
+                    <h4 class="font-display text-lg font-black uppercase">High-Margin Selection</h4>
+                    <p class="text-xs font-medium text-bauhaus-darkgray mt-1">Average 60-72% profit margin per fulfillment order.</p>
+                </div>
+                <div class="bg-white border-2 border-bauhaus-black p-4 shadow-bauhaus-sm">
+                    <span class="font-mono text-[10px] text-bauhaus-red font-bold uppercase block mb-1">02 // EXPRESS FULFILLMENT</span>
+                    <h4 class="font-display text-lg font-black uppercase">4-Day Global Shipping</h4>
+                    <p class="text-xs font-medium text-bauhaus-darkgray mt-1">Automated ERP syncing with Masters Union suppliers.</p>
+                </div>
+                <div class="bg-white border-2 border-bauhaus-black p-4 shadow-bauhaus-sm">
+                    <span class="font-mono text-[10px] text-amber-600 font-bold uppercase block mb-1">03 // QUALITY CONTROL</span>
+                    <h4 class="font-display text-lg font-black uppercase">Certified Precision</h4>
+                    <p class="text-xs font-medium text-bauhaus-darkgray mt-1">Each item verified against authentic Bauhaus standards.</p>
+                </div>
+                <div class="bg-white border-2 border-bauhaus-black p-4 shadow-bauhaus-sm">
+                    <span class="font-mono text-[10px] text-bauhaus-blue font-bold uppercase block mb-1">04 // AUTOMATED STORE</span>
+                    <h4 class="font-display text-lg font-black uppercase">1-Click Integration</h4>
+                    <p class="text-xs font-medium text-bauhaus-darkgray mt-1">Push inventory & pricing straight to your storefront.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Studio Color Customizer Section -->
+    <section id="customizer" class="py-16 bg-bauhaus-cream border-b-2 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="border-b-2 border-bauhaus-black pb-4 mb-8 flex flex-col md:flex-row md:items-end justify-between">
+                <div>
+                    <span class="font-mono text-xs font-bold text-bauhaus-red uppercase tracking-widest">// STUDIO CONFIGURATOR 2026</span>
+                    <h2 class="font-display text-3xl sm:text-5xl font-black uppercase tracking-tight mt-1">
+                        Bauhaus Product Customizer
+                    </h2>
+                </div>
+                <p class="text-xs font-bold text-bauhaus-black max-w-md mt-2 md:mt-0">
+                    Test live primary color combinations on vector geometry before adding custom product builds to your dropshipping store.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Customizer Preview Card -->
+                <div class="lg:col-span-7 bauhaus-card p-8 bg-white relative flex flex-col items-center justify-center min-h-[380px]">
+                    <div class="absolute top-4 left-4 font-mono text-[11px] font-bold bg-bauhaus-yellow px-2 py-1 border border-bauhaus-black">
+                        BUILD ID: #MU-STUDIO-2026
+                    </div>
+
+                    <!-- Customizable Vector Lamp SVG -->
+                    <div class="w-full max-w-md h-72 my-auto">
+                        <svg viewBox="0 0 400 300" class="w-full h-full filter drop-shadow-md">
+                            <!-- Base -->
+                            <rect id="cust-part-base" x="120" y="240" width="160" height="25" fill="#111111" stroke="#111111" stroke-width="3" />
+                            <!-- Stem -->
+                            <rect id="cust-part-stem" x="190" y="110" width="20" height="130" fill="#005F73" stroke="#111111" stroke-width="3" />
+                            <!-- Shade -->
+                            <path id="cust-part-shade" d="M 100,110 A 100,100 0 0,1 300,110 Z" fill="#D62828" stroke="#111111" stroke-width="3" />
+                            <!-- Top Knob Finial -->
+                            <circle id="cust-part-knob" cx="200" cy="50" r="15" fill="#FFB703" stroke="#111111" stroke-width="3" />
+                        </svg>
+                    </div>
+
+                    <div class="absolute bottom-4 right-4 font-mono text-xs font-bold bg-bauhaus-black text-white px-3 py-1.5 border border-bauhaus-black">
+                        DROPSHIP COST: $95.00
+                    </div>
+                </div>
+
+                <!-- Customizer Controls -->
+                <div class="lg:col-span-5 space-y-4">
+                    
+                    <!-- Shade Control -->
+                    <div class="bg-white p-4 border-2 border-bauhaus-black shadow-bauhaus-sm">
+                        <label class="font-display text-xs font-bold uppercase tracking-wider block mb-2">1. Dome Shade Color</label>
+                        <div class="flex gap-3">
+                            <button onclick="setCustomColor('cust-part-shade', '#D62828')" class="w-8 h-8 rounded-none bg-bauhaus-red border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Red"></button>
+                            <button onclick="setCustomColor('cust-part-shade', '#005F73')" class="w-8 h-8 rounded-none bg-bauhaus-blue border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Blue"></button>
+                            <button onclick="setCustomColor('cust-part-shade', '#FFB703')" class="w-8 h-8 rounded-none bg-bauhaus-yellow border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Yellow"></button>
+                            <button onclick="setCustomColor('cust-part-shade', '#111111')" class="w-8 h-8 rounded-none bg-bauhaus-black border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Black"></button>
+                        </div>
+                    </div>
+
+                    <!-- Stem Control -->
+                    <div class="bg-white p-4 border-2 border-bauhaus-black shadow-bauhaus-sm">
+                        <label class="font-display text-xs font-bold uppercase tracking-wider block mb-2">2. Structural Column Stem</label>
+                        <div class="flex gap-3">
+                            <button onclick="setCustomColor('cust-part-stem', '#005F73')" class="w-8 h-8 rounded-none bg-bauhaus-blue border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Blue"></button>
+                            <button onclick="setCustomColor('cust-part-stem', '#D62828')" class="w-8 h-8 rounded-none bg-bauhaus-red border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Red"></button>
+                            <button onclick="setCustomColor('cust-part-stem', '#FFB703')" class="w-8 h-8 rounded-none bg-bauhaus-yellow border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Yellow"></button>
+                            <button onclick="setCustomColor('cust-part-stem', '#111111')" class="w-8 h-8 rounded-none bg-bauhaus-black border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Black"></button>
+                        </div>
+                    </div>
+
+                    <!-- Finial Control -->
+                    <div class="bg-white p-4 border-2 border-bauhaus-black shadow-bauhaus-sm">
+                        <label class="font-display text-xs font-bold uppercase tracking-wider block mb-2">3. Apex Spherical Finial</label>
+                        <div class="flex gap-3">
+                            <button onclick="setCustomColor('cust-part-knob', '#FFB703')" class="w-8 h-8 rounded-none bg-bauhaus-yellow border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Yellow"></button>
+                            <button onclick="setCustomColor('cust-part-knob', '#D62828')" class="w-8 h-8 rounded-none bg-bauhaus-red border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Red"></button>
+                            <button onclick="setCustomColor('cust-part-knob', '#005F73')" class="w-8 h-8 rounded-none bg-bauhaus-blue border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="Blue"></button>
+                            <button onclick="setCustomColor('cust-part-knob', '#F4F4F0')" class="w-8 h-8 rounded-none bg-white border-2 border-bauhaus-black hover:scale-110 transition-transform" aria-label="White"></button>
+                        </div>
+                    </div>
+
+                    <button onclick="addCustomBuildToCart()" class="w-full py-4 bg-bauhaus-black text-white bauhaus-btn flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-cart-plus text-bauhaus-yellow"></i>
+                        <span>ADD CUSTOM BUILD TO DROPSHIP BAG ($240.00 RETAIL)</span>
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Catalog 2026 Section -->
+    <section id="catalog" class="py-16 bg-white border-b-2 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b-2 border-bauhaus-black">
+                <div>
+                    <span class="font-mono text-xs font-bold text-bauhaus-blue uppercase tracking-widest">// DROPSHIPPING INVENTORY 2026</span>
+                    <h2 class="font-display text-3xl sm:text-5xl font-black uppercase tracking-tight mt-1">
+                        High-Margin Catalog
+                    </h2>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="flex items-center gap-2 mt-4 md:mt-0 overflow-x-auto no-scrollbar py-1">
+                    <button class="catalog-filter-btn px-4 py-2 bg-bauhaus-black text-white border-2 border-bauhaus-black font-display text-xs uppercase font-bold" data-filter="all">ALL PRODUCTS</button>
+                    <button class="catalog-filter-btn px-4 py-2 bg-bauhaus-cream text-bauhaus-black border-2 border-bauhaus-black font-display text-xs uppercase font-bold hover:bg-bauhaus-yellow" data-filter="lighting">LIGHTING</button>
+                    <button class="catalog-filter-btn px-4 py-2 bg-bauhaus-cream text-bauhaus-black border-2 border-bauhaus-black font-display text-xs uppercase font-bold hover:bg-bauhaus-yellow" data-filter="furniture">FURNITURE</button>
+                    <button class="catalog-filter-btn px-4 py-2 bg-bauhaus-cream text-bauhaus-black border-2 border-bauhaus-black font-display text-xs uppercase font-bold hover:bg-bauhaus-yellow" data-filter="timepieces">TIMEPIECES</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Product Grid -->
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Javascript injects product cards here -->
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Tech Specs / Bauhaus Principles Section -->
+    <section id="specs" class="py-16 bg-bauhaus-cream border-b-2 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="font-mono text-xs font-bold text-bauhaus-red uppercase tracking-widest">// ARCHITECTURAL SPECIFICATIONS</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-black uppercase tracking-tight mt-1">
+                    Bauhaus Design Core
+                </h2>
+                <p class="text-xs font-bold text-bauhaus-black mt-2">
+                    Why Bauhaus products perform exponentially better in 2026 e-commerce dropshipping stores.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Spec Card 1 -->
+                <div class="bauhaus-card p-6 bg-white">
+                    <div class="w-12 h-12 bg-bauhaus-red border-2 border-bauhaus-black flex items-center justify-center font-display font-black text-2xl text-white mb-4">
+                        01
+                    </div>
+                    <h3 class="font-display text-xl font-black uppercase mb-2">Asymmetric Grid Systems</h3>
+                    <p class="text-xs font-medium leading-relaxed text-bauhaus-darkgray">
+                        Eliminates clutter and focuses buyer eye movements directly toward high-converting checkout buttons and clear typography.
+                    </p>
+                </div>
+
+                <!-- Spec Card 2 -->
+                <div class="bauhaus-card p-6 bg-white">
+                    <div class="w-12 h-12 bg-bauhaus-yellow border-2 border-bauhaus-black flex items-center justify-center font-display font-black text-2xl text-bauhaus-black mb-4">
+                        02
+                    </div>
+                    <h3 class="font-display text-xl font-black uppercase mb-2">Primary Color Triad</h3>
+                    <p class="text-xs font-medium leading-relaxed text-bauhaus-darkgray">
+                        Uses raw Cadmium Yellow, Ultramarine Blue, and Crimson Red to create unmistakable psychological focal points on screen.
+                    </p>
+                </div>
+
+                <!-- Spec Card 3 -->
+                <div class="bauhaus-card p-6 bg-white">
+                    <div class="w-12 h-12 bg-bauhaus-blue border-2 border-bauhaus-black flex items-center justify-center font-display font-black text-2xl text-white mb-4">
+                        03
+                    </div>
+                    <h3 class="font-display text-xl font-black uppercase mb-2">Uncompromising Function</h3>
+                    <p class="text-xs font-medium leading-relaxed text-bauhaus-darkgray">
+                        No ornamental fluff. Pure high-demand industrial design that translates into low return rates and high customer retention.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Cart Drawer Modal -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+        <div id="cart-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-md bg-white border-l-4 border-bauhaus-black flex flex-col justify-between shadow-2xl">
+                
+                <!-- Drawer Header -->
+                <div class="p-6 border-b-2 border-bauhaus-black bg-bauhaus-yellow flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-cart-flatbed text-xl text-bauhaus-black"></i>
+                        <h2 class="font-display text-2xl font-black uppercase tracking-tight">Dropship Order Bag</h2>
+                    </div>
+                    <button id="cart-close-btn" class="p-2 border-2 border-bauhaus-black bg-white hover:bg-bauhaus-red hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Items Container -->
+                <div id="cart-items-container" class="p-6 overflow-y-auto flex-1 space-y-4">
+                    <!-- Javascript injects cart items here -->
+                </div>
+
+                <!-- Drawer Footer -->
+                <div class="p-6 border-t-2 border-bauhaus-black bg-bauhaus-cream space-y-4">
+                    <div class="flex justify-between items-center text-sm font-display font-black">
+                        <span class="uppercase">ESTIMATED TOTAL RETAIL</span>
+                        <span id="cart-subtotal" class="text-2xl text-bauhaus-red">$0.00</span>
+                    </div>
+                    <div class="p-3 bg-white border border-bauhaus-black font-mono text-[11px] font-bold">
+                        <span>EST. DROPSHIP MARGIN: </span>
+                        <span id="cart-margin-estimate" class="text-emerald-600">$0.00 (0%)</span>
+                    </div>
+                    <button onclick="simulateCheckout()" class="w-full py-4 bg-bauhaus-black text-white bauhaus-btn flex items-center justify-center gap-2 text-xs">
+                        <span>PROCESS MASTERS UNION ORDER 2026</span>
+                        <i class="fa-solid fa-arrow-right text-bauhaus-yellow"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div id="quickview-modal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4">
+        <div id="quickview-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative bg-white border-4 border-bauhaus-black max-w-2xl w-full p-6 sm:p-8 shadow-bauhaus-lg z-10 my-8">
+            <button id="quickview-close-btn" class="absolute top-4 right-4 p-2 bg-bauhaus-yellow border-2 border-bauhaus-black font-bold">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div id="quickview-content">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-bauhaus-black text-white px-6 py-4 border-2 border-bauhaus-black shadow-bauhaus-md flex items-center gap-3 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <div class="w-3 h-3 bg-bauhaus-yellow border border-white"></div>
+        <span id="toast-msg" class="font-display text-xs font-bold uppercase tracking-wider">Item Added</span>
+    </div>
+
+    <!-- Store Footer -->
+    <footer class="bg-bauhaus-black text-white border-t-4 border-bauhaus-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <span class="font-display text-2xl font-black uppercase tracking-tight block mb-3 text-bauhaus-yellow">
+                    MASTERS UNION<span class="text-bauhaus-red">.</span>
+                </span>
+                <p class="text-xs text-gray-300 leading-relaxed font-medium mb-4">
+                    The premier Bauhaus-inspired dropshipping curation network for modern e-commerce entrepreneurs in 2026.
+                </p>
+                <div class="flex gap-2">
+                    <span class="w-4 h-4 bg-bauhaus-red border border-white"></span>
+                    <span class="w-4 h-4 bg-bauhaus-blue border border-white"></span>
+                    <span class="w-4 h-4 bg-bauhaus-yellow border border-white"></span>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm font-bold uppercase tracking-wider text-bauhaus-yellow mb-3">// QUICK NAVIGATION</h4>
+                <ul class="space-y-2 text-xs font-bold">
+                    <li><a href="#hero-stage" class="hover:text-bauhaus-yellow transition-colors">01 // Render Animation Stage</a></li>
+                    <li><a href="#customizer" class="hover:text-bauhaus-yellow transition-colors">02 // Studio Configurator</a></li>
+                    <li><a href="#catalog" class="hover:text-bauhaus-yellow transition-colors">03 // High-Margin Catalog</a></li>
+                    <li><a href="#specs" class="hover:text-bauhaus-yellow transition-colors">04 // Architectural Specs</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm font-bold uppercase tracking-wider text-bauhaus-yellow mb-3">// DROPSHIP DISPATCH 2026</h4>
+                <p class="text-xs text-gray-300 mb-3 font-medium">Subscribe for weekly high-ROI item drops and supplier API keys.</p>
+                <form onsubmit="event.preventDefault(); showToast('Subscribed to Masters Union Dropshipping 2026!');" class="flex gap-2">
+                    <input type="email" placeholder="Enter business email" required class="bg-white text-bauhaus-black border-2 border-white px-3 py-2 text-xs font-bold focus:outline-none flex-1">
+                    <button type="submit" class="bg-bauhaus-yellow text-bauhaus-black px-4 py-2 border-2 border-white font-display font-bold text-xs uppercase">JOIN</button>
+                </form>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm font-bold uppercase tracking-wider text-bauhaus-yellow mb-3">// BAUHAUS SYSTEM</h4>
+                <p class="text-xs text-gray-300 leading-relaxed font-mono">
+                    STYLE: Pure Bauhaus Triad<br>
+                    ERA: 2026 Edition<br>
+                    STORE: Masters Union Network
+                </p>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-800 py-6 text-center font-mono text-[11px] text-gray-400">
+            © 2026 MASTERS UNION // DROPSHIPPING 2026 PLATFORM. ALL RIGHTS RESERVED.
+        </div>
+    </footer>
+
+    <script>
+        const PRODUCTS_2026 = [
+            {
+                id: 'mu-lamp-01',
+                title: 'Wagenfeld Bauhaus Desk Sphere',
+                category: 'lighting',
+                retailPrice: 240,
+                supplierCost: 84,
+                roi: '185%',
+                badge: 'TOP SELLER 2026',
+                badgeBg: 'bg-bauhaus-yellow text-bauhaus-black',
+                desc: 'Classic Bauhaus spherical glass table lamp constructed with heavy chromed brass stem and structural circular base.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="30" y="80" width="40" height="8" fill="#111111"/><rect x="47" y="45" width="6" height="35" fill="#005F73"/><circle cx="50" cy="35" r="22" fill="#D62828" stroke="#111111" stroke-width="2"/><circle cx="50" cy="12" r="5" fill="#FFB703"/></svg>`
+            },
+            {
+                id: 'mu-chair-02',
+                title: 'Kandinsky Triadic Armchair',
+                category: 'furniture',
+                retailPrice: 580,
+                supplierCost: 210,
+                roi: '176%',
+                badge: 'HIGH MARGIN',
+                badgeBg: 'bg-bauhaus-red text-white',
+                desc: 'Tubular steel construct with geometric primary red and cobalt leather sling cushions.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 20,30 L 20,80 L 80,80 L 80,30" fill="none" stroke="#111111" stroke-width="5"/><rect x="25" y="45" width="50" height="15" fill="#005F73"/><rect x="25" y="62" width="50" height="12" fill="#D62828"/></svg>`
+            },
+            {
+                id: 'mu-clock-03',
+                title: 'Bauhaus Geometric Wall Clock',
+                category: 'timepieces',
+                retailPrice: 160,
+                supplierCost: 42,
+                roi: '280%',
+                badge: 'VIRAL TREND',
+                badgeBg: 'bg-bauhaus-blue text-white',
+                desc: 'Silent quartz movement embedded inside a 2D geometric composition of circles, squares, and primary red hands.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="38" fill="#F4F4F0" stroke="#111111" stroke-width="4"/><polygon points="50,15 35,40 65,40" fill="#FFB703"/><line x1="50" y1="50" x2="50" y2="25" stroke="#D62828" stroke-width="4"/><line x1="50" y1="50" x2="70" y2="50" stroke="#111111" stroke-width="4"/></svg>`
+            },
+            {
+                id: 'mu-pendant-04',
+                title: 'Primary Cone Ceiling Pendant',
+                category: 'lighting',
+                retailPrice: 195,
+                supplierCost: 65,
+                roi: '200%',
+                badge: 'NEW ARRIVAL',
+                badgeBg: 'bg-emerald-300 text-bauhaus-black',
+                desc: 'Industrial spun aluminum cone shade powder-coated in matte Bauhaus primary yellow.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><line x1="50" y1="0" x2="50" y2="40" stroke="#111111" stroke-width="3"/><polygon points="50,40 15,80 85,80" fill="#FFB703" stroke="#111111" stroke-width="3"/><ellipse cx="50" cy="80" rx="35" ry="8" fill="#D62828"/></svg>`
+            },
+            {
+                id: 'mu-desk-05',
+                title: 'Modular Breuer Work Table',
+                category: 'furniture',
+                retailPrice: 720,
+                supplierCost: 260,
+                roi: '176%',
+                badge: 'EXECUTIVE',
+                badgeBg: 'bg-bauhaus-black text-white',
+                desc: 'Minimalist bent chrome tubing with a stark white laminate top and integrated primary red drawer unit.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="15" y="35" width="70" height="8" fill="#111111"/><rect x="60" y="43" width="22" height="25" fill="#D62828" stroke="#111111" stroke-width="2"/><line x1="22" y1="43" x2="22" y2="85" stroke="#111111" stroke-width="4"/></svg>`
+            },
+            {
+                id: 'mu-vessel-06',
+                title: 'Ceramic Bauhaus Construct Vase',
+                category: 'furniture',
+                retailPrice: 135,
+                supplierCost: 35,
+                roi: '285%',
+                badge: 'HIGH MARGIN',
+                badgeBg: 'bg-bauhaus-red text-white',
+                desc: 'Hand-glazed stoneware vase engineered with interlocking geometric cylinders and cuboid bodies.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="35" y="45" width="30" height="40" fill="#005F73" stroke="#111111" stroke-width="2"/><circle cx="50" cy="30" r="16" fill="#FFB703" stroke="#111111" stroke-width="2"/><rect x="42" y="10" width="16" height="20" fill="#D62828" stroke="#111111" stroke-width="2"/></svg>`
+            }
+        ];
+
+        /* Dropship Cart State */
+        let cart = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCatalog('all');
+            setupFilterListeners();
+            setupCartDrawerListeners();
+        });
+
+        function renderCatalog(filter) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' 
+                ? PRODUCTS_2026 
+                : PRODUCTS_2026.filter(p => p.category === filter);
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bauhaus-card p-6 bg-white flex flex-col justify-between group";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-mono text-[10px] font-bold px-2 py-0.5 border border-bauhaus-black ${p.badgeBg}">${p.badge}</span>
+                            <span class="font-mono text-[10px] font-bold text-bauhaus-blue uppercase">ROI: ${p.roi}</span>
+                        </div>
+
+                        <div class="h-44 bg-bauhaus-cream border-2 border-bauhaus-black p-4 flex items-center justify-center cursor-pointer group-hover:scale-[1.02] transition-transform" onclick="openQuickView('${p.id}')">
+                            <div class="w-28 h-28">
+                                ${p.svg}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h3 class="font-display text-lg font-black uppercase text-bauhaus-black group-hover:text-bauhaus-red transition-colors">${p.title}</h3>
+                            <p class="text-xs font-medium text-bauhaus-darkgray mt-1 line-clamp-2">${p.desc}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t-2 border-bauhaus-black flex items-center justify-between">
+                        <div>
+                            <span class="font-mono text-xs text-gray-500 block">RETAIL PRICE</span>
+                            <span class="font-display text-lg font-black text-bauhaus-black">$${p.retailPrice}.00</span>
+                        </div>
+                        <button onclick="addToBag('${p.id}')" class="px-4 py-2 bg-bauhaus-black text-white border-2 border-bauhaus-black font-display text-xs uppercase font-bold hover:bg-bauhaus-yellow hover:text-bauhaus-black transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>ADD</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* Filter listener registration */
+        function setupFilterListeners() {
+            const buttons = document.querySelectorAll('.catalog-filter-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-bauhaus-black', 'text-white');
+                        b.classList.add('bg-bauhaus-cream', 'text-bauhaus-black');
+                    });
+                    btn.classList.remove('bg-bauhaus-cream', 'text-bauhaus-black');
+                    btn.classList.add('bg-bauhaus-black', 'text-white');
+
+                    const filter = btn.getAttribute('data-filter');
+                    renderCatalog(filter);
+                });
+            });
+        }
+
+        let isStageExploded = false;
+        function toggleExplodedStage() {
+            isStageExploded = !isStageExploded;
+
+            const base = document.getElementById('layer-base');
+            const stem = document.getElementById('layer-stem');
+            const dome = document.getElementById('layer-dome');
+            const apex = document.getElementById('layer-apex');
+            const shadow = document.getElementById('layer-shadow');
+
+            const btnText = document.getElementById('explode-btn-text');
+            const modeText = document.getElementById('stage-layer-mode');
+
+            if (isStageExploded) {
+                base.style.transform = 'translateY(35px)';
+                stem.style.transform = 'translateY(10px)';
+                dome.style.transform = 'translateY(-30px)';
+                apex.style.transform = 'translateY(-65px)';
+                shadow.style.opacity = '0.3';
+
+                btnText.textContent = "RESET BAUHAUS LAYERS";
+                modeText.textContent = "MODE: EXPLODED VECTOR ANIMATION STAGE";
+                showToast("Hero Render Stage: Layers Exploded");
+            } else {
+                base.style.transform = 'translateY(0px)';
+                stem.style.transform = 'translateY(0px)';
+                dome.style.transform = 'translateY(0px)';
+                apex.style.transform = 'translateY(0px)';
+                shadow.style.opacity = '1';
+
+                btnText.textContent = "EXPLODE BAUHAUS LAYERS";
+                modeText.textContent = "MODE: STATIC VECTOR COMPOSITION";
+                showToast("Hero Render Stage: Layers Restored");
+            }
+        }
+
+        /* Triad Palette Rotation */
+        const TRIAD_PALETTES = [
+            { dome: '#D62828', stem: '#FFB703', apex: '#005F73' },
+            { dome: '#005F73', stem: '#D62828', apex: '#FFB703' },
+            { dome: '#FFB703', stem: '#005F73', apex: '#D62828' }
+        ];
+        let currentPaletteIdx = 0;
+
+        function cycleBauhausPalette() {
+            currentPaletteIdx = (currentPaletteIdx + 1) % TRIAD_PALETTES.length;
+            const p = TRIAD_PALETTES[currentPaletteIdx];
+
+            const domePath = document.querySelector('#layer-dome path');
+            const stemLine = document.querySelectorAll('#layer-stem line')[1];
+            const apexCircle = document.querySelector('#layer-apex circle');
+
+            if (domePath) domePath.setAttribute('fill', p.dome);
+            if (stemLine) stemLine.setAttribute('stroke', p.stem);
+            if (apexCircle) apexCircle.setAttribute('fill', p.apex);
+
+            showToast("Bauhaus Palette Rotated");
+        }
+
+        function setCustomColor(elementId, colorHex) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.setAttribute('fill', colorHex);
+            }
+        }
+
+        function addCustomBuildToCart() {
+            const customItem = {
+                id: 'custom-bauhaus-' + Date.now(),
+                title: 'Custom Studio Bauhaus Build 2026',
+                retailPrice: 240,
+                supplierCost: 88,
+                badge: 'CUSTOM BUILD',
+                badgeBg: 'bg-bauhaus-yellow text-bauhaus-black',
+                desc: 'Bespoke primary triad colorway configured inside Masters Union Studio.',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="30" y="70" width="40" height="10" fill="#111111"/><path d="M 20,60 A 30,30 0 0,1 80,60 Z" fill="#D62828" stroke="#111111" stroke-width="2"/></svg>`
+            };
+            cart.push(customItem);
+            updateCartUI();
+            showToast('Custom Build Added to Bag!');
+            openCartDrawer();
+        }
+
+        function setupCartDrawerListeners() {
+            const toggleBtn = document.getElementById('cart-toggle-btn');
+            const closeBtn = document.getElementById('cart-close-btn');
+            const backdrop = document.getElementById('cart-backdrop');
+            const qCloseBtn = document.getElementById('quickview-close-btn');
+            const qBackdrop = document.getElementById('quickview-backdrop');
+
+            toggleBtn.addEventListener('click', openCartDrawer);
+            closeBtn.addEventListener('click', closeCartDrawer);
+            backdrop.addEventListener('click', closeCartDrawer);
+
+            qCloseBtn.addEventListener('click', closeQuickView);
+            qBackdrop.addEventListener('click', closeQuickView);
+        }
+
+        function openCartDrawer() {
+            document.getElementById('cart-drawer').classList.remove('hidden');
+        }
+
+        function closeCartDrawer() {
+            document.getElementById('cart-drawer').classList.add('hidden');
+        }
+
+        function addToBag(productId) {
+            const item = PRODUCTS_2026.find(p => p.id === productId);
+            if (item) {
+                cart.push(item);
+                updateCartUI();
+                showToast(`${item.title} added to bag`);
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cart-count-badge');
+            const container = document.getElementById('cart-items-container');
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const marginEl = document.getElementById('cart-margin-estimate');
+
+            badge.textContent = cart.length;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fa-solid fa-cart-flatbed text-4xl text-gray-400 mb-3 block"></i>
+                        <p class="font-display text-xs font-bold uppercase text-bauhaus-black">Your dropship bag is empty.</p>
+                    </div>
+                `;
+                subtotalEl.textContent = "$0.00";
+                marginEl.textContent = "$0.00 (0%)";
+                return;
+            }
+
+            container.innerHTML = '';
+            let totalRetail = 0;
+            let totalSupplier = 0;
+
+            cart.forEach((item, idx) => {
+                totalRetail += item.retailPrice;
+                totalSupplier += item.supplierCost;
+
+                const row = document.createElement('div');
+                row.className = 'p-3 bg-white border-2 border-bauhaus-black flex items-center justify-between gap-3 font-sans';
+                row.innerHTML = `
+                    <div class="w-12 h-12 bg-bauhaus-cream border border-bauhaus-black p-1 flex-shrink-0">
+                        ${item.svg}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-display font-bold text-xs uppercase text-bauhaus-black truncate">${item.title}</h4>
+                        <span class="font-mono text-xs text-bauhaus-red font-bold">$${item.retailPrice}.00 Retail</span>
+                    </div>
+                    <button onclick="removeFromCart(${idx})" class="p-2 text-gray-500 hover:text-bauhaus-red font-bold transition-colors">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(row);
+            });
+
+            subtotalEl.textContent = `$${totalRetail}.00`;
+            const profit = totalRetail - totalSupplier;
+            const marginPercent = Math.round((profit / totalRetail) * 100);
+            marginEl.textContent = `$${profit}.00 est. net profit (${marginPercent}%)`;
+        }
+
+        function openQuickView(productId) {
+            const item = PRODUCTS_2026.find(p => p.id === productId);
+            if (!item) return;
+
+            const modal = document.getElementById('quickview-modal');
+            const content = document.getElementById('quickview-content');
+
+            content.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                    <div class="bg-bauhaus-cream border-2 border-bauhaus-black p-6 h-60 flex items-center justify-center">
+                        <div class="w-32 h-32">${item.svg}</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="font-mono text-[10px] font-bold px-2 py-0.5 border border-bauhaus-black ${item.badgeBg}">${item.badge}</span>
+                        <h3 class="font-display text-2xl font-black uppercase text-bauhaus-black">${item.title}</h3>
+                        <div class="font-mono text-lg font-bold text-bauhaus-red">$${item.retailPrice}.00 USD</div>
+                        <p class="text-xs font-medium text-bauhaus-darkgray leading-relaxed">${item.desc}</p>
+                        <div class="p-2 bg-bauhaus-cream border border-bauhaus-black font-mono text-[11px]">
+                            SUPPLIER COST: $${item.supplierCost}.00 | EST MARGIN: ${item.roi}
+                        </div>
+                        <button onclick="addToBag('${item.id}'); closeQuickView();" class="w-full py-3 bg-bauhaus-black text-white bauhaus-btn text-xs">
+                            ADD ITEM TO DROPSHIP BAG
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeQuickView() {
+            document.getElementById('quickview-modal').classList.add('hidden');
+        }
+
+        /* Toast notifications */
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('toast-show');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('toast-show');
+            }, 2400);
+        }
+
+        function simulateCheckout() {
+            if (cart.length === 0) {
+                showToast('Bag is empty!');
+                return;
+            }
+            showToast('Connecting to Masters Union Dropshipping ERP 2026...');
+            setTimeout(() => {
+                cart = [];
+                updateCartUI();
+                closeCartDrawer();
+                showToast('Orders Dispatched to Global Fulfillment Nodes!');
+            }, 1800);
+        }
+    </script>
+</body>
+</html>

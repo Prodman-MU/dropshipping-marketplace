@@ -46,19 +46,20 @@ export function VendorFilterBar({
 
   return (
     <aside className="w-full lg:w-72 shrink-0">
-      <div className="glass-panel p-5 rounded-3xl border border-white/10 space-y-6 shadow-2xl sticky top-24">
+      <div className="bauhaus-card p-5 bg-white space-y-6 sticky top-24">
+        
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between pb-3.5 border-b-2 border-[#111111]">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
+            <SlidersHorizontal className="w-4 h-4 text-[#D62828]" />
+            <h2 className="text-sm font-black text-[#111111] font-display uppercase tracking-wider">
               Filters & Search
             </h2>
           </div>
           {isFiltered && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1 text-[11px] font-mono text-amber-400 hover:underline"
+              className="flex items-center gap-1 text-[11px] font-mono text-[#D62828] font-bold hover:underline"
               title="Reset all filters"
             >
               <RotateCcw className="w-3 h-3" />
@@ -68,9 +69,9 @@ export function VendorFilterBar({
         </div>
 
         {/* 1. Quick Search Box */}
-        <div className="space-y-2">
-          <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Search className="w-3.5 h-3.5 text-amber-400" />
+        <div className="space-y-1.5">
+          <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+            <Search className="w-3.5 h-3.5 text-[#005F73]" />
             <span>Search Catalog</span>
           </label>
           <div className="relative">
@@ -79,25 +80,25 @@ export function VendorFilterBar({
               placeholder="Search title, SKU, vendor..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-black/80 border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-500/30 transition-all"
+              className="w-full bg-[#F4F4F0] border-2 border-[#111111] pl-9 pr-3 py-2 text-xs text-[#111111] placeholder-zinc-500 font-mono font-bold focus:outline-none focus:bg-white focus:border-[#FFB703] transition-all"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#111111]" />
           </div>
         </div>
 
         {/* 2. Category Dropdown Filter */}
-        <div className="space-y-2">
-          <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-amber-400" />
-            <span>Category</span>
+        <div className="space-y-1.5">
+          <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-[#D62828]" />
+            <span>Category Filter</span>
           </label>
           <select
             value={selectedCategory}
             onChange={(e) => onSelectCategory(e.target.value)}
-            className="w-full bg-black border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500/50 cursor-pointer"
+            className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-mono font-bold text-[#111111] focus:outline-none focus:bg-white cursor-pointer"
           >
             {categories.map((cat) => (
-              <option key={cat} value={cat} className="bg-[#121216]">
+              <option key={cat} value={cat}>
                 {cat}
               </option>
             ))}
@@ -105,19 +106,19 @@ export function VendorFilterBar({
         </div>
 
         {/* 3. Vendor Store Filter */}
-        <div className="space-y-2">
-          <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Store className="w-3.5 h-3.5 text-amber-400" />
-            <span>Vendor Store</span>
+        <div className="space-y-1.5">
+          <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+            <Store className="w-3.5 h-3.5 text-[#005F73]" />
+            <span>Approved Vendor Store</span>
           </label>
           <select
             value={selectedVendorId}
             onChange={(e) => onSelectVendor(e.target.value)}
-            className="w-full bg-black border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500/50 cursor-pointer"
+            className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-mono font-bold text-[#111111] focus:outline-none focus:bg-white cursor-pointer"
           >
-            <option value="all" className="bg-[#121216]">All Stores ({vendors.length})</option>
+            <option value="all">All Active Stores ({vendors.length})</option>
             {vendors.map((v) => (
-              <option key={v.id} value={v.id} className="bg-[#121216]">
+              <option key={v.id} value={v.id}>
                 {v.name} ({v.myshopifyDomain})
               </option>
             ))}
@@ -125,35 +126,37 @@ export function VendorFilterBar({
         </div>
 
         {/* 4. Sort Selector */}
-        <div className="space-y-2">
-          <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />
-            <span>Sort By</span>
+        <div className="space-y-1.5">
+          <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+            <ArrowUpDown className="w-3.5 h-3.5 text-[#FFB703]" />
+            <span>Sort Order</span>
           </label>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
-            className="w-full bg-black border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-500/50 cursor-pointer"
+            className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-mono font-bold text-[#111111] focus:outline-none focus:bg-white cursor-pointer"
           >
-            <option value="slot-asc" className="bg-[#121216]">Default Order</option>
-            <option value="price-low" className="bg-[#121216]">Price: Low to High</option>
-            <option value="price-high" className="bg-[#121216]">Price: High to Low</option>
-            <option value="stock-high" className="bg-[#121216]">Stock: High Level</option>
+            <option value="slot-asc">Default Order</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="stock-high">Stock Level: High to Low</option>
           </select>
         </div>
 
         {/* Summary Footer */}
-        <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono text-zinc-400">
+        <div className="pt-3 border-t-2 border-[#111111] flex items-center justify-between text-xs font-mono font-bold text-[#111111]">
           <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
+            <Layers className="w-3.5 h-3.5 text-[#005F73]" />
             <span>Matching Items:</span>
           </div>
-          <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">
+          <span className="text-[#111111] font-black bg-[#FFB703] px-2.5 py-0.5 border border-[#111111]">
             {totalResultsCount}
           </span>
         </div>
+
       </div>
     </aside>
   );
 }
+
 

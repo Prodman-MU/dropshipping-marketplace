@@ -16,6 +16,9 @@ import {
   Cpu,
   ShoppingCart,
   Zap,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { SlotListing, VariantOption } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -45,389 +48,398 @@ export function ListingDrawer({ slot, onClose }: ListingDrawerProps) {
   const isReserved = slot.status === "RESERVED";
   const isSold = slot.status === "SOLD";
 
+  const images = slot.images && slot.images.length > 0 ? slot.images : ["/placeholder.jpg"];
+
+  const handlePrevImage = () => {
+    setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-hidden">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden">
+        {/* Dark Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-start pl-8 sm:pl-16 md:pl-24 cursor-pointer"
-        >
-          {/* Clickable Shopify Merchant Store Popout Showcase */}
-          <motion.a
-            href={`https://${slot.merchant.myshopifyDomain}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="hidden md:flex flex-col items-center gap-4 p-8 rounded-3xl bg-black/70 border border-white/10 hover:border-amber-500/50 backdrop-blur-xl shadow-2xl max-w-xs text-center group cursor-pointer transition-all hover:scale-105"
-            title={`Click to open ${slot.merchant.name} live Shopify store`}
-          >
-            <div className="relative">
-              <img
-                src={slot.merchant.storeLogo}
-                alt={slot.merchant.name}
-                className="w-36 h-36 object-cover rounded-2xl shadow-2xl shadow-amber-500/20 border border-white/10 group-hover:border-amber-400/60 transition-all filter brightness-105"
-              />
-              <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-amber-500 border-2 border-black flex items-center justify-center shadow-md">
-                <ExternalLink className="w-3.5 h-3.5 text-black font-bold" />
-              </div>
-            </div>
+          className="fixed inset-0 bg-black/80 backdrop-blur-xs cursor-pointer"
+        />
 
-            <div>
-              <div className="flex items-center justify-center gap-1.5">
-                <h3 className="text-xl font-bold text-white tracking-wide font-sans group-hover:text-amber-300 transition-colors">
-                  {slot.merchant.name}
-                </h3>
-                <ExternalLink className="w-4 h-4 text-amber-400 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </div>
-              <p className="text-xs font-mono text-zinc-400 mt-0.5 group-hover:text-zinc-200">
-                {slot.merchant.myshopifyDomain}
-              </p>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 inline-block mt-2 group-hover:bg-amber-500 group-hover:text-black transition-colors">
-                VISIT SHOPIFY STOREFRONT ↗
-              </span>
-            </div>
-
-            <p className="text-[11px] font-mono text-zinc-500 group-hover:text-amber-400/80 transition-colors">
-              Click logo to open store in new tab
-            </p>
-          </motion.a>
-        </motion.div>
-
-        {/* Slide-over Drawer Panel on the Right */}
+        {/* Modal Window Container */}
         <motion.div
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="absolute inset-y-0 right-0 max-w-full flex pl-10"
+          initial={{ scale: 0.96, opacity: 0, y: 15 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.96, opacity: 0, y: 15 }}
+          transition={{ type: "spring", damping: 25, stiffness: 240 }}
+          className="relative z-10 w-full max-w-5xl bg-[#F4F4F0] border-4 border-[#111111] shadow-[10px_10px_0px_#111111] overflow-hidden flex flex-col max-h-[94vh]"
         >
-          <div className="w-screen max-w-2xl bg-[#121216] border-l border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden">
+          
+          {/* Header Bar */}
+          <div className="px-4 py-3 bg-white border-b-4 border-[#111111] flex items-center justify-between gap-4 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-[#D62828] border-2 border-[#111111] flex items-center justify-center font-display font-black text-xs text-white shadow-[2px_2px_0px_#111111]">
+                MU
+              </div>
+              <div>
+                <span className="text-[9px] font-mono font-black text-[#005F73] uppercase tracking-wider block">
+                  PRODUCT SPECIFICATION SHEET
+                </span>
+                <h2 className="text-base sm:text-lg font-black text-[#111111] font-display uppercase tracking-tight line-clamp-1">
+                  {slot.title}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {isAvailable && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-black bg-emerald-300 text-[#111111] border border-[#111111]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse" />
+                  AVAILABLE
+                </span>
+              )}
+              {isReserved && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-black bg-[#FFB703] text-[#111111] border border-[#111111]">
+                  RESERVED
+                </span>
+              )}
+              {isSold && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-black bg-[#E5E5E0] text-[#111111] border border-[#111111]">
+                  SOLD OUT
+                </span>
+              )}
+
+              <button
+                onClick={onClose}
+                className="p-1.5 bg-[#FFB703] border-2 border-[#111111] hover:bg-[#D62828] hover:text-white transition-colors"
+                title="Close Window"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+              </button>
+            </div>
+          </div>
+
+          {/* Modal Main Body: Split Grid (Left Carousel | Right Content) */}
+          <div className="flex-1 overflow-y-auto lg:overflow-visible p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            {/* Top Fixed Header */}
-            <div className="p-6 border-b border-white/10 bg-black/90 backdrop-blur-md">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  {/* Masters Union Animated Logo */}
+            {/* LEFT COLUMN: IMAGE CAROUSEL (col-span-5) */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
+              
+              <div className="space-y-3">
+                {/* Main Display Image Frame with Controls */}
+                <div className="relative w-full h-56 sm:h-64 bg-white border-2 border-[#111111] shadow-[3px_3px_0px_#111111] overflow-hidden group">
                   <img
-                    src="/assets/logoanimationblack.gif"
-                    alt="Masters Union"
-                    className="h-9 w-auto max-w-[160px] object-contain rounded-lg"
+                    src={images[selectedImageIndex]}
+                    alt={slot.title}
+                    className="w-full h-full object-cover"
                   />
-                  <div className="h-4 w-px bg-white/15 hidden sm:block" />
-                  <div className="flex items-center gap-2.5">
-                    {isAvailable && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        AVAILABLE
-                      </span>
-                    )}
-                    {isReserved && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                        RESERVED
-                      </span>
-                    )}
-                    {isSold && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-zinc-500/10 text-zinc-400 border border-zinc-500/30">
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                        SOLD OUT
-                      </span>
-                    )}
+
+                  {/* Carousel Prev/Next Overlay Buttons */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/95 hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] transition-all"
+                        title="Previous Image"
+                      >
+                        <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                      </button>
+                      <button
+                        onClick={handleNextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/95 hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] transition-all"
+                        title="Next Image"
+                      >
+                        <ChevronRight className="w-4 h-4 stroke-[3]" />
+                      </button>
+
+                      {/* Image Counter Badge */}
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-[#111111] text-white text-[10px] font-mono font-black border border-white">
+                        {selectedImageIndex + 1} / {images.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Thumbnails Row */}
+                {images.length > 1 && (
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {images.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImageIndex(idx)}
+                        className={`w-12 h-12 border-2 border-[#111111] shrink-0 transition-all ${
+                          selectedImageIndex === idx
+                            ? "bg-[#FFB703] shadow-[2px_2px_0px_#111111] scale-105"
+                            : "opacity-70 hover:opacity-100 bg-white"
+                        }`}
+                      >
+                        <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Vendor Store Profile Badge */}
+              <div className="bg-white border-2 border-[#111111] p-3 shadow-[3px_3px_0px_#111111] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  {slot.merchant.storeLogo && (
+                    <img
+                      src={slot.merchant.storeLogo}
+                      alt={slot.merchant.name}
+                      className="w-8 h-8 object-cover border border-[#111111]"
+                    />
+                  )}
+                  <div>
+                    <span className="text-[9px] font-mono font-black text-[#005F73] uppercase">APPROVED VENDOR STORE</span>
+                    <h4 className="text-xs font-black text-[#111111] font-display uppercase">{slot.merchant.name}</h4>
+                    <p className="text-[10px] font-mono text-[#2B2D42] font-bold">{slot.merchant.myshopifyDomain}</p>
                   </div>
                 </div>
 
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                <a
+                  href={`https://${slot.merchant.myshopifyDomain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 bg-[#FFB703] border border-[#111111] hover:bg-[#111111] hover:text-white transition-colors"
+                  title="Visit Shopify Storefront"
                 >
-                  <X className="w-5 h-5" />
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+                </a>
               </div>
 
-              <h2 className="text-xl font-bold text-white tracking-tight leading-snug">
-                {slot.title}
-              </h2>
-
-              <div className="flex items-center gap-2 mt-2 text-xs font-mono text-zinc-400">
-                <Store className="w-3.5 h-3.5 text-amber-400" />
-                <span>Vendor Store:</span>
-                <span className="text-white font-bold">{slot.merchant.name}</span>
-                <span>({slot.merchant.myshopifyDomain})</span>
-              </div>
-
-              {/* Drawer Tabs */}
-              <div className="flex items-center gap-2 mt-6 pt-2 border-t border-white/10 font-mono text-xs">
-                <button
-                  onClick={() => setActiveTab("specs")}
-                  className={`px-4 py-2 rounded-xl font-bold transition-all ${
-                    activeTab === "specs"
-                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-                      : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
-                  }`}
-                >
-                  Product Specs
-                </button>
-                <button
-                  onClick={() => setActiveTab("shopify")}
-                  className={`px-4 py-2 rounded-xl font-bold transition-all ${
-                    activeTab === "shopify"
-                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-                      : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
-                  }`}
-                >
-                  Shopify & Inventory
-                </button>
-                <button
-                  onClick={() => setActiveTab("webhooks")}
-                  className={`px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                    activeTab === "webhooks"
-                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-                      : "bg-white/5 text-zinc-400 hover:text-white border border-white/5"
-                  }`}
-                >
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>Sync Logs ({slot.syncLogs.length})</span>
-                </button>
-              </div>
             </div>
 
-            {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* RIGHT COLUMN: EVERYTHING ELSE (col-span-7) */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
               
-              {/* TAB 1: PRODUCT SPECS */}
-              {activeTab === "specs" && (
-                <div className="space-y-6">
-                  {/* Image Gallery */}
-                  {slot.images && slot.images.length > 0 && (
+              <div className="space-y-3.5">
+                
+                {/* Price Display */}
+                <div className="flex items-center justify-between bg-white p-3 border-2 border-[#111111] shadow-[3px_3px_0px_#111111]">
+                  <div>
+                    <span className="text-[9px] font-mono text-[#2B2D42] uppercase block font-bold">Selected Variant Price</span>
+                    <span className="text-2xl font-black text-[#111111] font-mono">
+                      {formatCurrency(currentVariant.price, currentVariant.currencyCode || slot.currencyCode || "INR")}
+                    </span>
+                  </div>
+
+                  <span className="px-2.5 py-1 bg-[#FFB703] text-[#111111] border border-[#111111] font-mono text-xs font-black uppercase">
+                    {slot.category}
+                  </span>
+                </div>
+
+                {/* Navigation Tabs */}
+                <div className="flex items-center gap-1.5 font-mono text-xs border-b-2 border-[#111111] pb-2">
+                  <button
+                    onClick={() => setActiveTab("specs")}
+                    className={`px-3 py-1.5 font-black uppercase border-2 border-[#111111] text-[11px] transition-all ${
+                      activeTab === "specs"
+                        ? "bg-[#111111] text-white shadow-[2px_2px_0px_#FFB703]"
+                        : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                    }`}
+                  >
+                    Product Specs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("shopify")}
+                    className={`px-3 py-1.5 font-black uppercase border-2 border-[#111111] text-[11px] transition-all ${
+                      activeTab === "shopify"
+                        ? "bg-[#111111] text-white shadow-[2px_2px_0px_#FFB703]"
+                        : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                    }`}
+                  >
+                    Inventory Specs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("webhooks")}
+                    className={`px-3 py-1.5 font-black uppercase border-2 border-[#111111] text-[11px] flex items-center gap-1 transition-all ${
+                      activeTab === "webhooks"
+                        ? "bg-[#111111] text-white shadow-[2px_2px_0px_#FFB703]"
+                        : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                    }`}
+                  >
+                    <Activity className="w-3 h-3" />
+                    <span>Sync Logs ({slot.syncLogs.length})</span>
+                  </button>
+                </div>
+
+                {/* TAB 1: PRODUCT SPECS */}
+                {activeTab === "specs" && (
+                  <div className="space-y-3">
+                    {/* Description */}
                     <div>
-                      <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-black border border-white/10 mb-3">
-                        <img
-                          src={slot.images[selectedImageIndex] || slot.images[0]}
-                          alt={slot.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      {slot.images.length > 1 && (
-                        <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                          {slot.images.map((img, idx) => (
+                      <h4 className="text-[11px] font-mono font-bold text-[#111111] uppercase tracking-wider mb-1">
+                        Product Description & Overview
+                      </h4>
+                      <p className="text-xs font-semibold text-[#111111] leading-relaxed bg-white p-3 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] line-clamp-3">
+                        {slot.description}
+                      </p>
+                    </div>
+
+                    {/* Variant Selection */}
+                    {slot.variants && slot.variants.length > 0 && (
+                      <div>
+                        <h4 className="text-[11px] font-mono font-bold text-[#111111] uppercase tracking-wider mb-1">
+                          Available Variants ({slot.variants.length})
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {slot.variants.map((v) => (
                             <button
-                              key={idx}
-                              onClick={() => setSelectedImageIndex(idx)}
-                              className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                                selectedImageIndex === idx
-                                  ? "border-amber-400 scale-105"
-                                  : "border-white/10 opacity-60 hover:opacity-100"
+                              key={v.id}
+                              onClick={() => setSelectedVariant(v)}
+                              className={`p-2 border-2 border-[#111111] text-left font-mono transition-all ${
+                                currentVariant.id === v.id
+                                  ? "bg-[#FFB703] text-[#111111] shadow-[2px_2px_0px_#111111]"
+                                  : "bg-white text-[#111111] hover:bg-[#E5E5E0]"
                               }`}
                             >
-                              <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                              <div className="text-[11px] font-black uppercase truncate">{v.title}</div>
+                              <div className="flex items-center justify-between mt-0.5 text-[10px] font-bold">
+                                <span>SKU: {v.sku}</span>
+                                <span className="text-[#D62828] font-black">
+                                  {formatCurrency(v.price, v.currencyCode || slot.currencyCode || "INR")}
+                                </span>
+                              </div>
                             </button>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  {/* Description */}
-                  <div>
-                    <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
-                      Product Overview & Details
-                    </h4>
-                    <p className="text-sm text-zinc-300 leading-relaxed bg-black/60 p-4 rounded-xl border border-white/5 font-sans">
-                      {slot.description}
-                    </p>
-                  </div>
-
-                  {/* Variant Selection */}
-                  {slot.variants && slot.variants.length > 0 && (
+                    {/* Category & Tags */}
                     <div>
-                      <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
-                        Select Variant Options
+                      <h4 className="text-[11px] font-mono font-bold text-[#111111] uppercase tracking-wider mb-1">
+                        Tags & Attributes
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {slot.variants.map((v) => (
-                          <button
-                            key={v.id}
-                            onClick={() => setSelectedVariant(v)}
-                            className={`p-3 rounded-xl border text-left font-mono transition-all ${
-                              currentVariant.id === v.id
-                                ? "bg-amber-500/10 border-amber-500/40 text-white"
-                                : "bg-black/60 border-white/10 text-zinc-400 hover:text-white"
-                            }`}
-                          >
-                            <div className="text-xs font-bold text-white">{v.title}</div>
-                            <div className="flex items-center justify-between mt-1 text-[11px]">
-                              <span>SKU: {v.sku}</span>
-                              <span className="text-amber-400 font-bold">{formatCurrency(v.price)}</span>
-                            </div>
-                          </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {slot.tags.map((t) => (
+                          <span key={t} className="px-2 py-0.5 bg-white text-[#111111] border border-[#111111] text-[10px] font-mono font-bold">
+                            #{t}
+                          </span>
                         ))}
                       </div>
                     </div>
-                  )}
-
-                  {/* Category & Tag Pills */}
-                  <div>
-                    <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">
-                      Category & Tags
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono">
-                        {slot.category}
-                      </span>
-                      {slot.tags.map((t) => (
-                        <span key={t} className="px-3 py-1 rounded-lg bg-white/5 text-zinc-400 border border-white/10 text-xs font-mono">
-                          #{t}
-                        </span>
-                      ))}
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* TAB 2: SHOPIFY & INVENTORY */}
-              {activeTab === "shopify" && (
-                <div className="space-y-6">
-                  {/* Shopify API Metadata Box */}
-                  <div className="bg-black/80 p-5 rounded-2xl border border-white/10 space-y-4">
-                    <h4 className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                      <Cpu className="w-4 h-4" />
-                      <span>SHOPIFY STOREFRONT GRAPHQL IDENTIFIERS</span>
-                    </h4>
+                {/* TAB 2: SHOPIFY INVENTORY */}
+                {activeTab === "shopify" && (
+                  <div className="space-y-3">
+                    <div className="bg-white p-3 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] space-y-2 font-mono text-xs">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <span className="text-[#2B2D42] block text-[9px] uppercase font-bold">Stock SKU</span>
+                          <span className="text-[#005F73] font-black">{currentVariant.sku}</span>
+                        </div>
+                        <div>
+                          <span className="text-[#2B2D42] block text-[9px] uppercase font-bold">Available Inventory</span>
+                          <span className="text-[#111111] font-black">{currentVariant.inventoryQuantity} Units</span>
+                        </div>
+                      </div>
 
-                    <div className="space-y-3 font-mono text-xs">
                       <div>
-                        <span className="text-zinc-500 block text-[10px] uppercase">Shopify Product GID</span>
-                        <span className="text-white bg-black/90 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
+                        <span className="text-[#2B2D42] block text-[9px] uppercase font-bold">Shopify Product GID</span>
+                        <span className="text-[#111111] bg-[#F4F4F0] px-2.5 py-1 border border-[#111111] block mt-0.5 break-all text-[11px] font-bold">
                           {slot.shopifyProductId}
                         </span>
                       </div>
-
-                      <div>
-                        <span className="text-zinc-500 block text-[10px] uppercase">Selected Variant GID</span>
-                        <span className="text-white bg-black/90 px-3 py-1.5 rounded-lg border border-white/10 block mt-1 break-all">
-                          {currentVariant.id}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 pt-2">
-                        <div>
-                          <span className="text-zinc-500 block text-[10px] uppercase">Stock SKU</span>
-                          <span className="text-amber-400 font-bold">{currentVariant.sku}</span>
-                        </div>
-                        <div>
-                          <span className="text-zinc-500 block text-[10px] uppercase">Available Inventory</span>
-                          <span className="text-white font-bold">{currentVariant.inventoryQuantity} Units</span>
-                        </div>
-                      </div>
                     </div>
-                  </div>
 
-                  {/* All Variants Table */}
-                  <div>
-                    <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-3">
-                      Complete Variant Catalog Inventory
-                    </h4>
-                    <div className="overflow-x-auto rounded-xl border border-white/10">
-                      <table className="w-full text-left font-mono text-xs">
-                        <thead className="bg-white/5 text-zinc-400 uppercase border-b border-white/10">
+                    {/* Variants Table */}
+                    <div className="overflow-x-auto border-2 border-[#111111] bg-white">
+                      <table className="w-full text-left font-mono text-[11px]">
+                        <thead className="bg-[#111111] text-white uppercase border-b-2 border-[#111111]">
                           <tr>
-                            <th className="p-3">Variant Title</th>
-                            <th className="p-3">SKU</th>
-                            <th className="p-3">Price</th>
-                            <th className="p-3">Stock</th>
+                            <th className="p-2">Variant Title</th>
+                            <th className="p-2">SKU</th>
+                            <th className="p-2">Price</th>
+                            <th className="p-2">Stock</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5 bg-black/60">
+                        <tbody className="divide-y divide-[#111111]">
                           {slot.variants.map((v) => (
-                            <tr key={v.id} className="hover:bg-white/5 transition-colors">
-                              <td className="p-3 font-bold text-white">{v.title}</td>
-                              <td className="p-3 text-zinc-400">{v.sku}</td>
-                              <td className="p-3 text-amber-400 font-bold">{formatCurrency(v.price)}</td>
-                              <td className="p-3 text-zinc-300">{v.inventoryQuantity} Units</td>
+                            <tr key={v.id} className="hover:bg-[#F4F4F0] transition-colors">
+                              <td className="p-2 font-black text-[#111111]">{v.title}</td>
+                              <td className="p-2 text-[#2B2D42]">{v.sku}</td>
+                              <td className="p-2 text-[#D62828] font-black">
+                                {formatCurrency(v.price, v.currencyCode || slot.currencyCode || "INR")}
+                              </td>
+                              <td className="p-2 text-[#111111] font-bold">{v.inventoryQuantity} Units</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* TAB 3: WEBHOOK SYNC LOGS */}
-              {activeTab === "webhooks" && (
-                <div className="space-y-6">
-                  <div className="bg-black/80 p-5 rounded-2xl border border-white/10">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
-                        <h4 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                          REAL-TIME SHOPIFY WEBHOOK LOGS
-                        </h4>
-                      </div>
-                      <span className="text-[11px] font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
-                        HMAC VERIFIED
-                      </span>
-                    </div>
-
-                    {/* Logs Timeline */}
-                    <div className="space-y-3 font-mono text-xs">
-                      {slot.syncLogs.map((log) => (
-                        <div
-                          key={log.id}
-                          className="p-3.5 rounded-xl bg-[#121216] border border-white/10 space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">
-                              {log.eventType}
-                            </span>
-                            <span className="text-zinc-500 text-[11px] flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {log.timestamp}
-                            </span>
-                          </div>
-                          <p className="text-zinc-300 text-xs">{log.details}</p>
+                {/* TAB 3: WEBHOOK LOGS */}
+                {activeTab === "webhooks" && (
+                  <div className="space-y-2 font-mono text-xs max-h-48 overflow-y-auto pr-1">
+                    {slot.syncLogs.map((log) => (
+                      <div key={log.id} className="p-2.5 bg-white border-2 border-[#111111] space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 bg-[#111111] text-white font-black text-[9px]">
+                            {log.eventType}
+                          </span>
+                          <span className="text-[#2B2D42] text-[10px] font-bold flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {log.timestamp}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                        <p className="text-[#111111] text-[11px] font-semibold">{log.details}</p>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              )}
+                )}
 
-            </div>
-
-            {/* Bottom Sticky Action Footer */}
-            <div className="p-6 border-t border-white/10 bg-black/90 backdrop-blur-md flex items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Selected Price</span>
-                <span className="text-2xl font-black text-white font-mono">
-                  {formatCurrency(currentVariant.price)}
-                </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              {/* Bottom Sticky CTA Action Buttons */}
+              <div className="pt-3 border-t-2 border-[#111111] flex flex-wrap items-center gap-2.5">
+                {slot.merchant.whatsappNumber && (
+                  <a
+                    href={`https://wa.me/${slot.merchant.whatsappNumber}?text=${encodeURIComponent(
+                      `Hi! I found "${slot.title}" (Variant: ${currentVariant.title}, SKU: ${
+                        currentVariant.sku || slot.sku
+                      }, Price: ${formatCurrency(currentVariant.price, currentVariant.currencyCode || slot.currencyCode || "INR")}) on Masters' Union Marketplace. I would like to inquire about purchasing this item: ${
+                        slot.productUrl || `https://${slot.merchant.myshopifyDomain}`
+                      }`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2.5 px-3 bg-emerald-400 text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-mono font-black uppercase flex items-center justify-center gap-1.5"
+                  >
+                    <MessageCircle className="w-4 h-4 text-[#111111]" />
+                    <span>WhatsApp Vendor</span>
+                  </a>
+                )}
+
                 <a
                   href={slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-black font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 shadow-lg shadow-amber-500/20 transition-all"
+                  className="flex-1 py-2.5 px-3 bg-[#D62828] text-white border-2 border-[#111111] bauhaus-btn text-xs font-mono font-black uppercase flex items-center justify-center gap-2"
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>Buy on Shopify Storefront</span>
-                  <ExternalLink className="w-4 h-4" />
+                  <ShoppingCart className="w-4 h-4 text-[#FFB703]" />
+                  <span>Buy on Shopify</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
+
             </div>
 
           </div>
+
         </motion.div>
       </div>
     </AnimatePresence>
   );
 }
+
+

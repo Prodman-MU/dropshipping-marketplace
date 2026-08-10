@@ -7,12 +7,13 @@ import { X, Store, ShieldCheck, ArrowRight, CheckCircle2, RefreshCw } from "luci
 interface ConnectStoreModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (domain: string, token?: string) => Promise<void> | void;
+  onConnect: (domain: string, token?: string, whatsappNumber?: string) => Promise<void> | void;
 }
 
 export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreModalProps) {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -22,13 +23,14 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
 
     setIsSubmitting(true);
     try {
-      await onConnect(domain, token);
+      await onConnect(domain, token, whatsappNumber);
       setIsSubmitting(false);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         setDomain("");
         setToken("");
+        setWhatsappNumber("");
         onClose();
       }, 1200);
     } catch (err) {
@@ -127,6 +129,22 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                   <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                     Webhooks for inventory_levels/update & products/update will be automatically configured.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>WhatsApp Owner Phone Number (Optional)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="e.g. +91 9876543210 or +1 555 123 4567"
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    className="w-full bg-black border border-emerald-500/30 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-400/70 transition-colors"
+                  />
+                  <p className="text-[11px] text-zinc-500 mt-1.5">
+                    Enables direct 1-click WhatsApp purchase inquiries & orders for customers. Include country code.
                   </p>
                 </div>
 

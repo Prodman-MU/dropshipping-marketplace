@@ -2,6 +2,7 @@ export interface VariantOption {
   id: string;
   title: string;
   price: number;
+  currencyCode?: string;
   sku: string;
   inventoryQuantity: number;
   availableForSale: boolean;
@@ -24,6 +25,7 @@ export interface MerchantVendor {
   totalProducts: number;
   connectedSince: string;
   lastWebhookSync: string;
+  whatsappNumber?: string;
 }
 
 export interface SlotListing {
@@ -34,6 +36,7 @@ export interface SlotListing {
   category: string;
   price: number;
   compareAtPrice?: number;
+  currencyCode?: string;
   inventoryQuantity: number;
   status: "AVAILABLE" | "RESERVED" | "SOLD";
   shopifyProductId: string;
