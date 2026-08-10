@@ -26,6 +26,7 @@ export interface MerchantVendor {
   connectedSince: string;
   lastWebhookSync: string;
   whatsappNumber?: string;
+  passcode?: string;
 }
 
 export interface SlotListing {

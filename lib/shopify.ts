@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { MOCK_SLOTS, MOCK_MERCHANTS, SlotListing, MerchantVendor } from "@/data/mock-slots";
+import { cleanStoreDomain, getDomainCandidates } from "@/lib/utils";
 
 const SHOPIFY_STORE_DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_TOKEN = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN;
@@ -244,11 +245,85 @@ export async function getMerchants(): Promise<MerchantVendor[]> {
 export async function fetchProductsFromShopifyStore(
   domainInput: string,
   token?: string,
-  whatsappNumberInput?: string
+  whatsappNumberInput?: string,
+  passcodeParam?: string
 ): Promise<{ merchant: MerchantVendor; slots: SlotListing[]; error?: string }> {
-  let cleanDomain = domainInput.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+  // Clean domain and generate candidate domains (e.g. www.pause2play.in and pause2play.in)
+  let cleanDomain = cleanStoreDomain(domainInput);
   if (!cleanDomain.includes(".")) {
     cleanDomain = `${cleanDomain}.myshopify.com`;
+  }
+
+  const candidateDomains = getDomainCandidates(cleanDomain);
+  console.log(`[Store Ingestion Pipeline] Ingesting store at candidates: ${candidateDomains.join(", ")}`);
+
+  // 1. Validate Domain Format Syntax
+  const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i;
+  if (!domainRegex.test(cleanDomain)) {
+    return {
+      merchant: null as any,
+      slots: [],
+      error: `Invalid Domain Format: "${cleanDomain}" is not a valid site domain. Please verify your Shopify store domain and try again.`,
+    };
+  }
+
+  // 2. Reachability & Storefront Validation Check
+  const KNOWN_DEMO_DOMAINS = [
+    "apex-gear",
+    "threads-co",
+    "tech-vault",
+    "brand-store",
+    "test-store",
+    "demo",
+    "myshopify",
+  ];
+
+  const isKnownDemo = KNOWN_DEMO_DOMAINS.some((d) => cleanDomain.includes(d));
+  let isReachable = isKnownDemo;
+
+  if (!isKnownDemo) {
+    for (const dom of candidateDomains) {
+      try {
+        const checkRes = await fetch(`https://${dom}/products.json?limit=1`, {
+          method: "GET",
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json",
+          },
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000),
+        }).catch(() => null);
+
+        if (checkRes && (checkRes.ok || checkRes.status === 200 || checkRes.status === 301 || checkRes.status === 302 || checkRes.status === 401 || checkRes.status === 403)) {
+          isReachable = true;
+          cleanDomain = dom;
+          break;
+        } else {
+          const headRes = await fetch(`https://${dom}`, {
+            method: "HEAD",
+            headers: { "User-Agent": "Mozilla/5.0" },
+            cache: "no-store",
+            signal: AbortSignal.timeout(4000),
+          }).catch(() => null);
+
+          if (headRes && (headRes.ok || headRes.status < 500)) {
+            isReachable = true;
+            cleanDomain = dom;
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn(`Validation check failed for ${dom}:`, err);
+      }
+    }
+
+    if (!isReachable) {
+      return {
+        merchant: null as any,
+        slots: [],
+        error: `Storefront Verification Failed: Could not reach or verify active site at "https://${cleanDomain}". Please verify your store URL is live and public before submitting for approval.`,
+      };
+    }
   }
 
   const storeName = cleanDomain
@@ -260,6 +335,9 @@ export async function fetchProductsFromShopifyStore(
     .join(" ");
 
   const cleanWhatsapp = whatsappNumberInput ? whatsappNumberInput.replace(/[^0-9]/g, "") : undefined;
+  const customPasscode = passcodeParam && passcodeParam.trim().length > 0
+    ? passcodeParam.trim()
+    : `${cleanDomain.split(".")[0].toLowerCase()}123`;
 
   const merchant: MerchantVendor = {
     id: `m-${cleanDomain.replace(/[^a-z0-9]/gi, "-")}`,
@@ -271,6 +349,7 @@ export async function fetchProductsFromShopifyStore(
     connectedSince: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
     lastWebhookSync: "Just now",
     whatsappNumber: cleanWhatsapp && cleanWhatsapp.length >= 7 ? cleanWhatsapp : undefined,
+    passcode: customPasscode,
   };
 
   let fetchedProducts: any[] = [];
@@ -359,13 +438,13 @@ export async function fetchProductsFromShopifyStore(
     }
   }
 
-  // Method 3: Multi-endpoint Public Storefront JSON Catalog fetch
+  // Method 3: Multi-endpoint Public Storefront JSON Catalog fetch across all candidate domains
   if (fetchedProducts.length === 0) {
-    const endpointsToTry = [
-      `https://${cleanDomain}/products.json?limit=50`,
-      `https://www.${cleanDomain}/products.json?limit=50`,
-      `https://${cleanDomain}/collections/all/products.json?limit=50`,
-    ];
+    const endpointsToTry: string[] = [];
+    for (const dom of candidateDomains) {
+      endpointsToTry.push(`https://${dom}/products.json?limit=50`);
+      endpointsToTry.push(`https://${dom}/collections/all/products.json?limit=50`);
+    }
 
     for (const endpoint of endpointsToTry) {
       try {
@@ -383,7 +462,7 @@ export async function fetchProductsFromShopifyStore(
           const json = await res.json();
           if (json.products && Array.isArray(json.products) && json.products.length > 0) {
             fetchedProducts = json.products;
-            fetchMethod = `Public Storefront API (${cleanDomain})`;
+            fetchMethod = `Public Storefront API (${endpoint})`;
             break;
           }
         }
@@ -503,73 +582,9 @@ export async function fetchProductsFromShopifyStore(
       };
     });
   } else {
-    // Domain returned 404 / 0 products (e.g. offline dev store or demo domain)
-    // Generate 2 domain-tailored catalog items so connected merchant is never empty
-    merchant.totalProducts = 2;
-
-    const prefix = storeName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 4).toUpperCase();
-
-    const fallbackSlot1: SlotListing = {
-      id: `slot-${merchant.id}-1`,
-      slotNumber: `SLOT #001`,
-      title: `${storeName} Pro Smart Tech Station`,
-      description: `Synchronized product asset from ${cleanDomain}. Multi-port fast charging hub with active thermal management.`,
-      category: "Tactical Tech & EDC",
-      price: 149.00,
-      inventoryQuantity: 42,
-      status: "AVAILABLE",
-      shopifyProductId: `gid://shopify/Product/${Date.now()}1`,
-      shopifyVariantId: `gid://shopify/ProductVariant/${Date.now()}1`,
-      merchant,
-      tags: ["Shopify Sync", "Verified Storefront"],
-      images: ["https://images.unsplash.com/photo-1609592424109-dd9892f1b177?w=800&auto=format&fit=crop&q=80"],
-      sku: `${prefix}-PWR-01`,
-      createdAt: new Date().toISOString(),
-      variants: [
-        { id: `v-${Date.now()}-1`, title: "Stealth Black", price: 149.00, sku: `${prefix}-PWR-01`, inventoryQuantity: 42, availableForSale: true },
-      ],
-      syncLogs: [
-        {
-          id: `sync-log-${Date.now()}-1`,
-          eventType: "products/create",
-          status: "SUCCESS",
-          timestamp: new Date().toLocaleTimeString(),
-          details: `Store integration established for ${cleanDomain}. Catalog live on marketplace.`,
-        },
-      ],
-    };
-
-    const fallbackSlot2: SlotListing = {
-      id: `slot-${merchant.id}-2`,
-      slotNumber: `SLOT #002`,
-      title: `${storeName} Wireless Comm Audio Dock`,
-      description: `High-fidelity audio dock with magnetic charging contacts and anodized aluminum chassis from ${cleanDomain}.`,
-      category: "Audiophile Hardware",
-      price: 219.00,
-      inventoryQuantity: 28,
-      status: "AVAILABLE",
-      shopifyProductId: `gid://shopify/Product/${Date.now()}2`,
-      shopifyVariantId: `gid://shopify/ProductVariant/${Date.now()}2`,
-      merchant,
-      tags: ["Wireless Dock", "Audiophile"],
-      images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80"],
-      sku: `${prefix}-AUD-02`,
-      createdAt: new Date().toISOString(),
-      variants: [
-        { id: `v-${Date.now()}-2`, title: "Anodized Silver", price: 219.00, sku: `${prefix}-AUD-02`, inventoryQuantity: 28, availableForSale: true },
-      ],
-      syncLogs: [
-        {
-          id: `sync-log-${Date.now()}-2`,
-          eventType: "products/create",
-          status: "SUCCESS",
-          timestamp: new Date().toLocaleTimeString(),
-          details: `Store catalog item registered for ${cleanDomain}. Published live.`,
-        },
-      ],
-    };
-
-    slots = [fallbackSlot1, fallbackSlot2];
+    // No products found on vendor storefront — do NOT create dummy products
+    merchant.totalProducts = 0;
+    slots = [];
   }
 
   return { merchant, slots };

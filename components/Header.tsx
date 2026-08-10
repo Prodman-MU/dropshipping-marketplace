@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Layers } from "lucide-react";
+import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
 interface HeaderProps {
   activeVendorCount: number;
@@ -14,6 +15,14 @@ export function Header({
   totalSyncedProducts,
 }: HeaderProps) {
   const [imgError, setImgError] = useState(false);
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
+
+  useEffect(() => {
+    setSettings(getSiteSettings());
+    const handleSettingsChange = () => setSettings(getSiteSettings());
+    window.addEventListener("site-settings-changed", handleSettingsChange);
+    return () => window.removeEventListener("site-settings-changed", handleSettingsChange);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#F4F4F0]/95 backdrop-blur-md border-b-2 border-[#111111] transition-all">
@@ -32,7 +41,7 @@ export function Header({
                 />
                 <div className="h-5 w-0.5 bg-[#FFB703]" />
                 <span className="font-mono text-xs font-black text-[#FFB703] tracking-wider uppercase">
-                  / DROPSHIPPING 2026
+                  / DROPSHIPPING {settings.dropshippingYear}
                 </span>
               </div>
             ) : (
@@ -41,7 +50,7 @@ export function Header({
                   MU
                 </div>
                 <span className="font-mono text-xs font-black text-[#FFB703] tracking-wider uppercase">
-                  MASTERS UNION / DROPSHIPPING 2026
+                  {settings.siteTitle} / DROPSHIPPING {settings.dropshippingYear}
                 </span>
               </div>
             )}
@@ -60,6 +69,8 @@ export function Header({
     </header>
   );
 }
+
+
 
 
 

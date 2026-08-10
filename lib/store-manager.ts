@@ -93,3 +93,89 @@ export function rejectMerchantStore(merchantId: string, currentMerchants: Mercha
   saveSlots(updatedSlots);
   return { updatedMerchants, updatedSlots };
 }
+
+export function deleteMerchantStore(merchantId: string, currentMerchants: MerchantVendor[], currentSlots: SlotListing[]) {
+  const updatedMerchants = currentMerchants.filter((m) => m.id !== merchantId);
+  const updatedSlots = currentSlots.filter((s) => s.merchant.id !== merchantId);
+  saveMerchants(updatedMerchants);
+  saveSlots(updatedSlots);
+  return { updatedMerchants, updatedSlots };
+}
+
+export function updateSlotPrice(slotId: string, newPrice: number, currentSlots: SlotListing[]): SlotListing[] {
+  const updated = currentSlots.map((slot) => {
+    if (slot.id === slotId) {
+      const updatedVariants = slot.variants.map((v) => ({ ...v, price: newPrice }));
+      const newLog = {
+        id: `log-price-${Date.now()}`,
+        eventType: "products/update" as const,
+        status: "SUCCESS" as const,
+        timestamp: new Date().toLocaleTimeString(),
+        details: `AI Price Recommendation Applied: Price optimized to ${newPrice}`,
+      };
+      return {
+        ...slot,
+        price: newPrice,
+        variants: updatedVariants,
+        syncLogs: [newLog, ...slot.syncLogs],
+      };
+    }
+    return slot;
+  });
+  saveSlots(updated);
+  return updated;
+}
+
+export function restockSlotInventory(slotId: string, addedUnits: number, currentSlots: SlotListing[]): SlotListing[] {
+  const updated = currentSlots.map((slot) => {
+    if (slot.id === slotId) {
+      const newQty = slot.inventoryQuantity + addedUnits;
+      const updatedVariants = slot.variants.map((v) => ({
+        ...v,
+        inventoryQuantity: v.inventoryQuantity + addedUnits,
+        availableForSale: true,
+      }));
+      const newLog = {
+        id: `log-stock-${Date.now()}`,
+        eventType: "inventory_levels/update" as const,
+        status: "SUCCESS" as const,
+        timestamp: new Date().toLocaleTimeString(),
+        details: `Simulated Restock Action: Added +${addedUnits} units. New Total: ${newQty} units.`,
+      };
+      return {
+        ...slot,
+        inventoryQuantity: newQty,
+        status: newQty > 0 ? ("AVAILABLE" as const) : slot.status,
+        variants: updatedVariants,
+        syncLogs: [newLog, ...slot.syncLogs],
+      };
+    }
+    return slot;
+  });
+  saveSlots(updated);
+  return updated;
+}
+
+export function updateSlotTags(slotId: string, newTags: string[], currentSlots: SlotListing[]): SlotListing[] {
+  const updated = currentSlots.map((slot) => {
+    if (slot.id === slotId) {
+      const mergedTags = Array.from(new Set([...slot.tags, ...newTags]));
+      const newLog = {
+        id: `log-tags-${Date.now()}`,
+        eventType: "products/update" as const,
+        status: "SUCCESS" as const,
+        timestamp: new Date().toLocaleTimeString(),
+        details: `AI Optimization: Auto-added enhanced discoverability tags: ${newTags.join(", ")}`,
+      };
+      return {
+        ...slot,
+        tags: mergedTags,
+        syncLogs: [newLog, ...slot.syncLogs],
+      };
+    }
+    return slot;
+  });
+  saveSlots(updated);
+  return updated;
+}
+

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Eye, EyeOff, Play, Pause, Sparkles } from "lucide-react";
+import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
 interface BackgroundVideoProps {
   isEnabled: boolean;
@@ -10,7 +11,15 @@ interface BackgroundVideoProps {
 
 export function BackgroundVideo({ isEnabled, onToggle }: BackgroundVideoProps) {
   const [isPlaying, setIsPlaying] = useState(true);
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    setSettings(getSiteSettings());
+    const handleSettingsChange = () => setSettings(getSiteSettings());
+    window.addEventListener("site-settings-changed", handleSettingsChange);
+    return () => window.removeEventListener("site-settings-changed", handleSettingsChange);
+  }, []);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -67,7 +76,7 @@ export function BackgroundVideo({ isEnabled, onToggle }: BackgroundVideoProps) {
       <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2 bg-[#111111] text-white border-2 border-[#111111] px-3.5 py-1.5 shadow-[4px_4px_0px_#FFB703]">
         <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#FFB703] font-black tracking-wider uppercase">
           <Sparkles className="w-3.5 h-3.5 animate-pulse text-[#FFB703]" />
-          <span className="hidden sm:inline">HERO VIDEO 2026</span>
+          <span className="hidden sm:inline">HERO VIDEO {settings.dropshippingYear}</span>
         </div>
 
         <button

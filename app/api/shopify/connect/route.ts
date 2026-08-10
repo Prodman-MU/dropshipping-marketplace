@@ -4,15 +4,15 @@ import { fetchProductsFromShopifyStore } from "@/lib/shopify";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { domain, token, whatsappNumber } = body;
+    const { domain, token, whatsappNumber, passcode } = body;
 
     if (!domain) {
       return NextResponse.json({ error: "Shopify domain is required." }, { status: 400 });
     }
 
-    console.log(`[Store Connect API] Request received for domain: ${domain} (WhatsApp: ${whatsappNumber || 'None'})`);
+    console.log(`[Store Connect API] Request received for domain: ${domain} (WhatsApp: ${whatsappNumber || 'None'}, Passcode Set: ${passcode ? 'Yes' : 'Default'})`);
 
-    const { merchant, slots, error } = await fetchProductsFromShopifyStore(domain, token, whatsappNumber);
+    const { merchant, slots, error } = await fetchProductsFromShopifyStore(domain, token, whatsappNumber, passcode);
 
     if (error) {
       return NextResponse.json({ error }, { status: 500 });

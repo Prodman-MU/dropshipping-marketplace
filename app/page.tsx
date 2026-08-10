@@ -16,6 +16,7 @@ import {
   saveMerchants,
   saveSlots,
 } from "@/lib/store-manager";
+import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
 export default function MarketplaceHomePage() {
   const [merchants, setMerchants] = useState<MerchantVendor[]>([]);
@@ -33,12 +34,20 @@ export default function MarketplaceHomePage() {
   // Pagination state: 10, 20, or 50 items per page
   const [pageSize, setPageSize] = useState<10 | 20 | 50>(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
 
   // Sync state on mount and on store-state-changed event
   useEffect(() => {
     setMerchants(getInitialMerchants());
     setSlots(getInitialSlots());
+    setSiteSettings(getSiteSettings());
 
+    const handleSettingsChange = () => setSiteSettings(getSiteSettings());
+    window.addEventListener("site-settings-changed", handleSettingsChange);
+    return () => window.removeEventListener("site-settings-changed", handleSettingsChange);
+  }, []);
+
+  useEffect(() => {
     // Check for OAuth connected URL params (?connected=true&domain=...)
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
@@ -73,39 +82,34 @@ export default function MarketplaceHomePage() {
   }, [merchants]);
 
   // Handler to connect and fetch real merchant products from Shopify Store
-  const handleAddStore = async (domain: string, token?: string, whatsappNumber?: string) => {
-    try {
-      const res = await fetch("/api/shopify/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain, token, whatsappNumber }),
-      });
+  const handleAddStore = async (domain: string, token?: string, whatsappNumber?: string, passcode?: string) => {
+    const res = await fetch("/api/shopify/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain, token, whatsappNumber, passcode }),
+    });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        console.error("Failed to connect store:", data.error);
-        return;
-      }
-
-      const { merchant, slots: newSlots } = data;
-
-      // Update merchant list (avoid duplicates)
-      const currentM = getInitialMerchants();
-      const currentS = getInitialSlots();
-
-      const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
-      const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
-
-      const updatedM = [merchant, ...filteredM];
-      const updatedS = [...newSlots, ...filteredS];
-
-      setMerchants(updatedM);
-      setSlots(updatedS);
-      saveMerchants(updatedM);
-      saveSlots(updatedS);
-    } catch (error) {
-      console.error("Error in handleAddStore:", error);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Storefront Verification Failed: Could not reach or verify store.");
     }
+
+    const { merchant, slots: newSlots } = data;
+
+    // Update merchant list (avoid duplicates)
+    const currentM = getInitialMerchants();
+    const currentS = getInitialSlots();
+
+    const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
+    const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
+
+    const updatedM = [merchant, ...filteredM];
+    const updatedS = [...newSlots, ...filteredS];
+
+    setMerchants(updatedM);
+    setSlots(updatedS);
+    saveMerchants(updatedM);
+    saveSlots(updatedS);
   };
 
   // Product-Centric Filter & Sort Logic: ONLY SHOW SLOTS FROM "ACTIVE" (APPROVED) STORES
@@ -361,12 +365,24 @@ export default function MarketplaceHomePage() {
           </div>
 
           <div>
-            <h4 className="font-display text-sm font-bold uppercase tracking-wider text-[#FFB703] mb-3">// QUICK NAVIGATION</h4>
-            <ul className="space-y-2 text-xs font-bold">
-              <li><a href="/" className="hover:text-[#FFB703] transition-colors">01 // Hero Stage</a></li>
-              <li><a href="#product-catalog" className="hover:text-[#FFB703] transition-colors">02 // Catalog 2026</a></li>
-              <li><Link href="/admin" className="hover:text-[#FFB703] transition-colors text-[#FFB703] font-black">03 // Admin Moderation Portal ↗</Link></li>
-            </ul>
+            <h4 className="font-display text-sm font-bold uppercase tracking-wider text-[#FFB703] mb-3">// PORTAL LOGINS & ACCESS</h4>
+            <p className="text-xs text-gray-300 mb-3 font-medium">Protected management portals for approved vendors & platform admins.</p>
+            <div className="space-y-2 font-mono text-xs font-bold">
+              <Link
+                href="/vendor"
+                className="w-full px-3 py-2 bg-[#FFB703] text-[#111111] border-2 border-white hover:bg-white flex items-center justify-between transition-colors uppercase"
+              >
+                <span>🔑 Vendor Portal Login</span>
+                <span>→</span>
+              </Link>
+              <Link
+                href="/admin"
+                className="w-full px-3 py-2 bg-[#D62828] text-white border-2 border-white hover:bg-white hover:text-[#111111] flex items-center justify-between transition-colors uppercase"
+              >
+                <span>🛡️ Admin Desk Login</span>
+                <span>→</span>
+              </Link>
+            </div>
           </div>
 
           <div>
@@ -374,7 +390,7 @@ export default function MarketplaceHomePage() {
             <p className="text-xs text-gray-300 mb-3 font-medium">New stores are automatically set to pending status. Admin moderation enforces quality control.</p>
             <button
               onClick={() => setIsMissingStoreModalOpen(true)}
-              className="bg-[#FFB703] text-[#111111] px-4 py-2 border-2 border-white font-display font-bold text-xs uppercase hover:bg-white"
+              className="w-full bg-[#005F73] text-white px-4 py-2 border-2 border-white font-mono font-bold text-xs uppercase hover:bg-white hover:text-[#111111] transition-colors"
             >
               CHECK STORE APPROVAL STATUS
             </button>
@@ -385,13 +401,13 @@ export default function MarketplaceHomePage() {
             <p className="text-xs text-gray-300 leading-relaxed font-mono">
               Designed & Engineered by the<br />
               <span className="text-[#FFB703] font-bold">Product Management Club</span><br />
-              at Masters&apos; Union // 2026
+              at {siteSettings.siteTitle} // {siteSettings.dropshippingYear}
             </p>
           </div>
         </div>
 
         <div className="border-t border-gray-800 py-6 text-center font-mono text-[11px] text-gray-400">
-          © 2026 MASTERS UNION // BUILT BY THE PRODUCT MANAGEMENT CLUB. ALL RIGHTS RESERVED.
+          © {siteSettings.dropshippingYear} {siteSettings.siteTitle} // BUILT BY THE PRODUCT MANAGEMENT CLUB. ALL RIGHTS RESERVED.
         </div>
       </footer>
 
@@ -399,6 +415,7 @@ export default function MarketplaceHomePage() {
       <ListingDrawer
         slot={selectedSlot}
         onClose={() => setSelectedSlot(null)}
+        onSelectRelatedSlot={(relSlot) => setSelectedSlot(relSlot)}
       />
 
       {/* "Your Store Missing?" Modal Popup */}

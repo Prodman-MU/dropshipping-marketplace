@@ -13,6 +13,12 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Trash2,
+  Sliders,
+  Globe,
+  Save,
+  RotateCcw,
+  Sparkles,
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -23,8 +29,16 @@ import {
   saveSlots,
   approveMerchantStore,
   rejectMerchantStore,
+  deleteMerchantStore,
 } from "@/lib/store-manager";
 import { ConnectStoreModal } from "@/components/ConnectStoreModal";
+import {
+  getSiteSettings,
+  saveSiteSettings,
+  resetSiteSettings,
+  SiteSettings,
+  DEFAULT_SITE_SETTINGS,
+} from "@/lib/settings-manager";
 
 const ADMIN_PASSCODE = "admin123";
 
@@ -39,33 +53,46 @@ export default function AdminPage() {
   const [expandedMerchantId, setExpandedMerchantId] = useState<string | null>(null);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
-  // Load initial store state on mount
+  // Admin Navigation Tab ("STORES" | "SETTINGS")
+  const [adminTab, setAdminTab] = useState<"STORES" | "SETTINGS">("STORES");
+
+  // Website Settings Form State
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
+  const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
+
+  // Load initial store state & site settings on mount
   useEffect(() => {
     setMerchants(getInitialMerchants());
     setSlots(getInitialSlots());
+    setSiteSettings(getSiteSettings());
+
+    if (typeof window !== "undefined") {
+      const authSession = sessionStorage.getItem("admin_authenticated");
+      if (authSession === "true") {
+        setIsAuthenticated(true);
+      }
+    }
 
     // Listen for cross-tab or component state updates
     const handleStateChange = () => {
       setMerchants(getInitialMerchants());
       setSlots(getInitialSlots());
     };
-    window.addEventListener("store-state-changed", handleStateChange);
-    return () => window.removeEventListener("store-state-changed", handleStateChange);
-  }, []);
+    const handleSettingsChange = () => {
+      setSiteSettings(getSiteSettings());
+    };
 
-  // Check stored auth session
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const auth = sessionStorage.getItem("admin_authenticated");
-      if (auth === "true") {
-        setIsAuthenticated(true);
-      }
-    }
+    window.addEventListener("store-state-changed", handleStateChange);
+    window.addEventListener("site-settings-changed", handleSettingsChange);
+    return () => {
+      window.removeEventListener("store-state-changed", handleStateChange);
+      window.removeEventListener("site-settings-changed", handleSettingsChange);
+    };
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === ADMIN_PASSCODE) {
+    if (passcode.trim() === ADMIN_PASSCODE) {
       setIsAuthenticated(true);
       setAuthError("");
       sessionStorage.setItem("admin_authenticated", "true");
@@ -92,37 +119,56 @@ export default function AdminPage() {
     setSlots(updatedSlots);
   };
 
-  const handleAddStore = async (domain: string, token?: string, whatsappNumber?: string) => {
-    try {
-      const res = await fetch("/api/shopify/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain, token, whatsappNumber }),
-      });
+  const handleDeleteStore = (merchantId: string) => {
+    if (confirm("Are you sure you want to permanently delete this store submission from the marketplace?")) {
+      const { updatedMerchants, updatedSlots } = deleteMerchantStore(merchantId, merchants, slots);
+      setMerchants(updatedMerchants);
+      setSlots(updatedSlots);
+    }
+  };
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        console.error("Failed to connect store:", data.error);
-        return;
-      }
+  const handleAddStore = async (domain: string, token?: string, whatsappNumber?: string, passcode?: string) => {
+    const res = await fetch("/api/shopify/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain, token, whatsappNumber, passcode }),
+    });
 
-      const { merchant, slots: newSlots } = data;
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Storefront Verification Failed: Could not reach or verify store.");
+    }
 
-      const currentM = getInitialMerchants();
-      const currentS = getInitialSlots();
+    const { merchant, slots: newSlots } = data;
 
-      const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
-      const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
+    const currentM = getInitialMerchants();
+    const currentS = getInitialSlots();
 
-      const updatedM = [merchant, ...filteredM];
-      const updatedS = [...newSlots, ...filteredS];
+    const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
+    const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
 
-      setMerchants(updatedM);
-      setSlots(updatedS);
-      saveMerchants(updatedM);
-      saveSlots(updatedS);
-    } catch (error) {
-      console.error("Error in handleAddStore:", error);
+    const updatedM = [merchant, ...filteredM];
+    const updatedS = [...newSlots, ...filteredS];
+
+    setMerchants(updatedM);
+    setSlots(updatedS);
+    saveMerchants(updatedM);
+    saveSlots(updatedS);
+  };
+
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveSiteSettings(siteSettings);
+    setSettingsSaveSuccess(true);
+    setTimeout(() => setSettingsSaveSuccess(false), 3000);
+  };
+
+  const handleResetSettings = () => {
+    if (confirm("Reset all website settings and dropshipping year to factory defaults?")) {
+      const defaults = resetSiteSettings();
+      setSiteSettings(defaults);
+      setSettingsSaveSuccess(true);
+      setTimeout(() => setSettingsSaveSuccess(false), 3000);
     }
   };
 
@@ -205,7 +251,7 @@ export default function AdminPage() {
       {/* Admin Top Navigation Bar */}
       <header className="sticky top-0 z-40 w-full bg-white border-b-4 border-[#111111]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
+          <div className="flex flex-wrap items-center justify-between h-auto py-3 sm:h-20 gap-4">
             
             <div className="flex items-center gap-3">
               <Link
@@ -220,26 +266,47 @@ export default function AdminPage() {
               </div>
               <div>
                 <h1 className="text-lg font-black text-[#111111] font-display uppercase tracking-tight flex items-center gap-2">
-                  <span>Shopify Store Moderation Panel</span>
+                  <span>Admin Control Portal</span>
                   <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#FFB703] text-[#111111] border border-[#111111]">
                     ACCESS CONTROLLED
                   </span>
                 </h1>
                 <p className="text-xs text-[#2B2D42] font-mono font-bold">
-                  Approve or Reject Shopify stores before items go live publicly
+                  {adminTab === "STORES"
+                    ? "Approve or Reject Shopify stores before items go live publicly"
+                    : "Manage global website settings, branding & dropshipping year"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-2 font-mono text-xs">
               <button
-                onClick={() => setIsConnectModalOpen(true)}
-                className="px-4 py-2 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black flex items-center gap-2"
+                onClick={() => setAdminTab("STORES")}
+                className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all uppercase ${
+                  adminTab === "STORES"
+                    ? "bg-[#D62828] text-white shadow-[3px_3px_0px_#111111]"
+                    : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                }`}
               >
-                <Store className="w-4 h-4 text-[#111111]" />
-                <span>Link Shopify Store</span>
+                <Store className="w-4 h-4" />
+                <span>Store Moderation</span>
               </button>
 
+              <button
+                onClick={() => setAdminTab("SETTINGS")}
+                className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all uppercase ${
+                  adminTab === "SETTINGS"
+                    ? "bg-[#005F73] text-white shadow-[3px_3px_0px_#111111]"
+                    : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                }`}
+              >
+                <Sliders className="w-4 h-4" />
+                <span>Website Settings</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleLogout}
                 className="px-3.5 py-2 bg-[#E5E5E0] text-[#111111] border-2 border-[#111111] font-mono text-xs font-black uppercase hover:bg-[#D62828] hover:text-white transition-colors"
@@ -254,261 +321,482 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative z-10">
         
-        {/* Metrics Banner */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
-            <span className="text-xs font-mono font-black text-[#D62828] uppercase">Pending Approval</span>
-            <div className="text-3xl font-black text-[#111111] font-mono flex items-center gap-2">
-              <span>{pendingCount}</span>
-              {pendingCount > 0 && (
-                <span className="w-2.5 h-2.5 rounded-full bg-[#D62828] animate-pulse" />
-              )}
+        {/* TAB 1: STORE MODERATION DASHBOARD */}
+        {adminTab === "STORES" && (
+          <>
+            {/* Metrics Banner */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
+                <span className="text-xs font-mono font-black text-[#D62828] uppercase">Pending Approval</span>
+                <div className="text-3xl font-black text-[#111111] font-mono flex items-center gap-2">
+                  <span>{pendingCount}</span>
+                  {pendingCount > 0 && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#D62828] animate-pulse" />
+                  )}
+                </div>
+                <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Requires admin review</p>
+              </div>
+
+              <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
+                <span className="text-xs font-mono font-black text-[#005F73] uppercase">Approved Stores</span>
+                <div className="text-3xl font-black text-[#005F73] font-mono">{activeCount}</div>
+                <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Live on public marketplace</p>
+              </div>
+
+              <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
+                <span className="text-xs font-mono font-black text-[#D62828] uppercase">Rejected Stores</span>
+                <div className="text-3xl font-black text-[#D62828] font-mono">{rejectedCount}</div>
+                <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Disabled integrations</p>
+              </div>
+
+              <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
+                <span className="text-xs font-mono font-black text-[#111111] uppercase">Total Linked Stores</span>
+                <div className="text-3xl font-black text-[#111111] font-mono">{merchants.length}</div>
+                <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Total connected accounts</p>
+              </div>
             </div>
-            <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Requires admin review</p>
-          </div>
 
-          <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
-            <span className="text-xs font-mono font-black text-[#005F73] uppercase">Approved Stores</span>
-            <div className="text-3xl font-black text-[#005F73] font-mono">{activeCount}</div>
-            <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Live on public marketplace</p>
-          </div>
-
-          <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
-            <span className="text-xs font-mono font-black text-[#D62828] uppercase">Rejected Stores</span>
-            <div className="text-3xl font-black text-[#D62828] font-mono">{rejectedCount}</div>
-            <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Disabled integrations</p>
-          </div>
-
-          <div className="p-5 bg-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-1">
-            <span className="text-xs font-mono font-black text-[#111111] uppercase">Total Linked Stores</span>
-            <div className="text-3xl font-black text-[#111111] font-mono">{merchants.length}</div>
-            <p className="text-[11px] text-[#2B2D42] font-mono font-bold">Total connected accounts</p>
-          </div>
-        </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs border-b-2 border-[#111111] pb-4">
-          <button
-            onClick={() => setActiveFilter("PENDING")}
-            className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
-              activeFilter === "PENDING"
-                ? "bg-[#D62828] text-white shadow-[3px_3px_0px_#111111]"
-                : "bg-white text-[#111111] hover:bg-[#FFB703]"
-            }`}
-          >
-            <span>Pending Approval</span>
-            <span className="px-2 py-0.5 bg-[#111111] text-[#FFB703] text-[11px]">
-              {pendingCount}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveFilter("ACTIVE")}
-            className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
-              activeFilter === "ACTIVE"
-                ? "bg-[#005F73] text-white shadow-[3px_3px_0px_#111111]"
-                : "bg-white text-[#111111] hover:bg-[#FFB703]"
-            }`}
-          >
-            <span>Active Stores</span>
-            <span className="px-2 py-0.5 bg-[#111111] text-white text-[11px]">
-              {activeCount}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveFilter("REJECTED")}
-            className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
-              activeFilter === "REJECTED"
-                ? "bg-[#111111] text-white shadow-[3px_3px_0px_#111111]"
-                : "bg-white text-[#111111] hover:bg-[#FFB703]"
-            }`}
-          >
-            <span>Rejected Stores</span>
-            <span className="px-2 py-0.5 bg-[#D62828] text-white text-[11px]">
-              {rejectedCount}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveFilter("ALL")}
-            className={`px-4 py-2 font-black border-2 border-[#111111] transition-all ${
-              activeFilter === "ALL"
-                ? "bg-[#FFB703] text-[#111111] shadow-[3px_3px_0px_#111111]"
-                : "bg-white text-[#111111] hover:bg-[#FFB703]"
-            }`}
-          >
-            All Stores ({merchants.length})
-          </button>
-        </div>
-
-        {/* Stores List */}
-        <div className="space-y-6">
-          {filteredMerchants.length > 0 ? (
-            filteredMerchants.map((merchant) => {
-              const storeSlots = slots.filter((s) => s.merchant.id === merchant.id);
-              const isExpanded = expandedMerchantId === merchant.id || activeFilter === "PENDING";
-
-              return (
-                <div
-                  key={merchant.id}
-                  className="p-6 bg-white border-2 border-[#111111] shadow-[5px_5px_0px_#111111] space-y-6 transition-all"
+            {/* Status Filter Tabs & Link Action */}
+            <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs border-b-2 border-[#111111] pb-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setActiveFilter("PENDING")}
+                  className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
+                    activeFilter === "PENDING"
+                      ? "bg-[#D62828] text-white shadow-[3px_3px_0px_#111111]"
+                      : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                  }`}
                 >
-                  {/* Store Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={merchant.storeLogo}
-                        alt={merchant.name}
-                        className="w-14 h-14 object-cover border-2 border-[#111111] shadow-[2px_2px_0px_#111111]"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2.5">
-                          <h2 className="text-xl font-black text-[#111111] font-display uppercase tracking-tight">
-                            {merchant.name}
-                          </h2>
-                          {merchant.status === "PENDING" && (
-                            <span className="px-3 py-1 text-xs font-mono font-black bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] animate-pulse">
-                              ⏳ PENDING APPROVAL
-                            </span>
-                          )}
-                          {merchant.status === "ACTIVE" && (
-                            <span className="px-3 py-1 text-xs font-mono font-black bg-[#005F73] text-white border-2 border-[#111111] shadow-[2px_2px_0px_#111111]">
-                              ✓ APPROVED & ACTIVE
-                            </span>
-                          )}
-                          {merchant.status === "REJECTED" && (
-                            <span className="px-3 py-1 text-xs font-mono font-black bg-[#D62828] text-white border-2 border-[#111111]">
-                              ✕ REJECTED
-                            </span>
-                          )}
+                  <span>Pending Approval</span>
+                  <span className="px-2 py-0.5 bg-[#111111] text-[#FFB703] text-[11px]">
+                    {pendingCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveFilter("ACTIVE")}
+                  className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
+                    activeFilter === "ACTIVE"
+                      ? "bg-[#005F73] text-white shadow-[3px_3px_0px_#111111]"
+                      : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                  }`}
+                >
+                  <span>Active Stores</span>
+                  <span className="px-2 py-0.5 bg-[#111111] text-white text-[11px]">
+                    {activeCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveFilter("REJECTED")}
+                  className={`px-4 py-2 font-black flex items-center gap-2 border-2 border-[#111111] transition-all ${
+                    activeFilter === "REJECTED"
+                      ? "bg-[#111111] text-white shadow-[3px_3px_0px_#111111]"
+                      : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                  }`}
+                >
+                  <span>Rejected Stores</span>
+                  <span className="px-2 py-0.5 bg-[#D62828] text-white text-[11px]">
+                    {rejectedCount}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveFilter("ALL")}
+                  className={`px-4 py-2 font-black border-2 border-[#111111] transition-all ${
+                    activeFilter === "ALL"
+                      ? "bg-[#FFB703] text-[#111111] shadow-[3px_3px_0px_#111111]"
+                      : "bg-white text-[#111111] hover:bg-[#FFB703]"
+                  }`}
+                >
+                  All Stores ({merchants.length})
+                </button>
+              </div>
+
+              <button
+                onClick={() => setIsConnectModalOpen(true)}
+                className="px-4 py-2 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black flex items-center gap-2 shadow-[2px_2px_0px_#111111] uppercase"
+              >
+                <Store className="w-4 h-4 text-[#111111]" />
+                <span>Link Shopify Store</span>
+              </button>
+            </div>
+
+            {/* Stores List */}
+            <div className="space-y-6">
+              {filteredMerchants.length > 0 ? (
+                filteredMerchants.map((merchant) => {
+                  const storeSlots = slots.filter((s) => s.merchant.id === merchant.id);
+                  const isExpanded = expandedMerchantId === merchant.id || activeFilter === "PENDING";
+
+                  return (
+                    <div
+                      key={merchant.id}
+                      className="p-6 bg-white border-2 border-[#111111] shadow-[5px_5px_0px_#111111] space-y-6 transition-all"
+                    >
+                      {/* Store Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={merchant.storeLogo}
+                            alt={merchant.name}
+                            className="w-14 h-14 object-cover border-2 border-[#111111] shadow-[2px_2px_0px_#111111]"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2.5">
+                              <h2 className="text-xl font-black text-[#111111] font-display uppercase tracking-tight">
+                                {merchant.name}
+                              </h2>
+                              {merchant.status === "PENDING" && (
+                                <span className="px-3 py-1 text-xs font-mono font-black bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] animate-pulse">
+                                  ⏳ PENDING APPROVAL
+                                </span>
+                              )}
+                              {merchant.status === "ACTIVE" && (
+                                <span className="px-3 py-1 text-xs font-mono font-black bg-[#005F73] text-white border-2 border-[#111111] shadow-[2px_2px_0px_#111111]">
+                                  ✓ APPROVED & ACTIVE
+                                </span>
+                              )}
+                              {merchant.status === "REJECTED" && (
+                                <span className="px-3 py-1 text-xs font-mono font-black bg-[#D62828] text-white border-2 border-[#111111]">
+                                  ✕ REJECTED
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-4 mt-1.5 text-xs font-mono font-bold text-[#2B2D42]">
+                              <span className="flex items-center gap-1.5 text-[#111111]">
+                                <Store className="w-4 h-4 text-[#005F73]" />
+                                {merchant.myshopifyDomain}
+                              </span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1.5">
+                                <Package className="w-4 h-4 text-[#D62828]" />
+                                {storeSlots.length} Synced Products
+                              </span>
+                              <span>•</span>
+                              <span className="text-[#2B2D42]">Connected: {merchant.connectedSince}</span>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-4 mt-1.5 text-xs font-mono font-bold text-[#2B2D42]">
-                          <span className="flex items-center gap-1.5 text-[#111111]">
-                            <Store className="w-4 h-4 text-[#005F73]" />
-                            {merchant.myshopifyDomain}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1.5">
-                            <Package className="w-4 h-4 text-[#D62828]" />
-                            {storeSlots.length} Synced Products
-                          </span>
-                          <span>•</span>
-                          <span className="text-[#2B2D42]">Connected: {merchant.connectedSince}</span>
+                        {/* Approve / Reject Controls */}
+                        <div className="flex items-center gap-3">
+                          {merchant.status !== "ACTIVE" && (
+                            <button
+                              onClick={() => handleApprove(merchant.id)}
+                              className="px-5 py-2.5 bg-[#005F73] text-white border-2 border-[#111111] bauhaus-btn font-mono text-xs font-black flex items-center gap-2 uppercase"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Approve Store Integration</span>
+                            </button>
+                          )}
+
+                          {merchant.status !== "REJECTED" && (
+                            <button
+                              onClick={() => handleReject(merchant.id)}
+                              className="px-4 py-2.5 bg-[#D62828] text-white border-2 border-[#111111] bauhaus-btn font-mono text-xs font-black flex items-center gap-2 uppercase"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              <span>Reject Store</span>
+                            </button>
+                          )}
+
+                          {/* Delete Button for Rejected Stores */}
+                          {merchant.status === "REJECTED" && (
+                            <button
+                              onClick={() => handleDeleteStore(merchant.id)}
+                              className="px-4 py-2.5 bg-[#111111] hover:bg-[#D62828] text-white border-2 border-[#111111] bauhaus-btn font-mono text-xs font-black flex items-center gap-2 uppercase transition-all shadow-[2px_2px_0px_#D62828]"
+                              title="Permanently remove rejected store from marketplace"
+                            >
+                              <Trash2 className="w-4 h-4 text-[#FFB703]" />
+                              <span>Delete Rejected Store</span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() =>
+                              setExpandedMerchantId(expandedMerchantId === merchant.id ? null : merchant.id)
+                            }
+                            className="p-2.5 bg-[#E5E5E0] border-2 border-[#111111] text-[#111111] hover:bg-[#FFB703] transition-colors"
+                            title="Toggle product catalog preview"
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="w-4 h-4 stroke-[3]" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 stroke-[3]" />
+                            )}
+                          </button>
                         </div>
                       </div>
+
+                      {/* Expandable Fetched Product Preview List */}
+                      {isExpanded && (
+                        <div className="pt-4 border-t-2 border-[#111111] space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-xs font-mono font-black text-[#005F73] uppercase tracking-wider flex items-center gap-2">
+                              <Package className="w-4 h-4" />
+                              <span>Fetched Product Catalog Items ({storeSlots.length})</span>
+                            </h3>
+                            <span className="text-xs font-mono font-bold text-[#2B2D42]">
+                              Photos, Descriptions & Variant Specs
+                            </span>
+                          </div>
+
+                          {storeSlots.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {storeSlots.map((slot) => (
+                                <div
+                                  key={slot.id}
+                                  className="p-4 bg-[#F4F4F0] border-2 border-[#111111] flex gap-4 overflow-hidden shadow-[3px_3px_0px_#111111]"
+                                >
+                                  {slot.images && slot.images[0] && (
+                                    <img
+                                      src={slot.images[0]}
+                                      alt={slot.title}
+                                      className="w-24 h-24 object-cover border-2 border-[#111111] shrink-0"
+                                    />
+                                  )}
+                                  <div className="min-w-0 flex-1 space-y-1.5 font-mono">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-black text-[#D62828]">
+                                        {slot.slotNumber}
+                                      </span>
+                                      <span className="text-sm font-black text-[#111111] bg-[#FFB703] px-2 py-0.5 border border-[#111111]">
+                                        {formatCurrency(slot.price, slot.currencyCode || "INR")}
+                                      </span>
+                                    </div>
+                                    <h4 className="text-sm font-bold text-[#111111] truncate font-display uppercase">
+                                      {slot.title}
+                                    </h4>
+                                    <p className="text-xs text-[#2B2D42] line-clamp-2 leading-relaxed font-sans font-medium">
+                                      {slot.description}
+                                    </p>
+                                    <div className="flex items-center gap-2 pt-1 text-[11px] font-bold text-[#005F73]">
+                                      <span>SKU: {slot.sku}</span>
+                                      <span>•</span>
+                                      <span>Stock: {slot.inventoryQuantity} units</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-6 bg-[#F4F4F0] border-2 border-[#111111] text-center font-mono text-xs font-bold text-[#2B2D42]">
+                              No items synced for this store.
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
+                  );
+                })
+              ) : (
+                <div className="p-16 text-center space-y-4 bg-white border-4 border-[#111111] shadow-[8px_8px_0px_#111111]">
+                  <ShieldAlert className="w-12 h-12 text-[#D62828] mx-auto stroke-[2.5]" />
+                  <h3 className="text-lg font-black text-[#111111] font-display uppercase">No Stores Found</h3>
+                  <p className="text-xs font-mono font-bold text-[#2B2D42]">
+                    No store integrations found matching filter ({activeFilter}).
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
-                    {/* Approve / Reject Controls */}
-                    <div className="flex items-center gap-3">
-                      {merchant.status !== "ACTIVE" && (
-                        <button
-                          onClick={() => handleApprove(merchant.id)}
-                          className="px-5 py-2.5 bg-[#005F73] text-white border-2 border-[#111111] bauhaus-btn font-mono text-xs font-black flex items-center gap-2 uppercase"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Approve Store Integration</span>
-                        </button>
-                      )}
+        {/* TAB 2: WEBSITE SETTINGS */}
+        {adminTab === "SETTINGS" && (
+          <div className="space-y-8">
+            
+            {/* Confirmation Toast */}
+            {settingsSaveSuccess && (
+              <div className="p-4 bg-[#005F73] text-white border-2 border-[#111111] shadow-[4px_4px_0px_#111111] flex items-center justify-between font-mono text-xs font-bold animate-fadeIn">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#FFB703]" />
+                  <span>Website Settings & Dropshipping Year updated successfully! Live across all pages.</span>
+                </div>
+                <span className="text-[10px] bg-[#111111] text-[#FFB703] px-2 py-1 font-black">SAVED & SYNCED</span>
+              </div>
+            )}
 
-                      {merchant.status !== "REJECTED" && (
-                        <button
-                          onClick={() => handleReject(merchant.id)}
-                          className="px-4 py-2.5 bg-[#D62828] text-white border-2 border-[#111111] bauhaus-btn font-mono text-xs font-black flex items-center gap-2 uppercase"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          <span>Reject Store</span>
-                        </button>
-                      )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              
+              {/* Form Card */}
+              <div className="lg:col-span-7 bg-white border-4 border-[#111111] p-6 sm:p-8 shadow-[8px_8px_0px_#111111] space-y-6">
+                
+                <div className="border-b-2 border-[#111111] pb-4">
+                  <h2 className="text-xl font-black text-[#111111] font-display uppercase tracking-tight flex items-center gap-2">
+                    <Sliders className="w-5 h-5 text-[#D62828]" />
+                    <span>Global Website Settings</span>
+                  </h2>
+                  <p className="text-xs text-[#2B2D42] font-mono font-bold mt-1">
+                    Edit dropshipping year, marketplace branding, and banner labels displayed on the website UI.
+                  </p>
+                </div>
 
-                      <button
-                        onClick={() =>
-                          setExpandedMerchantId(expandedMerchantId === merchant.id ? null : merchant.id)
-                        }
-                        className="p-2.5 bg-[#E5E5E0] border-2 border-[#111111] text-[#111111] hover:bg-[#FFB703] transition-colors"
-                        title="Toggle product catalog preview"
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 stroke-[3]" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 stroke-[3]" />
-                        )}
-                      </button>
+                <form onSubmit={handleSaveSettings} className="space-y-5 font-mono">
+                  
+                  {/* Dropshipping Year Input */}
+                  <div className="p-4 bg-[#F4F4F0] border-2 border-[#111111] space-y-2 shadow-[3px_3px_0px_#111111]">
+                    <label className="block text-xs font-black text-[#111111] uppercase tracking-wider flex items-center justify-between">
+                      <span>Dropshipping Year</span>
+                      <span className="px-2 py-0.5 text-[10px] bg-[#FFB703] text-[#111111] font-black border border-[#111111]">EDITABLE PARAMETER</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={siteSettings.dropshippingYear}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, dropshippingYear: e.target.value })}
+                      required
+                      placeholder="e.g. 2026 or 2027"
+                      className="w-full bg-white border-2 border-[#111111] px-4 py-2.5 text-base font-black text-[#D62828] focus:outline-none focus:border-[#FFB703]"
+                    />
+                    <p className="text-[11px] text-[#2B2D42] font-bold">
+                      Updates the year displayed in Header logo, Hero badge, Background Video label, and Footer copyright.
+                    </p>
+                  </div>
+
+                  {/* Site Title Input */}
+                  <div className="p-4 bg-[#F4F4F0] border-2 border-[#111111] space-y-2 shadow-[3px_3px_0px_#111111]">
+                    <label className="block text-xs font-black text-[#111111] uppercase tracking-wider">
+                      Marketplace Organization Title
+                    </label>
+                    <input
+                      type="text"
+                      value={siteSettings.siteTitle}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, siteTitle: e.target.value })}
+                      required
+                      placeholder="e.g. MASTERS UNION"
+                      className="w-full bg-white border-2 border-[#111111] px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#FFB703]"
+                    />
+                    <p className="text-[11px] text-[#2B2D42] font-bold">
+                      Used in header text fallback and footer copyright notice.
+                    </p>
+                  </div>
+
+                  {/* Hero Announcement Text */}
+                  <div className="p-4 bg-[#F4F4F0] border-2 border-[#111111] space-y-2 shadow-[3px_3px_0px_#111111]">
+                    <label className="block text-xs font-black text-[#111111] uppercase tracking-wider">
+                      Hero Banner Subtitle / Announcement
+                    </label>
+                    <input
+                      type="text"
+                      value={siteSettings.announcementText}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, announcementText: e.target.value })}
+                      required
+                      placeholder="e.g. MASTERS UNION PMC — STUDENT-CURATED DROPSHIPPING NETWORK"
+                      className="w-full bg-white border-2 border-[#111111] px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#FFB703]"
+                    />
+                    <p className="text-[11px] text-[#2B2D42] font-bold">
+                      Displays in the top ticker bar above the hero video.
+                    </p>
+                  </div>
+
+                  {/* Catalog Badge Text */}
+                  <div className="p-4 bg-[#F4F4F0] border-2 border-[#111111] space-y-2 shadow-[3px_3px_0px_#111111]">
+                    <label className="block text-xs font-black text-[#111111] uppercase tracking-wider">
+                      Catalog Badge Text
+                    </label>
+                    <input
+                      type="text"
+                      value={siteSettings.catalogBadgeText}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, catalogBadgeText: e.target.value })}
+                      required
+                      placeholder="e.g. OFFICIAL CATALOG"
+                      className="w-full bg-white border-2 border-[#111111] px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#FFB703]"
+                    />
+                    <p className="text-[11px] text-[#2B2D42] font-bold">
+                      Appears alongside the dropshipping year in the hero yellow badge.
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-4 flex flex-wrap items-center justify-between gap-4">
+                    <button
+                      type="submit"
+                      className="px-6 py-3.5 bg-[#005F73] text-white border-2 border-[#111111] bauhaus-btn text-xs font-black uppercase flex items-center gap-2 shadow-[3px_3px_0px_#111111]"
+                    >
+                      <Save className="w-4 h-4 text-[#FFB703]" />
+                      <span>Save Website Settings</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResetSettings}
+                      className="px-4 py-3.5 bg-[#E5E5E0] text-[#111111] border-2 border-[#111111] font-mono text-xs font-black uppercase hover:bg-[#D62828] hover:text-white transition-colors flex items-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span>Reset Defaults</span>
+                    </button>
+                  </div>
+
+                </form>
+
+              </div>
+
+              {/* Live UI Preview Box */}
+              <div className="lg:col-span-5 space-y-6">
+                
+                <div className="bg-white border-4 border-[#111111] p-6 shadow-[8px_8px_0px_#111111] space-y-4">
+                  <div className="border-b-2 border-[#111111] pb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-black text-[#111111] font-display uppercase tracking-tight flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-[#005F73]" />
+                      <span>Real-time UI Preview</span>
+                    </h3>
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#FFB703] text-[#111111] border border-[#111111]">
+                      LIVE PERSPECTIVE
+                    </span>
+                  </div>
+
+                  {/* Header Badge Preview */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-mono font-black text-[#2B2D42] uppercase">1. Header Logo & Year</span>
+                    <div className="p-3 bg-[#111111] border-2 border-[#111111] flex items-center justify-between text-[#FFB703] font-mono text-xs font-black">
+                      <span>MU DROPSHIPPING</span>
+                      <span className="bg-[#FFB703] text-[#111111] px-2 py-0.5 border border-[#111111]">
+                        / DROPSHIPPING {siteSettings.dropshippingYear}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Expandable Fetched Product Preview List */}
-                  {isExpanded && (
-                    <div className="pt-4 border-t-2 border-[#111111] space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-mono font-black text-[#005F73] uppercase tracking-wider flex items-center gap-2">
-                          <Package className="w-4 h-4" />
-                          <span>Fetched Product Catalog Items ({storeSlots.length})</span>
-                        </h3>
-                        <span className="text-xs font-mono font-bold text-[#2B2D42]">
-                          Photos, Descriptions & Variant Specs
-                        </span>
-                      </div>
-
-                      {storeSlots.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {storeSlots.map((slot) => (
-                            <div
-                              key={slot.id}
-                              className="p-4 bg-[#F4F4F0] border-2 border-[#111111] flex gap-4 overflow-hidden shadow-[3px_3px_0px_#111111]"
-                            >
-                              {slot.images && slot.images[0] && (
-                                <img
-                                  src={slot.images[0]}
-                                  alt={slot.title}
-                                  className="w-24 h-24 object-cover border-2 border-[#111111] shrink-0"
-                                />
-                              )}
-                              <div className="min-w-0 flex-1 space-y-1.5 font-mono">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-black text-[#D62828]">
-                                    {slot.slotNumber}
-                                  </span>
-                                  <span className="text-sm font-black text-[#111111] bg-[#FFB703] px-2 py-0.5 border border-[#111111]">
-                                    {formatCurrency(slot.price, slot.currencyCode || "INR")}
-                                  </span>
-                                </div>
-                                <h4 className="text-sm font-bold text-[#111111] truncate font-display uppercase">
-                                  {slot.title}
-                                </h4>
-                                <p className="text-xs text-[#2B2D42] line-clamp-2 leading-relaxed font-sans font-medium">
-                                  {slot.description}
-                                </p>
-                                <div className="flex items-center gap-2 pt-1 text-[11px] font-bold text-[#005F73]">
-                                  <span>SKU: {slot.sku}</span>
-                                  <span>•</span>
-                                  <span>Stock: {slot.inventoryQuantity} units</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-6 bg-[#F4F4F0] border-2 border-[#111111] text-center font-mono text-xs font-bold text-[#2B2D42]">
-                          No items synced for this store.
-                        </div>
-                      )}
+                  {/* Hero Badge Preview */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-mono font-black text-[#2B2D42] uppercase">2. Hero Catalog Badge</span>
+                    <div className="p-3 bg-[#F4F4F0] border-2 border-[#111111] flex items-center justify-between font-mono text-xs">
+                      <span className="font-black text-[#111111] uppercase truncate max-w-[180px]">{siteSettings.announcementText}</span>
+                      <span className="bg-[#FFB703] text-[#111111] font-black px-2.5 py-1 border border-[#111111] shrink-0 ml-2">
+                        {siteSettings.dropshippingYear} {siteSettings.catalogBadgeText}
+                      </span>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Hero Video Banner Preview */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-mono font-black text-[#2B2D42] uppercase">3. Video Banner Controls</span>
+                    <div className="p-3 bg-[#111111] border-2 border-[#111111] flex items-center justify-between text-white font-mono text-xs font-black">
+                      <span className="flex items-center gap-1.5 text-[#FFB703]">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>HERO VIDEO {siteSettings.dropshippingYear}</span>
+                      </span>
+                      <span className="px-2 py-0.5 bg-[#FFB703] text-[#111111] text-[10px] uppercase font-black">TOGGLE ON</span>
+                    </div>
+                  </div>
+
+                  {/* Footer Copyright Preview */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-mono font-black text-[#2B2D42] uppercase">4. Footer Copyright</span>
+                    <div className="p-3 bg-[#111111] border-2 border-[#111111] text-center font-mono text-[11px] text-gray-300">
+                      © {siteSettings.dropshippingYear} {siteSettings.siteTitle} // BUILT BY THE PRODUCT MANAGEMENT CLUB.
+                    </div>
+                  </div>
+
                 </div>
-              );
-            })
-          ) : (
-            <div className="p-16 text-center space-y-4 bg-white border-4 border-[#111111] shadow-[8px_8px_0px_#111111]">
-              <ShieldAlert className="w-12 h-12 text-[#D62828] mx-auto stroke-[2.5]" />
-              <h3 className="text-lg font-black text-[#111111] font-display uppercase">No Stores Found</h3>
-              <p className="text-xs font-mono font-bold text-[#2B2D42]">
-                No store integrations found matching filter ({activeFilter}).
-              </p>
+
+              </div>
+
             </div>
-          )}
-        </div>
+
+          </div>
+        )}
 
       </main>
 
