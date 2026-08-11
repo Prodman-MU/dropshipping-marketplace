@@ -1,18 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { BackgroundVideo } from "@/components/BackgroundVideo";
+import { AnimatedSquiggle } from "@/components/AnimatedSquiggle";
+import { MastersUnionLogo } from "@/components/MastersUnionLogo";
 import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
 interface HeroProps {
-  isVideoEnabled: boolean;
-  onToggleVideo: () => void;
+  isVideoEnabled?: boolean;
+  onToggleVideo?: () => void;
 }
 
-export function Hero({
-  isVideoEnabled,
-  onToggleVideo,
-}: HeroProps) {
+export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
 
   useEffect(() => {
@@ -23,35 +21,38 @@ export function Hero({
   }, []);
 
   return (
-    <section className="relative bg-[#F4F4F0] border-b-2 border-[#111111] py-6 overflow-hidden">
+    <section className="relative bg-[#F4F4F0] border-b-2 border-[#111111] py-4 sm:py-6 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Central Hero Video Frame */}
-        <div className="bauhaus-card p-3 sm:p-6 bg-grid-pattern relative min-h-[380px] sm:min-h-[480px] flex flex-col justify-between overflow-hidden">
-          
-          {/* Header Overlay */}
-          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold border-2 border-[#111111] py-2.5 px-4 bg-white shadow-[3px_3px_0px_#111111] mb-4 z-20">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-2.5 py-1 bg-[#D62828] text-white font-black text-[11px] uppercase tracking-wider">
-                MASTERS UNION PMC
-              </span>
-              <span className="text-[#111111] font-black uppercase tracking-tight">
-                {settings.announcementText}
-              </span>
-              <span className="hidden md:inline text-[#005F73] font-bold">
-                • SOURCED FROM ARTISANAL & MANUFACTURING HUBS ACROSS INDIA
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 bg-[#FFB703] border border-[#111111] text-[#111111] text-[11px] font-black uppercase">
-                {settings.dropshippingYear} {settings.catalogBadgeText}
-              </span>
-            </div>
-          </div>
 
-          {/* Contained Hero Video */}
-          <div className="w-full flex-1 min-h-[320px] sm:min-h-[400px]">
-            <BackgroundVideo isEnabled={isVideoEnabled} onToggle={onToggleVideo} />
+        {/* Central Hero Canvas Frame - Borderless inner container */}
+        <div className="bg-white p-3 sm:p-8 bg-grid-pattern relative min-h-[260px] sm:min-h-[450px] flex flex-col justify-center items-center overflow-hidden border-2 border-[#111111] shadow-[5px_5px_0px_#111111]">
+
+          {/* Subtle Grid Pattern Overlay */}
+          <div
+            className="absolute inset-0 z-10 opacity-30 pointer-events-none"
+            style={{
+              backgroundImage: `linear-gradient(to right, rgba(17,17,17,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(17,17,17,0.06) 1px, transparent 1px)`,
+              backgroundSize: '32px 32px'
+            }}
+          />
+
+          {/* Glowing Ambient Spotlight */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FFB703]/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Main Hero Content Area - Borderless SVG Container */}
+          <div className="relative z-20 w-full max-w-4xl flex flex-col items-center justify-center text-center space-y-2 sm:space-y-3 py-2">
+
+            {/* 1. Masters' Union Logo (Emblem + "masters' union" + "dropshipping 2026") */}
+            <MastersUnionLogo
+              showSubtitle={true}
+              subtitleText={`dropshipping ${settings.dropshippingYear || "2026"}`}
+            />
+
+            {/* 2. Animated SVG Squiggle directly below logo */}
+            <div className="w-full mt-1 sm:mt-2">
+              <AnimatedSquiggle />
+            </div>
+
           </div>
 
         </div>
@@ -60,6 +61,8 @@ export function Hero({
     </section>
   );
 }
+
+
 
 
 
