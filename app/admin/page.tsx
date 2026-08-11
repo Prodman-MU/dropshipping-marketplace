@@ -37,6 +37,7 @@ import {
   saveSiteSettings,
   resetSiteSettings,
   SiteSettings,
+  CarouselSlide,
   DEFAULT_SITE_SETTINGS,
 } from "@/lib/settings-manager";
 
@@ -170,6 +171,68 @@ export default function AdminPage() {
       setSettingsSaveSuccess(true);
       setTimeout(() => setSettingsSaveSuccess(false), 3000);
     }
+  };
+
+  const handleAddSlide = (type: "svg" | "image" | "video" | "image_ad" | "video_ad") => {
+    const newSlide: CarouselSlide = {
+      id: `slide-${Date.now()}`,
+      type,
+      badge: type === "svg" ? "MASTERS UNION PMC" : type === "video_ad" ? "FEATURED VIDEO AD" : type === "image_ad" ? "FEATURED DISPLAY AD" : type === "video" ? "FEATURED VIDEO" : "FEATURED SHOWCASE",
+      title: type !== "svg" ? "NEW CAROUSEL SHOWCASE" : undefined,
+      subtitle: type === "svg" ? "dropshipping 2026" : "Add custom description for this slide in Admin Portal.",
+      mediaSrc: type.includes("video") ? "/assets/masters_union_dropshipping_v1.mp4" : type === "svg" ? undefined : "/assets/wp1959356-mob-psycho-100-wallpapers.jpg",
+      ctaText: type !== "svg" ? "Explore Catalog" : undefined,
+      ctaLink: type !== "svg" ? "#product-catalog" : undefined,
+    };
+    setSiteSettings((prev) => ({
+      ...prev,
+      carouselSlides: [...(prev.carouselSlides || []), newSlide],
+    }));
+  };
+
+  const handleUpdateSlide = (id: string, updated: Partial<CarouselSlide>) => {
+    setSiteSettings((prev) => ({
+      ...prev,
+      carouselSlides: (prev.carouselSlides || []).map((slide) =>
+        slide.id === id ? { ...slide, ...updated } : slide
+      ),
+    }));
+  };
+
+  const handleDeleteSlide = (id: string) => {
+    if ((siteSettings.carouselSlides || []).length <= 1) {
+      alert("At least 1 slide is required in the carousel.");
+      return;
+    }
+    if (confirm("Are you sure you want to delete this carousel slide slot from the marketplace hero?")) {
+      setSiteSettings((prev) => ({
+        ...prev,
+        carouselSlides: (prev.carouselSlides || []).filter((slide) => slide.id !== id),
+      }));
+    }
+  };
+
+  const handleMoveSlideUp = (index: number) => {
+    if (index <= 0) return;
+    setSiteSettings((prev) => {
+      const slides = [...(prev.carouselSlides || [])];
+      const temp = slides[index];
+      slides[index] = slides[index - 1];
+      slides[index - 1] = temp;
+      return { ...prev, carouselSlides: slides };
+    });
+  };
+
+  const handleMoveSlideDown = (index: number) => {
+    const slidesList = siteSettings.carouselSlides || [];
+    if (index >= slidesList.length - 1) return;
+    setSiteSettings((prev) => {
+      const slides = [...(prev.carouselSlides || [])];
+      const temp = slides[index];
+      slides[index] = slides[index + 1];
+      slides[index + 1] = temp;
+      return { ...prev, carouselSlides: slides };
+    });
   };
 
   const pendingCount = merchants.filter((m) => m.status === "PENDING").length;
@@ -708,6 +771,143 @@ export default function AdminPage() {
                     <p className="text-[11px] text-[#2B2D42] font-bold">
                       Appears alongside the dropshipping year in the hero yellow badge.
                     </p>
+                  </div>
+
+                  {/* Hero Carousel Manager */}
+                  <div className="p-4 bg-[#F4F4F0] border-2 border-[#111111] space-y-4 shadow-[3px_3px_0px_#111111]">
+                    <div className="flex items-center justify-between border-b-2 border-[#111111] pb-3">
+                      <div>
+                        <label className="block text-xs font-black text-[#111111] uppercase tracking-wider">
+                          Hero Carousel Slots ({siteSettings.carouselSlides?.length || 0} Slots Active)
+                        </label>
+                        <p className="text-[11px] text-[#2B2D42] font-bold mt-0.5">
+                          Add or remove slots. The homepage carousel automatically rotates through all filled slots every 5.6s.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleAddSlide("image_ad")}
+                          className="px-2.5 py-1 bg-[#D62828] text-white border border-[#111111] font-mono text-[10px] font-black uppercase hover:bg-[#111111] transition-colors"
+                        >
+                          + Add Full Image Ad
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddSlide("video_ad")}
+                          className="px-2.5 py-1 bg-[#005F73] text-white border border-[#111111] font-mono text-[10px] font-black uppercase hover:bg-[#111111] transition-colors"
+                        >
+                          + Add Full Video Ad
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddSlide("image")}
+                          className="px-2.5 py-1 bg-[#FFB703] text-[#111111] border border-[#111111] font-mono text-[10px] font-black uppercase hover:bg-[#111111] hover:text-[#FFB703] transition-colors"
+                        >
+                          + Add Text+Image
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Slides List */}
+                    <div className="space-y-4 pt-1">
+                      {(siteSettings.carouselSlides || []).map((slide, idx) => (
+                        <div
+                          key={slide.id}
+                          className="p-3.5 bg-white border-2 border-[#111111] shadow-[2px_2px_0px_#111111] space-y-3 font-mono text-xs"
+                        >
+                          <div className="flex items-center justify-between font-black text-[#111111] border-b border-[#111111] pb-2">
+                            <span className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-[#D62828] text-white text-[10px]">
+                                SLOT #{idx + 1} ({slide.type.toUpperCase()})
+                              </span>
+                              <span className="text-[#005F73]">{slide.badge}</span>
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveSlideUp(idx)}
+                                disabled={idx === 0}
+                                className="p-1 bg-[#E5E5E0] hover:bg-[#FFB703] disabled:opacity-30 disabled:hover:bg-[#E5E5E0] text-[#111111] border border-[#111111] transition-colors"
+                                title="Move slide up"
+                              >
+                                <ChevronUp className="w-3.5 h-3.5 stroke-[3]" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleMoveSlideDown(idx)}
+                                disabled={idx === (siteSettings.carouselSlides || []).length - 1}
+                                className="p-1 bg-[#E5E5E0] hover:bg-[#FFB703] disabled:opacity-30 disabled:hover:bg-[#E5E5E0] text-[#111111] border border-[#111111] transition-colors"
+                                title="Move slide down"
+                              >
+                                <ChevronDown className="w-3.5 h-3.5 stroke-[3]" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSlide(slide.id)}
+                                className="p-1 text-[#D62828] hover:bg-[#D62828] hover:text-white border border-[#111111] transition-colors ml-1"
+                                title="Delete this carousel slide"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-[#2B2D42] uppercase mb-1">Badge Label</label>
+                              <input
+                                type="text"
+                                value={slide.badge}
+                                onChange={(e) => handleUpdateSlide(slide.id, { badge: e.target.value })}
+                                className="w-full bg-[#F4F4F0] border border-[#111111] px-2.5 py-1 text-xs font-bold text-[#111111]"
+                              />
+                            </div>
+
+                            {slide.type !== "svg" && (
+                              <div>
+                                <label className="block text-[10px] font-bold text-[#2B2D42] uppercase mb-1">Slide Title</label>
+                                <input
+                                  type="text"
+                                  value={slide.title || ""}
+                                  onChange={(e) => handleUpdateSlide(slide.id, { title: e.target.value })}
+                                  placeholder="Slide Headline"
+                                  className="w-full bg-[#F4F4F0] border border-[#111111] px-2.5 py-1 text-xs font-bold text-[#111111]"
+                                />
+                              </div>
+                            )}
+
+                            <div className="sm:col-span-2">
+                              <label className="block text-[10px] font-bold text-[#2B2D42] uppercase mb-1">Subtitle / Description</label>
+                              <input
+                                type="text"
+                                value={slide.subtitle || ""}
+                                onChange={(e) => handleUpdateSlide(slide.id, { subtitle: e.target.value })}
+                                placeholder="Subtitle text..."
+                                className="w-full bg-[#F4F4F0] border border-[#111111] px-2.5 py-1 text-xs font-bold text-[#111111]"
+                              />
+                            </div>
+
+                            {slide.type !== "svg" && (
+                              <div className="sm:col-span-2">
+                                <label className="block text-[10px] font-bold text-[#2B2D42] uppercase mb-1">
+                                  {slide.type === "video" ? "Video URL / Path (.mp4)" : "Image URL / Asset Path"}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={slide.mediaSrc || ""}
+                                  onChange={(e) => handleUpdateSlide(slide.id, { mediaSrc: e.target.value })}
+                                  placeholder={slide.type === "video" ? "/assets/masters_union_dropshipping_v1.mp4" : "/assets/wp1959356-mob-psycho-100-wallpapers.jpg"}
+                                  className="w-full bg-[#F4F4F0] border border-[#111111] px-2.5 py-1 text-xs font-bold text-[#111111]"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Action Buttons */}

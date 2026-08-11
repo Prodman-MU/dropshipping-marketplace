@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Layers, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
 interface HeaderProps {
@@ -70,24 +70,9 @@ export function Header({
             </Link>
           </div>
 
-          {/* Right: Approved Stores & Live Products Ticker */}
-          <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-[#E5E5E0] border-2 border-[#111111] text-[9px] sm:text-xs font-mono font-bold shadow-[2px_2px_0px_#111111] shrink-0">
-            <Layers className="w-3.5 h-3.5 text-[#005F73] shrink-0" />
-            <span className="text-[#111111]">
-              <strong>{activeVendorCount}</strong>
-              <span className="hidden sm:inline"> Approved Stores</span>
-              <span className="sm:hidden"> Stores</span>
-            </span>
-            <span className="text-[#111111] font-black">•</span>
-            <span className="text-[#005F73]">
-              <strong>{totalSyncedProducts}</strong>
-              <span className="hidden sm:inline"> Live Products</span>
-              <span className="sm:hidden"> Products</span>
-            </span>
-          </div>
-
         </div>
       </div>
     </header>
   );
 }
+
