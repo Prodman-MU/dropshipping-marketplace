@@ -115,7 +115,7 @@ export default function AdminPage() {
       setAuthError("");
       sessionStorage.setItem("admin_authenticated", "true");
     } else {
-      setAuthError("Invalid Admin Access Key. Enter your custom key or default: admin123");
+      setAuthError("Invalid Admin Access Key. Please try again.");
     }
   };
 
@@ -365,7 +365,7 @@ export default function AdminPage() {
               </label>
               <input
                 type="password"
-                placeholder="Enter access key (default: admin123)"
+                placeholder="Enter admin access passkey"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
                 required
