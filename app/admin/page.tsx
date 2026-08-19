@@ -120,11 +120,26 @@ export default function AdminPage() {
     setSlots(updatedSlots);
   };
 
-  const handleDeleteStore = (merchantId: string) => {
+  const handleDeleteStore = async (merchantId: string) => {
     if (confirm("Are you sure you want to permanently delete this store submission from the marketplace?")) {
+      const targetMerchant = merchants.find((m) => m.id === merchantId);
+      
+      // Update local client state
       const { updatedMerchants, updatedSlots } = deleteMerchantStore(merchantId, merchants, slots);
       setMerchants(updatedMerchants);
       setSlots(updatedSlots);
+
+      // Also invoke server API to cascade delete from PostgreSQL / Supabase tables
+      try {
+        const queryParam = targetMerchant?.myshopifyDomain
+          ? `domain=${encodeURIComponent(targetMerchant.myshopifyDomain)}`
+          : `id=${encodeURIComponent(merchantId)}`;
+        await fetch(`/api/merchants?${queryParam}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.warn("Server database delete warning (store may be client-only mock):", err);
+      }
     }
   };
 
