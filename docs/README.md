@@ -26,3 +26,6 @@ Welcome to the official developer documentation suite for the **Masters' Union S
 
 7. 🎨 [**Design System Specification**](./DESIGN_SYSTEM.md)
    - Bauhaus visual design tokens, `#FFB703` Cyber Gold accents, solid border weights, offset block shadow utilities, and component interface contracts.
+
+8. 📝 [**Findings & Architectural Learnings**](./FINDINGS_AND_LEARNINGS.md)
+   - Comprehensive log of architectural decisions, Prisma 7 breaking changes, driver adapters, decoupled seeding strategies, and Vercel build pipeline error resolutions.
