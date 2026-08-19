@@ -1,3 +1,9 @@
+// ==============================================================================
+// PRISMA 7 SCHEMA DEFINITION: MASTERS' UNION DROPSHIPPING MARKETPLACE
+// ==============================================================================
+// This file serves as the Single Source of Truth for the marketplace database schema.
+// Connection strings and driver adapters are configured in prisma.config.ts and lib/prisma.ts.
+
 datasource db {
   provider = "postgresql"
 }
@@ -6,100 +12,116 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+/// Lifecycle status of an onboarded Shopify merchant store
 enum MerchantStatus {
-  ACTIVE
-  PENDING
-  REJECTED
-  DISCONNECTED
+  ACTIVE       /// Approved and actively listed on public marketplace
+  PENDING      /// Newly connected, awaiting moderation review in /admin
+  REJECTED     /// Declined by administrators, hidden from public catalog
+  DISCONNECTED /// Access revoked or uninstalled by merchant
 }
 
+/// Real-time inventory availability status for catalog slots
 enum ListingStatus {
-  AVAILABLE
-  RESERVED
-  SOLD
+  AVAILABLE    /// In stock and ready for immediate dropshipping/order placement
+  RESERVED     /// Low stock or temporarily reserved for pending inquiries
+  SOLD         /// Completely sold out (displays high-contrast OUT OF STOCK tag)
 }
 
+// ------------------------------------------------------------------------------
+// DATABASE MODELS
+// ------------------------------------------------------------------------------
+
+/// Represents an onboarded Shopify merchant vendor
 model Merchant {
   id              String         @id @default(uuid())
-  name            String
-  myshopifyDomain String         @unique
-  accessToken     String?
-  status          MerchantStatus @default(PENDING)
-  storeLogo       String?
-  totalProducts   Int            @default(0)
-  whatsappNumber  String?
-  passcode        String?
-  connectedSince  String?
-  lastWebhookSync String?
+  supabaseUserId  String?        @unique               /// Link to Supabase Auth auth.users record
+  name            String                               /// Display name of the vendor store
+  myshopifyDomain String         @unique               /// Unique myshopify store domain
+  accessToken     String?                              /// Encrypted Shopify Admin API access token
+  status          MerchantStatus @default(PENDING)     /// Moderation status
+  storeLogo       String?                              /// Public URL of store avatar (from Supabase Storage)
+  totalProducts   Int            @default(0)           /// Total count of synced product listings
+  whatsappNumber  String?                              /// Merchant WhatsApp contact for B2B buyer inquiries
+  passcode        String?                              /// Vendor workspace passcode for /vendor portal
+  connectedSince  String?                              /// Human-readable connection timestamp
+  lastWebhookSync String?                              /// Timestamp of most recent webhook event received
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  listings Listing[]
-  syncLogs SyncLog[]
+  listings Listing[]                                  /// Products belonging to this merchant
+  syncLogs SyncLog[]                                  /// Webhook audit trail for this merchant
 
   @@map("merchants")
 }
 
+/// Represents a standardized product catalog slot listed on the marketplace
 model Listing {
   id                String        @id @default(uuid())
-  slotNumber        String        @unique // e.g. SLOT #001
-  title             String
-  description       String        @db.Text
-  category          String
-  price             Float
-  compareAtPrice    Float?
-  shopifyProductId  String        @unique
-  shopifyVariantId  String
-  merchantId        String
+  slotNumber        String        @unique               /// Human-readable catalog slot (e.g. "SLOT #001")
+  title             String                              /// Product name
+  description       String        @db.Text              /// Full markdown or HTML product description
+  category          String                              /// Catalog category taxonomy (e.g. "Tactical Tech & EDC")
+  price             Float                               /// Wholesale or direct purchase unit price
+  compareAtPrice    Float?                              /// Original MSRP / retail price for discount display
+  shopifyProductId  String        @unique               /// External Shopify Product Global ID (GID)
+  shopifyVariantId  String                              /// Primary Shopify Product Variant Global ID (GID)
+  merchantId        String                              /// Foreign key linking fulfilling merchant
   merchant          Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  tags              String[]
-  images            String[]
-  variants          Json?         // JSON array of variant options
-  sku               String?
-  handle            String?
-  productUrl        String?
+  tags              String[]                            /// Searchable product discoverability tags
+  images            String[]                            /// Array of product image URLs (from Shopify Edge CDN)
+  variants          Json?                               /// JSON array storing variant sizes, colors, and SKUs
+  sku               String?                             /// Primary Stock Keeping Unit identifier
+  handle            String?                             /// Shopify URL slug handle
+  productUrl        String?                             /// Direct URL to merchant's live storefront product page
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  inventory Inventory?
+  inventory Inventory?                                 /// 1-to-1 decoupled inventory record
 
   @@index([merchantId, category])
   @@map("listings")
 }
 
+/// Decoupled inventory record managing real-time stock levels
 model Inventory {
   id                String        @id @default(uuid())
-  listingId         String        @unique
+  listingId         String        @unique               /// Foreign key referencing the parent catalog listing
   listing           Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  quantityAvailable Int           @default(0)
-  isUnknownQuantity Boolean       @default(false) // When true, UI displays "Inventory Unknown"
-  status            ListingStatus @default(AVAILABLE)
-  lastSyncedAt      DateTime      @default(now())
+  quantityAvailable Int           @default(0)           /// Current inventory quantity in units
+  isUnknownQuantity Boolean       @default(false)       /// When true, displays graceful in-stock fallback
+  status            ListingStatus @default(AVAILABLE)   /// Availability status tag
+  lastSyncedAt      DateTime      @default(now())       /// Timestamp of last webhook inventory update
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   @@map("inventory")
 }
 
+/// Audit log recording every incoming Shopify webhook event and catalog sync
 model SyncLog {
   id           String   @id @default(uuid())
   merchantId   String
   merchant     Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  eventType    String   // e.g. products/create, products/update, inventory_levels/update
-  status       String   // SUCCESS, FAILED, PENDING
-  payload      Json?
-  errorMessage String?
+  eventType    String                                  /// Webhook topic (e.g. products/update, inventory_levels/update)
+  status       String                                  /// Processing outcome: SUCCESS, FAILED, PENDING
+  payload      Json?                                   /// Full raw JSON webhook payload for debugging
+  errorMessage String?                                 /// Error description if processing failed
   createdAt    DateTime @default(now())
 
   @@map("sync_logs")
 }
 
+/// Global marketplace website branding and dynamic header settings
 model SiteSetting {
-  id               String   @id @default("default")
-  dropshippingYear String   @default("2026")
-  siteTitle        String   @default("MASTERS UNION")
-  announcementText String   @default("2026 B2B DIRECT DROPSHIPPING CATALOG")
-  catalogBadgeText String   @default("OFFICIAL CATALOG")
+  id               String   @id @default("default")     /// Primary key (single default row)
+  dropshippingYear String   @default("2026")            /// Active cohort year displayed across UI
+  siteTitle        String   @default("MASTERS UNION")   /// Primary organization title
+  announcementText String   @default("2026 B2B DIRECT DROPSHIPPING CATALOG") /// Header ticker banner text
+  catalogBadgeText String   @default("OFFICIAL CATALOG")/// Verified catalog badge text
   updatedAt        DateTime @updatedAt
 
   @@map("site_settings")

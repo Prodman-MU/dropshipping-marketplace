@@ -1,3 +1,12 @@
+/**
+ * @file Header.tsx
+ * @description Sticky Bauhaus Navigation Bar & Marketplace Header.
+ * 
+ * Renders the top navigation bar featuring the animated Masters' Union GIF brand logo,
+ * cohort year badge, optional back navigation button (`<ArrowLeft />`), and live synchronization
+ * with dynamic `SiteSettings` via custom DOM events.
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -5,22 +14,34 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 
+/**
+ * Props for the Header component
+ */
 interface HeaderProps {
+  /** Count of active approved merchant vendors */
   activeVendorCount?: number;
+  /** Total count of live synced products in the catalog */
   totalSyncedProducts?: number;
+  /** When true, renders a prominent Bauhaus back button (used on product detail pages) */
   showBackButton?: boolean;
 }
 
+/**
+ * Main application header component with responsive mobile sizing and fallback brand avatars.
+ */
 export function Header({
-  activeVendorCount = 0,
-  totalSyncedProducts = 0,
   showBackButton = false,
 }: HeaderProps) {
+  // Flag to display text fallback if the GIF logo fails to load
   const [imgError, setImgError] = useState(false);
+  // Dynamic site settings state
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
 
   useEffect(() => {
+    // Initial load of site settings
     setSettings(getSiteSettings());
+
+    // Listen for real-time site setting updates from the Admin portal
     const handleSettingsChange = () => setSettings(getSiteSettings());
     window.addEventListener("site-settings-changed", handleSettingsChange);
     return () => window.removeEventListener("site-settings-changed", handleSettingsChange);
@@ -43,7 +64,7 @@ export function Header({
               </Link>
             )}
 
-            {/* Clickable Logo */}
+            {/* Clickable Logo with Bauhaus solid borders and offset shadow */}
             <Link href="/" className="flex items-center group cursor-pointer shrink-0">
               {!imgError ? (
                 <div className="bg-[#111111] px-2 sm:px-3.5 py-1.5 sm:py-2 border-2 border-[#111111] shadow-[2px_2px_0px_#FFB703] sm:shadow-[4px_4px_0px_#FFB703] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] transition-transform flex items-center gap-1.5 sm:gap-3">
@@ -58,6 +79,7 @@ export function Header({
                   </span>
                 </div>
               ) : (
+                /* Fallback Brand Badge if GIF is missing */
                 <div className="bg-[#111111] px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-[#111111] shadow-[2px_2px_0px_#FFB703] flex items-center gap-1.5 sm:gap-3">
                   <div className="w-5 h-5 sm:w-8 sm:h-8 bg-[#D62828] border border-white flex items-center justify-center font-display font-black text-[10px] sm:text-sm text-white shrink-0">
                     MU
@@ -75,4 +97,3 @@ export function Header({
     </header>
   );
 }
-

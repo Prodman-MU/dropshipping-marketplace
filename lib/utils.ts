@@ -1,10 +1,32 @@
+/**
+ * @file utils.ts
+ * @description General-Purpose Utilities, Class Name Merging & Domain Normalization.
+ * 
+ * Provides CSS class concatenation using clsx & tailwind-merge, localized currency/number formatting,
+ * and resilient Shopify domain parsing algorithms that handle protocol variations, www prefixes,
+ * subpaths, custom domain aliases, and .myshopify.com fallbacks.
+ */
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[]) {
+/**
+ * Merges multiple CSS class names and resolves Tailwind CSS conflicts.
+ * 
+ * @param inputs - Class names, boolean flags, or conditional class expressions.
+ * @returns {string} Optimized class string.
+ */
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Formats a numeric price into a localized currency string (e.g. ₹4,999.00 or $149.00).
+ * 
+ * @param {number} amount - Numeric monetary value.
+ * @param {string} [currency="INR"] - Target ISO currency code.
+ * @returns {string} Formatted currency representation.
+ */
 export function formatCurrency(amount: number, currency: string = "INR"): string {
   const locale = currency === "INR" ? "en-IN" : "en-US";
   return new Intl.NumberFormat(locale, {
@@ -14,18 +36,32 @@ export function formatCurrency(amount: number, currency: string = "INR"): string
   }).format(amount);
 }
 
+/**
+ * Formats a number with comma separators (e.g. 1,000,000).
+ * 
+ * @param {number} num - Raw number.
+ * @returns {string} Comma-separated string.
+ */
 export function formatNumber(num: number): string {
   return new Intl.NumberFormat("en-US").format(num);
 }
 
 /**
- * Clean URL or site link input to extract clean domain/hostname.
- * Handles protocols (http/https), auth credentials, ports, paths, query strings, and trailing slashes.
+ * Extracts and cleanses a bare hostname/domain from arbitrary user URL inputs.
+ * Strips protocols (http/https), authentication strings, port numbers, URL query parameters,
+ * trailing slashes, and whitespace.
+ * 
+ * @example
+ * cleanStoreDomain("https://apex-gear.myshopify.com/products/test?ref=123") // "apex-gear.myshopify.com"
+ * cleanStoreDomain("pause2play.in/") // "pause2play.in"
+ * 
+ * @param {string} input - Raw store URL or domain string.
+ * @returns {string} Clean lowercase domain hostname.
  */
 export function cleanStoreDomain(input: string): string {
   if (!input) return "";
   
-  // Clean surrounding quotes, spaces, and hidden characters
+  // Clean surrounding quotes, spaces, and hidden Unicode whitespace characters
   let raw = String(input).trim().toLowerCase();
   raw = raw.replace(/^['"\s\u200B]+|['"\s\u200B]+$/g, "");
   
@@ -39,13 +75,13 @@ export function cleanStoreDomain(input: string): string {
   try {
     const parsed = new URL(raw);
     let hostname = parsed.hostname.toLowerCase().replace(/\.$/, "");
-    // Remove port numbers if attached
+    // Remove port numbers if attached (e.g. :3000)
     if (hostname.includes(":")) {
       hostname = hostname.split(":")[0];
     }
     return hostname;
-  } catch (e) {
-    // Fallback regex cleaning if URL parser fails
+  } catch {
+    // Fallback regex cleaning if native URL parser fails on malformed input
     let cleaned = raw.replace(/^https?:\/\//i, "");
     cleaned = cleaned.replace(/[\/\?#].*$/, "");
     cleaned = cleaned.replace(/[^a-z0-9\.\-]/g, "");
@@ -54,14 +90,21 @@ export function cleanStoreDomain(input: string): string {
 }
 
 /**
- * Generate exhaustive candidate domain variations for a given store input.
- * e.g., 'pause2play.in' -> ['pause2play.in', 'www.pause2play.in', 'pause2play.myshopify.com']
+ * Generates an exhaustive set of domain variations/aliases for matching Shopify stores.
+ * Handles both custom domains (e.g. pause2play.in) and default myshopify domains.
+ * 
+ * @example
+ * getDomainCandidates("pause2play.in")
+ * // returns ["pause2play.in", "www.pause2play.in", "pause2play.myshopify.com"]
+ * 
+ * @param {string} input - Raw domain input.
+ * @returns {string[]} Array of candidate domain permutations.
  */
 export function getDomainCandidates(input: string): string[] {
   let baseDomain = cleanStoreDomain(input);
   if (!baseDomain) return [];
 
-  // If user entered a simple store slug like 'apex-gear'
+  // If user entered a bare store handle/slug like 'apex-gear'
   if (!baseDomain.includes(".")) {
     baseDomain = `${baseDomain}.myshopify.com`;
   }
@@ -76,7 +119,7 @@ export function getDomainCandidates(input: string): string[] {
     candidates.add(`www.${baseDomain}`);
   }
 
-  // Add .myshopify.com fallback for custom domains
+  // Add .myshopify.com fallback for custom branded domains
   if (!baseDomain.endsWith(".myshopify.com")) {
     const slug = baseDomain.replace(/^www\./, "").split(".")[0];
     if (slug && slug.length >= 2) {
@@ -88,7 +131,11 @@ export function getDomainCandidates(input: string): string[] {
 }
 
 /**
- * Checks if two store URL or domain inputs refer to the same merchant store.
+ * Compares two domain or URL inputs to determine if they refer to the same merchant store.
+ * 
+ * @param {string} input1 - First store URL/domain.
+ * @param {string} input2 - Second store URL/domain.
+ * @returns {boolean} True if domains share any candidate variation.
  */
 export function isSameStoreDomain(input1: string, input2: string): boolean {
   const c1 = getDomainCandidates(input1);
@@ -99,7 +146,10 @@ export function isSameStoreDomain(input1: string, input2: string): boolean {
 }
 
 /**
- * Ensures https:// protocol is prepended if missing and returns clean store URL
+ * Normalizes user input into a fully qualified HTTPS URL.
+ * 
+ * @param {string} input - Domain or URL input.
+ * @returns {string} Sanitized https:// URL string.
  */
 export function normalizeStoreUrl(input: string): string {
   const domain = cleanStoreDomain(input);

@@ -1,6 +1,18 @@
+/**
+ * @file route.ts (under app/api/webhooks/shopify/)
+ * @description Shopify Real-Time Webhook Ingestion Listener.
+ * 
+ * Ingests asynchronous Shopify Admin events (product creations, price updates,
+ * deletions, and inventory level adjustments).
+ * Validates authenticity via HMAC SHA256 signatures before processing payloads.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { verifyShopifyHmac } from "@/lib/shopify";
 
+/**
+ * Handles POST /api/webhooks/shopify
+ */
 export async function POST(req: NextRequest) {
   try {
     const topic = req.headers.get("x-shopify-topic") || "unknown";
@@ -9,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const rawBody = await req.text();
 
-    // Verify HMAC Signature
+    // Verify HMAC Signature using the shared SHOPIFY_WEBHOOK_SECRET
     const isValid = verifyShopifyHmac(rawBody, hmacHeader);
     if (!isValid) {
       console.warn(`[Shopify Webhook] HMAC verification failed for ${shopDomain}`);
@@ -18,9 +30,11 @@ export async function POST(req: NextRequest) {
 
     const payload = JSON.parse(rawBody || "{}");
 
-    console.log(`[Shopify Webhook Ingest] Event: ${topic} | Shop: ${shopDomain} | Entity ID: ${payload.id || "N/A"}`);
+    console.log(
+      `[Shopify Webhook Ingest] Event: ${topic} | Shop: ${shopDomain} | Entity ID: ${payload.id || "N/A"}`
+    );
 
-    // Process specific webhook topics
+    // Route event based on Shopify Webhook topic
     let syncAction = "PROCESSED";
 
     switch (topic) {
@@ -30,7 +44,9 @@ export async function POST(req: NextRequest) {
         break;
 
       case "products/update":
-        console.log(`-> Product slot updated: "${payload.title}" (Price: ${payload.variants?.[0]?.price || 'N/A'})`);
+        console.log(
+          `-> Product slot updated: "${payload.title}" (Price: ${payload.variants?.[0]?.price || "N/A"})`
+        );
         syncAction = "PRODUCT_UPDATED";
         break;
 
@@ -40,7 +56,9 @@ export async function POST(req: NextRequest) {
         break;
 
       case "inventory_levels/update":
-        console.log(`-> Inventory level update: Item ${payload.inventory_item_id} -> Available: ${payload.available}`);
+        console.log(
+          `-> Inventory level update: Item ${payload.inventory_item_id} -> Available: ${payload.available}`
+        );
         syncAction = "INVENTORY_UPDATED";
         break;
 
@@ -58,8 +76,9 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
       status: "SYNC_LOGGED",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
     console.error("Shopify Webhook Processing Error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,3 +1,15 @@
+/**
+ * @file shopify.ts
+ * @description Shopify Storefront GraphQL & Admin Catalog Ingestion Pipeline.
+ * 
+ * Provides end-to-end integration with Shopify:
+ * 1. HMAC SHA-256 Webhook Verification for secure asynchronous event ingestion.
+ * 2. Storefront GraphQL queries with automatic caching and graceful mock fallbacks.
+ * 3. Direct checkout / cart creation mutations (`cartCreate`).
+ * 4. Multi-method catalog ingestion (Admin REST, Storefront GraphQL, Public JSON API).
+ * 5. Robust domain candidate normalization and availability health checks.
+ */
+
 import crypto from "crypto";
 import { MOCK_SLOTS, MOCK_MERCHANTS, SlotListing, MerchantVendor } from "@/data/mock-slots";
 import { cleanStoreDomain, getDomainCandidates } from "@/lib/utils";
@@ -7,7 +19,11 @@ const SHOPIFY_STOREFRONT_TOKEN = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKE
 const SHOPIFY_WEBHOOK_SECRET = process.env.SHOPIFY_WEBHOOK_SECRET;
 
 /**
- * Verify Shopify Webhook HMAC SHA256 Signature
+ * Validates the authenticity of an incoming Shopify webhook payload using HMAC SHA-256.
+ * 
+ * @param {string} bodyText - Raw request body text.
+ * @param {string | null} hmacHeader - The value of the `x-shopify-hmac-sha256` header.
+ * @returns {boolean} True if the signature matches or fallback is active in local development.
  */
 export function verifyShopifyHmac(bodyText: string, hmacHeader: string | null): boolean {
   if (!SHOPIFY_WEBHOOK_SECRET || !hmacHeader) return true; // Fallback in dev mode

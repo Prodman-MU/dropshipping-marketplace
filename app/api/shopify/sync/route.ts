@@ -1,6 +1,19 @@
+/**
+ * @file route.ts (under app/api/shopify/sync/)
+ * @description Manual & Scheduled Catalog Synchronization Route Handler.
+ * 
+ * Allows triggering an on-demand re-sync of a connected Shopify store's catalog.
+ * Queries Shopify Storefront API, transforms products into marketplace slots,
+ * updates inventory status, and returns synced slot summaries.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getShopifySlots } from "@/lib/shopify";
 
+/**
+ * Handles POST /api/shopify/sync
+ * Body: { myshopifyDomain: "store.myshopify.com" }
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -10,7 +23,9 @@ export async function POST(req: NextRequest) {
 
     // Fetch latest catalog slots
     const slots = await getShopifySlots();
-    const domainSlots = slots.filter((s) => s.merchant.myshopifyDomain === domain || domain === "all");
+    const domainSlots = slots.filter(
+      (s) => s.merchant.myshopifyDomain === domain || domain === "all"
+    );
 
     return NextResponse.json({
       success: true,
@@ -26,8 +41,9 @@ export async function POST(req: NextRequest) {
         status: s.status,
       })),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to sync catalog";
     console.error("Catalog Sync Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to sync catalog" }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

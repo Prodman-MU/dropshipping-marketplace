@@ -1,11 +1,31 @@
-import { PrismaClient, MerchantStatus, ListingStatus } from "@prisma/client";
+/**
+ * @file seed.ts (under prisma/)
+ * @description Local Development Seeding Pipeline with Mock Merchants & Products.
+ * 
+ * Populates a fresh local PostgreSQL database with:
+ * 1. Default global site settings (via shared `seedSiteSettings()`).
+ * 2. Mock merchant vendors (Apex Gear, Threads & Co, Tech Vault).
+ * 3. Standardized catalog listings across multiple categories with variants and wholesale pricing.
+ * 4. Decoupled inventory records with real-time stock levels and unknown quantity fallbacks.
+ * 
+ * Uses Prisma upserts (`where: { ... }`) to ensure safe, idempotent execution.
+ */
 
-const prisma = new PrismaClient();
+import { MerchantStatus, ListingStatus } from "@prisma/client";
+import { prisma } from "../lib/prisma";
+import { seedSiteSettings } from "./seed-settings";
 
 async function main() {
-  console.log("🌱 Starting Database Seeding Pipeline...");
+  console.log("🌱 Starting Local Database Seeding Pipeline...");
 
-  // Seed Initial Merchants
+  // ----------------------------------------------------------------------------
+  // 1. Seed Global Website & Branding Settings (Shared)
+  // ----------------------------------------------------------------------------
+  await seedSiteSettings();
+
+  // ----------------------------------------------------------------------------
+  // 2. Seed Mock Merchant Vendors
+  // ----------------------------------------------------------------------------
   const apexMerchant = await prisma.merchant.upsert({
     where: { myshopifyDomain: "apex-gear.myshopify.com" },
     update: {},
@@ -51,15 +71,18 @@ async function main() {
     },
   });
 
-  // Seed Initial Catalog Listings & Inventory Tables
-  const slot1 = await prisma.listing.upsert({
+  // ----------------------------------------------------------------------------
+  // 3. Seed Catalog Listings & Decoupled Inventory
+  // ----------------------------------------------------------------------------
+  await prisma.listing.upsert({
     where: { slotNumber: "SLOT #001" },
     update: {},
     create: {
       id: "slot-001",
       slotNumber: "SLOT #001",
       title: "Tactical Modular Backpack",
-      description: "Waterproof 45L high-capacity modular tactical backpack engineered with laser-cut MOLLE webbing, reinforced ergonomic straps, and laptop sleeve.",
+      description:
+        "Waterproof 45L high-capacity modular tactical backpack engineered with laser-cut MOLLE webbing, reinforced ergonomic straps, and laptop sleeve.",
       category: "Tactical Tech & EDC",
       price: 4999.0,
       compareAtPrice: 6999.0,
@@ -86,14 +109,15 @@ async function main() {
     },
   });
 
-  const slot2 = await prisma.listing.upsert({
+  await prisma.listing.upsert({
     where: { slotNumber: "SLOT #002" },
     update: {},
     create: {
       id: "slot-002",
       slotNumber: "SLOT #002",
       title: "Bauhaus Minimalist Chronograph",
-      description: "Sleek industrial design wrist watch featuring sapphire crystal glass, matte black stainless steel case, and genuine Italian leather band.",
+      description:
+        "Sleek industrial design wrist watch featuring sapphire crystal glass, matte black stainless steel case, and genuine Italian leather band.",
       category: "Apparel & Accessories",
       price: 7499.0,
       compareAtPrice: 9999.0,
@@ -118,14 +142,15 @@ async function main() {
     },
   });
 
-  const slot3 = await prisma.listing.upsert({
+  await prisma.listing.upsert({
     where: { slotNumber: "SLOT #003" },
     update: {},
     create: {
       id: "slot-003",
       slotNumber: "SLOT #003",
       title: "Cyberpunk Mechanical Keyboard",
-      description: "Hot-swappable gasket-mounted 75% wireless mechanical keyboard with customizable RGB backlighting, PBT keycaps, and linear yellow switches.",
+      description:
+        "Hot-swappable gasket-mounted 75% wireless mechanical keyboard with customizable RGB backlighting, PBT keycaps, and linear yellow switches.",
       category: "Tactical Tech & EDC",
       price: 8999.0,
       compareAtPrice: 11999.0,
@@ -143,32 +168,19 @@ async function main() {
       inventory: {
         create: {
           quantityAvailable: 0,
-          isUnknownQuantity: true, // Unknown quantity fallback demo
+          isUnknownQuantity: true,
           status: ListingStatus.RESERVED,
         },
       },
     },
   });
 
-  // Seed Site Settings
-  await prisma.siteSetting.upsert({
-    where: { id: "default" },
-    update: {},
-    create: {
-      id: "default",
-      dropshippingYear: "2026",
-      siteTitle: "MASTERS UNION",
-      announcementText: "2026 B2B DIRECT DROPSHIPPING CATALOG",
-      catalogBadgeText: "OFFICIAL CATALOG",
-    },
-  });
-
-  console.log("✅ Seeding complete! Populated merchants, catalog listings, and inventory tables.");
+  console.log("✅ Local seeding complete! Populated site settings, merchants, and product slots.");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error during database seeding:", e);
+    console.error("❌ Error during local database seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

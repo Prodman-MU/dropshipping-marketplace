@@ -1,6 +1,6 @@
 # Getting Started Guide
 
-Welcome to the **Masters' Union Shopify Marketplace Platform**. This guide covers local environment setup, configuration, running the development server, and executing database migrations.
+Welcome to the **Masters' Union Shopify Marketplace Platform**. This guide covers local environment setup, configuration with Supabase and Prisma 7, running the development server, executing database migrations, and setting up Shopify webhooks.
 
 ---
 
@@ -8,12 +8,12 @@ Welcome to the **Masters' Union Shopify Marketplace Platform**. This guide cover
 
 - **Node.js**: v18.17.0 or higher
 - **npm**: v9.0.0 or higher
-- **PostgreSQL**: v14+ (or Supabase / Neon PostgreSQL instance)
-- **Shopify Partner Account** (Optional for live Shopify OAuth and Webhooks testing)
+- **Docker Desktop**: Required for local Supabase / PostgreSQL containers
+- **Shopify Partner Account** (Optional for live Shopify OAuth and Webhook testing)
 
 ---
 
-## 🚀 Quick Setup Instructions
+## 🚀 Local Development Setup
 
 ### 1. Clone & Install Dependencies
 
@@ -22,54 +22,120 @@ cd dropshipping-marketplace
 npm install
 ```
 
-### 2. Configure Environment Variables
+### 2. Environment Configuration
 
-Create a `.env.local` file in the project root based on the following template:
+Create a `.env` file in the root directory:
 
 ```env
-# Database Connection (PostgreSQL / Supabase / Neon)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/dropshipping_db?schema=public"
+# ==============================================================================
+# Database Configuration (Local Supabase Docker Stack)
+# ==============================================================================
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+DIRECT_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
-# App Base URL
+# ==============================================================================
+# Supabase Auth & Storage (Local Stack)
+# ==============================================================================
+NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key"
+SUPABASE_SERVICE_ROLE_KEY="dummy_service_role_key"
+
+# ==============================================================================
+# Application Settings & Passcodes
+# ==============================================================================
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ADMIN_PASSCODE="admin123"
+MASTER_VENDOR_PASSCODE="vendor123"
 
+# ==============================================================================
 # Shopify Storefront API Credentials (Optional - Mock fallback enabled if omitted)
+# ==============================================================================
 NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN="apex-gear.myshopify.com"
-NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN="your_storefront_access_token_here"
-
-# Shopify Partner App OAuth & Admin Credentials
+NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN="your_storefront_access_token"
 SHOPIFY_CLIENT_ID="your_shopify_app_api_key"
 SHOPIFY_CLIENT_SECRET="your_shopify_app_api_secret"
 SHOPIFY_WEBHOOK_SECRET="your_shopify_app_webhook_secret"
 ```
 
-### 3. Database Schema Setup (Prisma)
+### 3. Start Local Supabase Stack
 
-Push the database schema to your PostgreSQL instance and generate the Prisma Client:
+Start the complete offline Supabase infrastructure (Postgres, GoTrue Auth, Storage, Studio UI):
 
 ```bash
-# Push schema to database
-npx prisma db push
-
-# Generate Prisma Client
-npx prisma generate
+npx supabase start
 ```
 
-### 4. Run Development Server
+This starts the following local services:
+- **API Gateway**: `http://127.0.0.1:54321`
+- **PostgreSQL Database**: `127.0.0.1:54322`
+- **Supabase Studio Dashboard**: `http://127.0.0.1:54323`
+- **Inbucket Local Email/OTP Inbox**: `http://127.0.0.1:54324`
+
+### 4. Run Prisma Schema Migrations & Seeding
+
+```bash
+# Push migrations to local database
+npx prisma migrate dev
+
+# Seed initial catalog items and website settings
+npm run db:seed
+```
+
+### 5. Run Next.js Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to access the marketplace UI.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 🐳 Alternative: Standalone Docker Compose Setup
+
+If you prefer using standard Docker Compose without the Supabase CLI:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## ☁️ Connecting to Supabase Cloud
+
+To connect to a hosted Supabase project:
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Go to **Project Settings** → **Database** to obtain your connection strings.
+3. Update `.env` with your Cloud credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon-key>"
+SUPABASE_SERVICE_ROLE_KEY="<service-role-key>"
+
+# Supavisor Pooler (Port 6543)
+DATABASE_URL="postgresql://postgres.<project-ref>:<password>@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Direct Session Connection (Port 5432)
+DIRECT_URL="postgresql://postgres.<project-ref>:<password>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
+```
+
+4. Deploy migrations to Supabase Cloud:
+```bash
+npx prisma migrate deploy
+```
 
 ---
 
 ## 🧪 Verification & Build Commands
 
 ```bash
-# Run TypeScript compilation check
+# Verify TypeScript types
 npx tsc --noEmit
+
+# Compile Prisma Client
+npx prisma generate
 
 # Run production build
 npm run build
@@ -80,10 +146,13 @@ npm run start
 
 ---
 
-## 🔗 Local Webhook Testing (ngrok)
+## 🔗 Local Shopify Webhook Testing (ngrok)
 
-To test live incoming Shopify webhooks locally:
+To test incoming Shopify webhooks locally:
 
-1. Start ngrok tunnel: `ngrok http 3000`
-2. Update `NEXT_PUBLIC_APP_URL` in `.env.local` to your ngrok URL (`https://xxxx.ngrok-free.app`)
-3. Shopify webhooks will hit `https://xxxx.ngrok-free.app/api/webhooks/shopify`.
+1. Start an ngrok tunnel:
+   ```bash
+   ngrok http 3000
+   ```
+2. Update `NEXT_PUBLIC_APP_URL` in `.env` to your ngrok URL (`https://xxxx.ngrok-free.app`).
+3. Set your webhook endpoint in your Shopify Partner Dashboard to `https://xxxx.ngrok-free.app/api/webhooks/shopify`.

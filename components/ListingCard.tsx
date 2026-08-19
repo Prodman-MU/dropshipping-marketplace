@@ -1,3 +1,12 @@
+/**
+ * @file ListingCard.tsx
+ * @description Bauhaus Product Card Component for Catalog Grids.
+ * 
+ * Renders a tactile Bauhaus-styled product card with responsive 2-column mobile layout,
+ * image viewport, wholesale price badge, MSRP discount strike-through, out-of-stock tag,
+ * fixed-height title container for horizontal store baseline alignment, and fulfilling merchant badge.
+ */
+
 "use client";
 
 import React from "react";
@@ -7,12 +16,21 @@ import { Eye, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
 
+/**
+ * Props for the ListingCard component
+ */
 interface ListingCardProps {
+  /** The catalog slot data containing pricing, images, variants, and merchant details */
   slot: SlotListing;
+  /** Optional click callback */
   onSelect?: (slot: SlotListing) => void;
 }
 
+/**
+ * Product Card Component with smooth hover elevations and Bauhaus borders.
+ */
 export function ListingCard({ slot, onSelect }: ListingCardProps) {
+  // Determine if product is out of stock without exposing numerical counts
   const isOutOfStock =
     (!slot.isUnknownQuantity && slot.inventoryQuantity <= 0) ||
     slot.status === "SOLD";
@@ -39,7 +57,6 @@ export function ListingCard({ slot, onSelect }: ListingCardProps) {
                 NO PREVIEW
               </div>
             )}
-
           </div>
 
           {/* Price & Out of Stock Status Line */}
@@ -56,7 +73,7 @@ export function ListingCard({ slot, onSelect }: ListingCardProps) {
               )}
             </div>
 
-            {/* Only show Out of Stock info if product is out of stock */}
+            {/* High-contrast OUT OF STOCK tag (shown only if unavailable) */}
             {isOutOfStock && (
               <span className="px-1.5 py-0.5 bg-[#D62828] text-white font-mono font-black text-[9px] border border-[#111111]">
                 OUT OF STOCK
