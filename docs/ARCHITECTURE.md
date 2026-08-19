@@ -235,6 +235,7 @@ dropshipping-marketplace/
 │   ├── Header.tsx                # Bauhaus sticky header with animated logo & store counts
 │   ├── Hero.tsx                  # Contained ambient video hero card
 │   ├── VendorFilterBar.tsx       # 2-column mobile filter bar & slide-up drawer
+│   ├── VendorGroupedSection.tsx  # Store group section with banner, link, & 1-row product grid
 │   ├── ListingCard.tsx           # Product card with price, tags, and inspect trigger
 │   ├── ListingDrawer.tsx         # Slide-out product quick-inspect drawer
 │   ├── BackgroundVideo.tsx       # Ambient video player with toggle controls

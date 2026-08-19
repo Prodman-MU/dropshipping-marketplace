@@ -15,6 +15,10 @@
 ## ⚡ Key Features & Capabilities
 
 - 🎨 **Bauhaus Design System**: High-contrast, tactile UI featuring `#F4F4F0` light canvas, `#FFB703` Cyber Gold accents, `#111111` solid 2px/3px/4px borders, and hard offset block shadows (`shadow-[4px_4px_0px_#111111]`).
+- 🔀 **Dual Catalog View Modes (Product Grid & Grouped by Vendor)**:
+  - **Product Grid View**: Dynamic paginated catalog with 3-column desktop and 2-column mobile layout.
+  - **Grouped by Vendor View**: Structured store sections featuring vendor logos, store names, direct external links (`Visit Store` ↗), and `Filter Store` shortcuts. Displays exactly 1 row of products per store (3 on desktop, 2 on mobile) with responsive expand/collapse controls.
+  - **State Persistence & URL Sync**: Automatically remembers active view in `localStorage` and supports `?view=vendor` / `?view=grid` shareable query parameters.
 - 🛍️ **Dedicated Product Pages (`/product/[id]`)**: Full-page product view with multi-image gallery, variant selectors, wholesale pricing, pre-filled WhatsApp B2B inquiry CTA, direct Shopify checkout, copy specifications tool, and related products carousel.
 - 📱 **Mobile Optimization**:
   - **2-Column Product Grid**: Responsive `grid-cols-2` layout on mobile screens with uniform image aspect ratios and consistent store name horizontal baseline alignment.

@@ -18,7 +18,27 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 🛍️ 2. Dedicated Product Pages (`/product/[id]`)
+## 🔀 2. Dual Catalog View Modes (Grid vs. Grouped by Vendor)
+
+- **View Switcher Toolbar**:
+  - Tactile neo-brutalist toggle buttons (`[Grid View | By Vendor]`) on the catalog toolbar.
+  - Switches between standard global product pagination and structured store-by-store grouping without reloading.
+- **Grouped by Vendor Layout (`VendorGroupedSection.tsx`)**:
+  - **Streamlined Store Banner**: Left-aligned store logo + store name/domain; right-aligned direct external link (`Visit Store` ↗) and `Filter Store` shortcut action.
+  - **1-Row Responsive Subgrid**:
+    - Displays exactly **1 row per store** by default (**3 products on Desktop/LG**, **2 products on Mobile**).
+  - **Expand / Collapse Toggle**: If a vendor has more than 1 row of products, a "Show All [N] Products" / "Show 1 Row Only" button allows smooth catalog inspection without cluttering the page.
+- **Smart Filtering & Sorting**:
+  - Vendors with 0 matching items under active category or search filters are automatically hidden.
+  - Vendors are ranked by most matching products first, and products within each vendor section are sorted according to active sort order (Price, Stock, Slot).
+  - Clicking "Filter Store" isolates the vendor in the catalog and smooth-scrolls up.
+- **State Persistence & URL Sync**:
+  - Persists selected view mode in `localStorage` (`catalog_view_mode`).
+  - Supports `?view=vendor` and `?view=grid` URL query parameters for direct sharing.
+
+---
+
+## 🛍️ 3. Dedicated Product Pages (`/product/[id]`)
 
 - **Full-Page Detail Route**:
   - Dedicated product page route (`/product/[id]`) replacing intrusive modal popups.
@@ -38,7 +58,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 📱 3. Mobile Optimization & Sticky Filter Bar
+## 📱 4. Mobile Optimization & Sticky Filter Bar
 
 - **2-Column Mobile Product Grid**:
   - Responsive `grid-cols-2` product grid on mobile screens.
@@ -50,7 +70,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 🏷️ 4. Clean Inventory Status Logic
+## 🏷️ 5. Clean Inventory Status Logic
 
 - **Hidden Numerical Inventory Counts**:
   - Numerical unit counts (e.g. `18 UNITS IN STOCK`, `18 LEFT`) and `"INVENTORY UNKNOWN"` badges are hidden across all cards and pages.
@@ -60,7 +80,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 🔒 5. Supabase Auth & Route Security
+## 🔒 6. Supabase Auth & Route Security
 
 - **Server-Side Cookie Authentication (`@supabase/ssr`)**:
   - Session tokens stored in encrypted, HttpOnly, SameSite cookies.
@@ -72,7 +92,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 📦 6. Supabase Storage Integration
+## 📦 7. Supabase Storage Integration
 
 - **Public Assets Bucket (`marketplace-assets`)**:
   - Storage bucket for merchant store logos and custom promotional banners.
@@ -82,7 +102,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## ⚙️ 7. Admin Portal & Website Settings
+## ⚙️ 8. Admin Portal & Website Settings
 
 - **Store Moderation Suite (`/admin`)**:
   - Tabbed admin portal for approving, rejecting, or disconnecting candidate Shopify storefronts.
@@ -94,7 +114,7 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
-## 🗄️ 8. Cloud Database & Prisma 7 Architecture
+## 🗄️ 9. Cloud Database & Prisma 7 Architecture
 
 - **Decoupled Prisma 7 Schema (`schema.prisma`)**:
   - Separate `Listing` (Catalog) and `Inventory` models linked by 1-to-1 relationships.
