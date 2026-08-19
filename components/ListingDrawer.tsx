@@ -444,27 +444,27 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
               {/* COLUMN 3: Sticky Buy Box & Vendor Card (3 cols / ~25%) */}
               <div className="lg:col-span-3 space-y-3.5">
                 
-                {/* Price & Stock Status Box */}
-                <div className="bg-[#FFB703] border-3 border-[#111111] p-3.5 shadow-[4px_4px_0px_#111111] space-y-1.5">
+                {/* Price & Stock Status Box (Clean Informational Display) */}
+                <div className="bg-transparent border-b-2 border-[#111111] pb-2.5 space-y-1">
                   <div className="flex items-baseline justify-between gap-2 flex-wrap">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black font-mono text-[#111111]">
+                      <span className="text-2xl sm:text-3xl font-black font-mono text-[#111111]">
                         {formatCurrency(currentVariant.price || currentSlot.price, currentVariant.currencyCode || currentSlot.currencyCode || "INR")}
                       </span>
                       {currentSlot.compareAtPrice && currentSlot.compareAtPrice > currentSlot.price && (
-                        <span className="text-xs font-mono text-zinc-700 line-through font-bold">
+                        <span className="text-xs font-mono text-zinc-500 line-through font-bold">
                           {formatCurrency(currentSlot.compareAtPrice, currentSlot.currencyCode || "INR")}
                         </span>
                       )}
                     </div>
 
                     {((!currentSlot.isUnknownQuantity && currentSlot.inventoryQuantity <= 0) || currentSlot.status === "SOLD" || !currentVariant.availableForSale) && (
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#D62828] text-white border-2 border-[#111111] shadow-[2px_2px_0px_#111111] uppercase">
+                      <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#D62828] text-white border border-[#111111] uppercase">
                         OUT OF STOCK
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-[#111111] block">
+                  <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-wider block">
                     Retail Price (Taxes Included)
                   </span>
                 </div>
@@ -495,21 +495,13 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
                     <span>CHECKOUT ON SHOPIFY</span>
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
-
-                  <button
-                    onClick={handleCopySpecs}
-                    className="w-full py-2 px-3 bg-white hover:bg-[#F4F4F0] text-[#111111] border-2 border-[#111111] font-mono text-xs font-bold flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#005F73]" />}
-                    <span>{copied ? "COPIED SPECIFICATIONS!" : "COPY SPECIFICATIONS"}</span>
-                  </button>
                 </div>
 
-                {/* Vendor Information Box */}
-                <div className="bg-white border-3 border-[#111111] p-3 shadow-[3px_3px_0px_#111111] space-y-2 font-mono">
-                  <div className="flex items-center justify-between border-b-2 border-[#111111] pb-1">
+                {/* Vendor Information Box (Clean Profile Card) */}
+                <div className="bg-[#F4F4F0] border-2 border-[#111111] p-3 space-y-2 font-mono">
+                  <div className="flex items-center justify-between border-b border-[#111111]/30 pb-1">
                     <span className="text-[10px] font-black text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
-                      <Store className="w-3.5 h-3.5 text-[#D62828]" />
+                      <Store className="w-3.5 h-3.5 text-[#005F73]" />
                       <span>Merchant Vendor</span>
                     </span>
                     <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-100 border border-emerald-500 px-1.5 py-0.5 text-[9px]">
@@ -522,10 +514,10 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
                       <img
                         src={currentSlot.merchant.storeLogo}
                         alt={currentSlot.merchant.name}
-                        className="w-9 h-9 border-2 border-[#111111] object-cover bg-white shrink-0 shadow-[2px_2px_0px_#111111]"
+                        className="w-9 h-9 border border-[#111111] object-cover bg-white shrink-0"
                       />
                     ) : (
-                      <div className="w-9 h-9 bg-[#FFB703] border-2 border-[#111111] flex items-center justify-center font-black text-xs shrink-0 shadow-[2px_2px_0px_#111111]">
+                      <div className="w-9 h-9 bg-[#FFB703] border border-[#111111] flex items-center justify-center font-black text-xs shrink-0">
                         {currentSlot.merchant.name.slice(0, 2).toUpperCase()}
                       </div>
                     )}

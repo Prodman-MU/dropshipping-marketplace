@@ -322,27 +322,27 @@ export default function ProductDetailPage() {
             {/* COLUMN 3: Sticky Buy Box & Vendor Card (3 cols / ~25%) */}
             <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-24 self-start">
               
-              {/* Price & Stock Status Box */}
-              <div className="bg-[#FFB703] border-3 border-[#111111] p-3.5 sm:p-4 shadow-[4px_4px_0px_#111111] space-y-2">
+              {/* Price & Stock Status Box (Clean Informational Display) */}
+              <div className="bg-transparent border-b-2 border-[#111111] pb-3 space-y-1">
                 <div className="flex items-baseline justify-between gap-2 flex-wrap">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl font-black font-mono text-[#111111]">
+                    <span className="text-3xl sm:text-4xl font-black font-mono text-[#111111]">
                       {formatCurrency(currentVariant.price || slot.price, slot.currencyCode || "INR")}
                     </span>
                     {slot.compareAtPrice && slot.compareAtPrice > slot.price && (
-                      <span className="text-xs sm:text-sm font-mono text-zinc-700 line-through font-bold">
+                      <span className="text-xs sm:text-sm font-mono text-zinc-500 line-through font-bold">
                         {formatCurrency(slot.compareAtPrice, slot.currencyCode || "INR")}
                       </span>
                     )}
                   </div>
 
                   {((!slot.isUnknownQuantity && slot.inventoryQuantity <= 0) || slot.status === "SOLD" || !currentVariant.availableForSale) && (
-                    <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#D62828] text-white border-2 border-[#111111] shadow-[2px_2px_0px_#111111] uppercase">
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#D62828] text-white border border-[#111111] uppercase">
                       OUT OF STOCK
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-mono font-bold text-[#111111] block">
+                <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-wider block">
                   Retail Price (Taxes Included)
                 </span>
               </div>
@@ -388,24 +388,16 @@ export default function ProductDetailPage() {
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
                 )}
-
-                <button
-                  onClick={handleCopySpecs}
-                  className="w-full py-2 px-3 bg-white hover:bg-[#F4F4F0] text-[#111111] border-2 border-[#111111] font-mono text-xs font-bold flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all"
-                >
-                  <Copy className="w-3.5 h-3.5 text-[#005F73]" />
-                  <span>COPY SPECIFICATIONS</span>
-                </button>
               </div>
 
-              {/* Fulfilling Vendor Information Box */}
-              <div className="bg-white border-3 border-[#111111] p-3.5 shadow-[3px_3px_0px_#111111] space-y-2.5 font-mono">
-                <div className="flex items-center justify-between border-b-2 border-[#111111] pb-1.5">
+              {/* Fulfilling Vendor Information Box (Clean Profile Card) */}
+              <div className="bg-[#F4F4F0] border-2 border-[#111111] p-3 space-y-2 font-mono">
+                <div className="flex items-center justify-between border-b border-[#111111]/30 pb-1.5">
                   <span className="text-[10px] font-black text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
-                    <Store className="w-3.5 h-3.5 text-[#D62828]" />
+                    <Store className="w-3.5 h-3.5 text-[#005F73]" />
                     <span>Merchant Vendor</span>
                   </span>
-                  <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-100 border border-emerald-500 px-2 py-0.5 text-[9px]">
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-100 border border-emerald-500 px-1.5 py-0.5 text-[9px]">
                     <ShieldCheck className="w-3 h-3" /> VERIFIED
                   </span>
                 </div>
@@ -415,10 +407,10 @@ export default function ProductDetailPage() {
                     <img
                       src={slot.merchant.storeLogo}
                       alt={slot.merchant.name}
-                      className="w-10 h-10 border-2 border-[#111111] object-cover bg-white shrink-0 shadow-[2px_2px_0px_#111111]"
+                      className="w-9 h-9 border border-[#111111] object-cover bg-white shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-[#FFB703] border-2 border-[#111111] flex items-center justify-center font-black text-xs shrink-0 shadow-[2px_2px_0px_#111111]">
+                    <div className="w-9 h-9 bg-[#FFB703] border border-[#111111] flex items-center justify-center font-black text-xs shrink-0">
                       {slot.merchant.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
