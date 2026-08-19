@@ -76,7 +76,7 @@ export default function AdminPage() {
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [vendorKeyToast, setVendorKeyToast] = useState<string | null>(null);
 
-  // Load initial store state & site settings on mount
+  // Load initial store state & site settings on mount, and hydrate live records from PostgreSQL
   useEffect(() => {
     setMerchants(getInitialMerchants());
     setSlots(getInitialSlots());
@@ -88,6 +88,38 @@ export default function AdminPage() {
         setIsAuthenticated(true);
       }
     }
+
+    // Fetch live database merchants and listings from server
+    const fetchLiveDbData = async () => {
+      try {
+        const [mRes, lRes] = await Promise.all([
+          fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+          fetch("/api/listings").then((r) => r.json()).catch(() => null),
+        ]);
+
+        if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+          const currentLocal = getInitialMerchants();
+          const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+          const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+          const mergedM = [...mRes.merchants, ...localOnly];
+          setMerchants(mergedM);
+          saveMerchants(mergedM);
+        }
+
+        if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+          const currentLocalSlots = getInitialSlots();
+          const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+          const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+          const mergedS = [...lRes.slots, ...localOnlySlots];
+          setSlots(mergedS);
+          saveSlots(mergedS);
+        }
+      } catch (e) {
+        console.warn("Failed to load live database records in admin portal:", e);
+      }
+    };
+
+    fetchLiveDbData();
 
     // Listen for cross-tab or component state updates
     const handleStateChange = () => {
@@ -187,16 +219,50 @@ export default function AdminPage() {
     setPasscode("");
   };
 
-  const handleApprove = (merchantId: string) => {
+  const handleApprove = async (merchantId: string) => {
+    // 1. Optimistic local state update
     const { updatedMerchants, updatedSlots } = approveMerchantStore(merchantId, merchants, slots);
     setMerchants(updatedMerchants);
     setSlots(updatedSlots);
+
+    // 2. Persist to PostgreSQL database
+    try {
+      const targetMerchant = merchants.find((m) => m.id === merchantId);
+      await fetch("/api/merchants", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: merchantId,
+          domain: targetMerchant?.myshopifyDomain,
+          status: "ACTIVE",
+        }),
+      });
+    } catch (err) {
+      console.warn("DB update warning on merchant approval:", err);
+    }
   };
 
-  const handleReject = (merchantId: string) => {
+  const handleReject = async (merchantId: string) => {
+    // 1. Optimistic local state update
     const { updatedMerchants, updatedSlots } = rejectMerchantStore(merchantId, merchants, slots);
     setMerchants(updatedMerchants);
     setSlots(updatedSlots);
+
+    // 2. Persist to PostgreSQL database
+    try {
+      const targetMerchant = merchants.find((m) => m.id === merchantId);
+      await fetch("/api/merchants", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: merchantId,
+          domain: targetMerchant?.myshopifyDomain,
+          status: "REJECTED",
+        }),
+      });
+    } catch (err) {
+      console.warn("DB update warning on merchant rejection:", err);
+    }
   };
 
   const handleDeleteStore = async (merchantId: string) => {

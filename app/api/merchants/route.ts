@@ -40,6 +40,57 @@ export async function GET() {
 }
 
 /**
+ * Handles PATCH /api/merchants
+ * Body: { id?: string, domain?: string, status?: "ACTIVE" | "PENDING" | "REJECTED", passcode?: string, whatsappNumber?: string }
+ * Updates merchant moderation status or credentials in PostgreSQL.
+ */
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const { id, domain, status, passcode, whatsappNumber } = body;
+
+    if (!id && !domain) {
+      return NextResponse.json(
+        { error: "Must provide either 'id' or 'domain' to update a merchant." },
+        { status: 400 }
+      );
+    }
+
+    const merchant = await prisma.merchant.findFirst({
+      where: id ? { id } : { myshopifyDomain: domain },
+    });
+
+    if (!merchant) {
+      return NextResponse.json(
+        { error: "Merchant store not found in database." },
+        { status: 404 }
+      );
+    }
+
+    const updated = await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        ...(status ? { status: status as any } : {}),
+        ...(passcode !== undefined ? { passcode } : {}),
+        ...(whatsappNumber !== undefined ? { whatsappNumber } : {}),
+      },
+    });
+
+    console.log(`[Merchant Status Update] Updated merchant "${updated.name}" (${updated.myshopifyDomain}) status to ${updated.status}`);
+
+    return NextResponse.json({
+      success: true,
+      merchant: updated,
+      message: `Merchant "${updated.name}" updated successfully.`,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update merchant";
+    console.error("Update Merchant Error:", error);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
  * Handles DELETE /api/merchants?id=... or DELETE /api/merchants?domain=...
  * Permanently removes the merchant and cascades deletion to listings, inventory, and sync logs.
  */

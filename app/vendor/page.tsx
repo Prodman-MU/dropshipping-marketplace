@@ -92,12 +92,43 @@ export default function VendorDashboardPage() {
   const [passcodeSuccessMsg, setPasscodeSuccessMsg] = useState("");
   const [passcodeSubmitting, setPasscodeSubmitting] = useState(false);
 
-  // Load state on mount & check session storage auth
+  // Load state on mount, hydrate live records from PostgreSQL, & check session storage auth
   useEffect(() => {
     const loadedMerchants = getInitialMerchants();
     const loadedSlots = getInitialSlots();
     setMerchants(loadedMerchants);
     setSlots(loadedSlots);
+
+    const fetchLiveDbData = async () => {
+      try {
+        const [mRes, lRes] = await Promise.all([
+          fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+          fetch("/api/listings").then((r) => r.json()).catch(() => null),
+        ]);
+
+        if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+          const currentLocal = getInitialMerchants();
+          const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+          const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+          const mergedM = [...mRes.merchants, ...localOnly];
+          setMerchants(mergedM);
+          saveMerchants(mergedM);
+        }
+
+        if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+          const currentLocalSlots = getInitialSlots();
+          const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+          const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+          const mergedS = [...lRes.slots, ...localOnlySlots];
+          setSlots(mergedS);
+          saveSlots(mergedS);
+        }
+      } catch (e) {
+        console.warn("Failed to load live database records in vendor portal:", e);
+      }
+    };
+
+    fetchLiveDbData();
 
     if (typeof window !== "undefined") {
       const authSession = sessionStorage.getItem("vendor_authenticated");

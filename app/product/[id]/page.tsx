@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ListingCard } from "@/components/ListingCard";
 import { SlotListing, MerchantVendor } from "@/data/mock-slots";
-import { getInitialSlots, getInitialMerchants } from "@/lib/store-manager";
+import { getInitialSlots, getInitialMerchants, saveSlots, saveMerchants } from "@/lib/store-manager";
 import { formatCurrency } from "@/lib/utils";
 import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 import {
@@ -37,6 +37,37 @@ export default function ProductDetailPage() {
     setSlots(getInitialSlots());
     setMerchants(getInitialMerchants());
     setSiteSettings(getSiteSettings());
+
+    const fetchLiveDbData = async () => {
+      try {
+        const [mRes, lRes] = await Promise.all([
+          fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+          fetch("/api/listings").then((r) => r.json()).catch(() => null),
+        ]);
+
+        if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+          const currentLocal = getInitialMerchants();
+          const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+          const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+          const mergedM = [...mRes.merchants, ...localOnly];
+          setMerchants(mergedM);
+          saveMerchants(mergedM);
+        }
+
+        if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+          const currentLocalSlots = getInitialSlots();
+          const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+          const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+          const mergedS = [...lRes.slots, ...localOnlySlots];
+          setSlots(mergedS);
+          saveSlots(mergedS);
+        }
+      } catch (e) {
+        console.warn("Failed to load live database records in product page:", e);
+      }
+    };
+
+    fetchLiveDbData();
 
     const handleStateChange = () => {
       setSlots(getInitialSlots());

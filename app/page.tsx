@@ -40,11 +40,43 @@ export default function MarketplaceHomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
 
-  // Sync state on mount and on store-state-changed event
+  // Sync state on mount and hydrate live database records from PostgreSQL
   useEffect(() => {
     setMerchants(getInitialMerchants());
     setSlots(getInitialSlots());
     setSiteSettings(getSiteSettings());
+
+    // Fetch live database merchants and listings from server
+    const fetchLiveDbData = async () => {
+      try {
+        const [mRes, lRes] = await Promise.all([
+          fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+          fetch("/api/listings").then((r) => r.json()).catch(() => null),
+        ]);
+
+        if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+          const currentLocal = getInitialMerchants();
+          const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+          const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+          const mergedM = [...mRes.merchants, ...localOnly];
+          setMerchants(mergedM);
+          saveMerchants(mergedM);
+        }
+
+        if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+          const currentLocalSlots = getInitialSlots();
+          const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+          const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+          const mergedS = [...lRes.slots, ...localOnlySlots];
+          setSlots(mergedS);
+          saveSlots(mergedS);
+        }
+      } catch (e) {
+        console.warn("Failed to load live database records in catalog:", e);
+      }
+    };
+
+    fetchLiveDbData();
 
     // Restore viewMode from URL query param or localStorage
     if (typeof window !== "undefined") {
