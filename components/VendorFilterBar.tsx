@@ -14,6 +14,8 @@ interface VendorFilterBarProps {
   onSelectCategory: (cat: string) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
+  pageSize: 10 | 20 | 50;
+  onPageSizeChange: (size: 10 | 20 | 50) => void;
   categories: string[];
   totalResultsCount: number;
 }
@@ -28,6 +30,8 @@ export function VendorFilterBar({
   onSelectCategory,
   sortBy,
   onSortChange,
+  pageSize,
+  onPageSizeChange,
   categories,
   totalResultsCount,
 }: VendorFilterBarProps) {
@@ -149,10 +153,26 @@ export function VendorFilterBar({
             </select>
           </div>
 
+          {/* 5. Items Per Page Selector */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#005F73]" />
+              <span>Products Per Page</span>
+            </label>
+            <select
+              value={pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value) as 10 | 20 | 50)}
+              className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-mono font-bold text-[#111111] focus:outline-none focus:bg-white cursor-pointer"
+            >
+              <option value={10}>10 Products / Page</option>
+              <option value={20}>20 Products / Page</option>
+              <option value={50}>50 Products / Page</option>
+            </select>
+          </div>
+
           {/* Summary Footer */}
           <div className="pt-3 border-t-2 border-[#111111] flex items-center justify-between text-xs font-mono font-bold text-[#111111]">
             <div className="flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#005F73]" />
               <span>Matching Items:</span>
             </div>
             <span className="text-[#111111] font-black bg-[#FFB703] px-2.5 py-0.5 border border-[#111111]">
@@ -274,6 +294,23 @@ export function VendorFilterBar({
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="stock-high">In-Stock First</option>
+              </select>
+            </div>
+
+            {/* Products Per Page */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#005F73]" />
+                <span>Products Per Page</span>
+              </label>
+              <select
+                value={pageSize}
+                onChange={(e) => onPageSizeChange(Number(e.target.value) as 10 | 20 | 50)}
+                className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-mono font-bold text-[#111111]"
+              >
+                <option value={10}>10 Products / Page</option>
+                <option value={20}>20 Products / Page</option>
+                <option value={50}>50 Products / Page</option>
               </select>
             </div>
 

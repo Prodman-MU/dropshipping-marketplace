@@ -213,6 +213,8 @@ export default function MarketplaceHomePage() {
             onSelectCategory={setSelectedCategory}
             sortBy={sortBy}
             onSortChange={setSortBy}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
             categories={categories}
             totalResultsCount={filteredSlots.length}
           />
@@ -220,36 +222,22 @@ export default function MarketplaceHomePage() {
           {/* Right Product Grid Area */}
           <div className="flex-1 w-full space-y-6">
             
-            {/* Top Pagination & Grid Controls Bar */}
-            <div className="bg-white border-2 border-[#111111] p-4 shadow-[4px_4px_0px_#111111] flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold">
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => setIsMissingStoreModalOpen(true)}
-                  className="px-3.5 py-1.5 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-display font-black flex items-center gap-2"
-                >
-                  <HelpCircle className="w-4 h-4 text-[#111111]" />
-                  <span>Your Store Missing?</span>
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[#2B2D42] uppercase font-black">Per Page:</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => setPageSize(Number(e.target.value) as 10 | 20 | 50)}
-                    className="bg-[#F4F4F0] border-2 border-[#111111] px-3 py-1 font-mono font-black text-[#111111] focus:outline-none focus:bg-[#FFB703] cursor-pointer"
-                  >
-                    <option value={10}>10 Items</option>
-                    <option value={20}>20 Items</option>
-                    <option value={50}>50 Items</option>
-                  </select>
-                </div>
+            {/* Top Pagination & Active View Indicator Bar */}
+            <div className="bg-white border-2 border-[#111111] p-3 sm:p-4 shadow-[4px_4px_0px_#111111] flex flex-wrap items-center justify-between gap-3 font-mono text-xs font-bold">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 bg-[#111111] text-[#FFB703] font-black uppercase text-[11px]">
+                  {selectedCategory}
+                </span>
+                <span className="text-[#2B2D42] text-xs">
+                  Showing {filteredSlots.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filteredSlots.length)} of {filteredSlots.length} Products
+                </span>
               </div>
 
               {/* Page Status & Prev/Next Controls */}
               {filteredSlots.length > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-[#111111]">
-                    Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({filteredSlots.length} total)
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-[#111111] text-[11px] sm:text-xs">
+                    Page <strong>{currentPage}</strong> / <strong>{totalPages}</strong>
                   </span>
 
                   <div className="flex items-center gap-1">
