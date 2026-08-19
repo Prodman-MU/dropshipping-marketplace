@@ -19,6 +19,10 @@ import {
   Save,
   RotateCcw,
   Sparkles,
+  KeyRound,
+  Eye,
+  EyeOff,
+  AlertTriangle,
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -30,18 +34,21 @@ import {
   approveMerchantStore,
   rejectMerchantStore,
   deleteMerchantStore,
+  resetMerchantPasscode,
 } from "@/lib/store-manager";
 import { ConnectStoreModal } from "@/components/ConnectStoreModal";
 import {
   getSiteSettings,
   saveSiteSettings,
   resetSiteSettings,
+  getActiveAdminPasscode,
+  setAdminCustomPasscode,
+  resetAdminPasscodeToDefault,
+  DEFAULT_ENV_ADMIN_PASSCODE,
   SiteSettings,
   CarouselSlide,
   DEFAULT_SITE_SETTINGS,
 } from "@/lib/settings-manager";
-
-const ADMIN_PASSCODE = "admin123";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,6 +67,14 @@ export default function AdminPage() {
   // Website Settings Form State
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
+
+  // Admin Key Management State
+  const [adminNewKey, setAdminNewKey] = useState("");
+  const [adminConfirmKey, setAdminConfirmKey] = useState("");
+  const [adminKeySuccess, setAdminKeySuccess] = useState("");
+  const [adminKeyError, setAdminKeyError] = useState("");
+  const [showAdminKey, setShowAdminKey] = useState(false);
+  const [vendorKeyToast, setVendorKeyToast] = useState<string | null>(null);
 
   // Load initial store state & site settings on mount
   useEffect(() => {
@@ -93,12 +108,76 @@ export default function AdminPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode.trim() === ADMIN_PASSCODE) {
+    const activeAdminKey = getActiveAdminPasscode();
+    const cleanInput = passcode.trim();
+    if (cleanInput === activeAdminKey || cleanInput === DEFAULT_ENV_ADMIN_PASSCODE) {
       setIsAuthenticated(true);
       setAuthError("");
       sessionStorage.setItem("admin_authenticated", "true");
     } else {
-      setAuthError("Invalid Admin Access Key. Try: admin123");
+      setAuthError("Invalid Admin Access Key. Enter your custom key or default: admin123");
+    }
+  };
+
+  const handleSaveAdminKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminKeyError("");
+    setAdminKeySuccess("");
+
+    if (adminNewKey.trim().length < 4) {
+      setAdminKeyError("New Admin Passcode must be at least 4 characters.");
+      return;
+    }
+
+    if (adminNewKey !== adminConfirmKey) {
+      setAdminKeyError("Passcodes do not match.");
+      return;
+    }
+
+    setAdminCustomPasscode(adminNewKey);
+    setAdminKeySuccess(`✅ Admin Access Passcode updated! Current active key: "${adminNewKey.trim()}"`);
+    setAdminNewKey("");
+    setAdminConfirmKey("");
+    setTimeout(() => setAdminKeySuccess(""), 4000);
+  };
+
+  const handleResetAdminKey = () => {
+    if (
+      confirm(
+        `Reset Admin Passcode back to environment default ("${DEFAULT_ENV_ADMIN_PASSCODE}")?`
+      )
+    ) {
+      resetAdminPasscodeToDefault();
+      setAdminKeySuccess(`🔄 Admin Passcode reset to environment default ("${DEFAULT_ENV_ADMIN_PASSCODE}").`);
+      setAdminKeyError("");
+      setTimeout(() => setAdminKeySuccess(""), 4000);
+    }
+  };
+
+  const handleResetVendorKey = async (merchantId: string) => {
+    const target = merchants.find((m) => m.id === merchantId);
+    if (!target) return;
+
+    if (confirm(`Reset passcode for "${target.name}" to standard formula (<domain>123)?`)) {
+      const { updatedMerchants, defaultPasscode } = resetMerchantPasscode(merchantId, merchants);
+      setMerchants(updatedMerchants);
+
+      try {
+        await fetch("/api/auth/passcode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "reset_vendor_passcode",
+            merchantId,
+            domain: target.myshopifyDomain,
+          }),
+        });
+      } catch (err) {
+        console.warn("API reset sync error:", err);
+      }
+
+      setVendorKeyToast(`🔑 Passcode for "${target.name}" reset to "${defaultPasscode}".`);
+      setTimeout(() => setVendorKeyToast(null), 4000);
     }
   };
 
@@ -399,6 +478,22 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative z-10">
         
+        {/* Vendor Passcode Action Toast */}
+        {vendorKeyToast && (
+          <div className="p-3.5 bg-[#FFB703] border-4 border-[#111111] font-mono text-xs font-black text-[#111111] shadow-[5px_5px_0px_#111111] flex items-center justify-between animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-4 h-4 stroke-[2.5]" />
+              <span>{vendorKeyToast}</span>
+            </div>
+            <button
+              onClick={() => setVendorKeyToast(null)}
+              className="p-1 hover:bg-[#111111] hover:text-[#FFB703] transition-colors font-black"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* TAB 1: STORE MODERATION DASHBOARD */}
         {adminTab === "STORES" && (
           <>
@@ -554,6 +649,26 @@ export default function AdminPage() {
                               </span>
                               <span>•</span>
                               <span className="text-[#2B2D42]">Connected: {merchant.connectedSince}</span>
+                            </div>
+
+                            {/* Store Passcode Status & Reset */}
+                            <div className="flex items-center gap-3 mt-2.5 pt-2 border-t border-dashed border-zinc-300">
+                              <span className="text-[11px] font-mono text-zinc-600 font-bold flex items-center gap-1.5">
+                                <KeyRound className="w-3.5 h-3.5 text-[#005F73]" />
+                                <span>Vendor Passcode:</span>
+                                <code className="bg-[#F4F4F0] px-2 py-0.5 border border-[#111111] text-[#111111] font-black">
+                                  {merchant.passcode || `${merchant.myshopifyDomain.split(".")[0].toLowerCase()}123`}
+                                </code>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleResetVendorKey(merchant.id)}
+                                className="text-[10px] font-mono font-black text-[#005F73] hover:text-[#D62828] hover:underline flex items-center gap-1 uppercase"
+                                title="Reset passcode to default formula (<domain>123)"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                <span>Reset Passcode</span>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -949,9 +1064,115 @@ export default function AdminPage() {
 
               </div>
 
-              {/* Live UI Preview Box */}
+              {/* Live UI Preview & Admin Security Boxes */}
               <div className="lg:col-span-5 space-y-6">
                 
+                {/* Admin Security & Access Passcode Card */}
+                <div className="bg-white border-4 border-[#111111] p-6 shadow-[8px_8px_0px_#111111] space-y-5 font-mono">
+                  <div className="border-b-2 border-[#111111] pb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-black text-[#111111] font-display uppercase tracking-tight flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-[#D62828]" />
+                      <span>Admin Passcode Security</span>
+                    </h3>
+                    <span className={`px-2 py-0.5 text-[10px] font-mono font-black border border-[#111111] ${
+                      siteSettings.adminCustomPasscode ? "bg-[#FFB703] text-[#111111]" : "bg-zinc-100 text-zinc-700"
+                    }`}>
+                      {siteSettings.adminCustomPasscode ? "CUSTOM KEY ACTIVE" : "DEFAULT KEY ACTIVE"}
+                    </span>
+                  </div>
+
+                  {/* Status Banner */}
+                  <div className="p-3 bg-[#F4F4F0] border-2 border-[#111111] text-xs space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-zinc-600">
+                      <span>Active Passcode:</span>
+                      <div className="flex items-center gap-1.5">
+                        <code className="bg-white px-2 py-0.5 border border-[#111111] font-black text-[#111111]">
+                          {showAdminKey ? getActiveAdminPasscode() : "••••••••"}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminKey(!showAdminKey)}
+                          className="p-1 text-zinc-500 hover:text-black"
+                          title={showAdminKey ? "Hide passcode" : "Show passcode"}
+                        >
+                          {showAdminKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-bold text-zinc-500">
+                      <span>Environment Default:</span>
+                      <code>{DEFAULT_ENV_ADMIN_PASSCODE}</code>
+                    </div>
+                  </div>
+
+                  {/* Success / Error alerts */}
+                  {adminKeySuccess && (
+                    <div className="p-3 bg-emerald-100 border-2 border-emerald-600 text-emerald-950 text-xs font-bold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{adminKeySuccess}</span>
+                    </div>
+                  )}
+
+                  {adminKeyError && (
+                    <div className="p-3 bg-red-100 border-2 border-[#D62828] text-red-900 text-xs font-bold flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-[#D62828] shrink-0" />
+                      <span>{adminKeyError}</span>
+                    </div>
+                  )}
+
+                  {/* Update Form */}
+                  <form onSubmit={handleSaveAdminKey} className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-black text-[#111111] uppercase tracking-wider mb-1">
+                        New Admin Passcode
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Min. 4 characters"
+                        value={adminNewKey}
+                        onChange={(e) => setAdminNewKey(e.target.value)}
+                        className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-bold text-[#111111] focus:outline-none focus:bg-white focus:border-[#FFB703]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-black text-[#111111] uppercase tracking-wider mb-1">
+                        Confirm New Passcode
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Re-enter new passcode"
+                        value={adminConfirmKey}
+                        onChange={(e) => setAdminConfirmKey(e.target.value)}
+                        className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3 py-2 text-xs font-bold text-[#111111] focus:outline-none focus:bg-white focus:border-[#FFB703]"
+                      />
+                    </div>
+
+                    <div className="pt-1 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetAdminKey}
+                        className="px-3 py-2 bg-[#E5E5E0] hover:bg-zinc-300 text-[#111111] border-2 border-[#111111] text-[11px] font-black uppercase flex items-center gap-1.5 transition-colors"
+                        title="Reset passcode back to .env default"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reset to .env</span>
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={!adminNewKey.trim()}
+                        className="px-4 py-2 bg-[#111111] hover:bg-[#005F73] text-white border-2 border-[#111111] text-[11px] font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0px_#FFB703] transition-all disabled:opacity-50"
+                      >
+                        <KeyRound className="w-3.5 h-3.5 text-[#FFB703]" />
+                        <span>Save Key</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
                 <div className="bg-white border-4 border-[#111111] p-6 shadow-[8px_8px_0px_#111111] space-y-4">
                   <div className="border-b-2 border-[#111111] pb-3 flex items-center justify-between">
                     <h3 className="text-sm font-black text-[#111111] font-display uppercase tracking-tight flex items-center gap-2">

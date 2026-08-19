@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency, cleanStoreDomain } from "@/lib/utils";
-import { getInitialMerchants, getInitialSlots } from "@/lib/store-manager";
+import { getInitialMerchants, getInitialSlots, updateMerchantPasscode } from "@/lib/store-manager";
 import { Header } from "@/components/Header";
 import { ListingDrawer } from "@/components/ListingDrawer";
 import { ConnectStoreModal } from "@/components/ConnectStoreModal";
@@ -76,6 +76,15 @@ export default function VendorDashboardPage() {
 
   // Connect Store Modal (for authenticated view quick action)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
+
+  // Passcode Management State
+  const [isPasscodeModalOpen, setIsPasscodeModalOpen] = useState(false);
+  const [passcodeCurrent, setPasscodeCurrent] = useState("");
+  const [passcodeNew, setPasscodeNew] = useState("");
+  const [passcodeConfirm, setPasscodeConfirm] = useState("");
+  const [passcodeError, setPasscodeError] = useState("");
+  const [passcodeSuccessMsg, setPasscodeSuccessMsg] = useState("");
+  const [passcodeSubmitting, setPasscodeSubmitting] = useState(false);
 
   // Load state on mount & check session storage auth
   useEffect(() => {
@@ -244,6 +253,67 @@ export default function VendorDashboardPage() {
       setSlots(getInitialSlots());
     } catch (err) {
       console.error("Add store error:", err);
+    }
+  };
+
+  const handleUpdateStorePasscode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasscodeError("");
+    setPasscodeSuccessMsg("");
+
+    if (!activeMerchantInfo) {
+      setPasscodeError("Please select a specific store view to change its passcode.");
+      return;
+    }
+
+    if (passcodeNew.trim().length < 4) {
+      setPasscodeError("New passcode must be at least 4 characters.");
+      return;
+    }
+
+    if (passcodeNew !== passcodeConfirm) {
+      setPasscodeError("New passcode and confirmation do not match.");
+      return;
+    }
+
+    setPasscodeSubmitting(true);
+    try {
+      // 1. Send update to API (sync with database)
+      const res = await fetch("/api/auth/passcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_vendor_passcode",
+          merchantId: activeMerchantInfo.id,
+          domain: activeMerchantInfo.myshopifyDomain,
+          currentPasscode: passcodeCurrent,
+          newPasscode: passcodeNew,
+          isAdminOverride: loginPasscode.trim().toLowerCase() === MASTER_VENDOR_PASSCODE.toLowerCase(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to update store passcode.");
+      }
+
+      // 2. Update local state
+      const updatedM = updateMerchantPasscode(activeMerchantInfo.id, passcodeNew, merchants);
+      setMerchants(updatedM);
+
+      setPasscodeSuccessMsg("✅ Passcode updated successfully! Use your new passcode on your next login.");
+      setTimeout(() => {
+        setIsPasscodeModalOpen(false);
+        setPasscodeSuccessMsg("");
+        setPasscodeCurrent("");
+        setPasscodeNew("");
+        setPasscodeConfirm("");
+      }, 2000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to update passcode.";
+      setPasscodeError(msg);
+    } finally {
+      setPasscodeSubmitting(false);
     }
   };
 
@@ -599,8 +669,26 @@ export default function VendorDashboardPage() {
             </p>
           </div>
 
-          {/* Action CTAs: Connect Store & Logout */}
-          <div className="flex items-center gap-2.5 font-mono">
+          {/* Action CTAs: Change Passcode, Connect Store & Logout */}
+          <div className="flex items-center flex-wrap gap-2.5 font-mono">
+            {activeMerchantInfo && (
+              <button
+                onClick={() => {
+                  setPasscodeError("");
+                  setPasscodeSuccessMsg("");
+                  setPasscodeCurrent("");
+                  setPasscodeNew("");
+                  setPasscodeConfirm("");
+                  setIsPasscodeModalOpen(true);
+                }}
+                className="py-2.5 px-4 bg-white hover:bg-[#111111] hover:text-white text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all"
+                title="Update Store Access Passcode"
+              >
+                <KeyRound className="w-4 h-4 text-[#005F73]" />
+                <span>Change Passcode</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsConnectModalOpen(true)}
               className="py-2.5 px-4 bg-[#FFB703] hover:bg-[#111111] hover:text-white text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all"
@@ -1049,6 +1137,132 @@ export default function VendorDashboardPage() {
         onClose={() => setIsConnectModalOpen(false)}
         onConnect={handleAddStore}
       />
+
+      {/* Change Store Passcode Modal */}
+      {isPasscodeModalOpen && activeMerchantInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-mono">
+          <div className="w-full max-w-md bg-white border-4 border-[#111111] p-6 shadow-[10px_10px_0px_#111111] space-y-5 relative">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b-2 border-[#111111] pb-3">
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-[#D62828]" />
+                <h3 className="font-black text-sm text-[#111111] uppercase tracking-wide">
+                  Change Store Passcode
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPasscodeModalOpen(false)}
+                className="p-1 hover:bg-[#111111] hover:text-white transition-colors text-zinc-500 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Store Information */}
+            <div className="bg-[#F4F4F0] p-3 border-2 border-[#111111] text-xs space-y-1">
+              <div className="flex justify-between font-bold text-zinc-600">
+                <span>Active Store:</span>
+                <span className="font-black text-[#111111]">{activeMerchantInfo.name}</span>
+              </div>
+              <div className="flex justify-between font-bold text-zinc-600">
+                <span>Domain:</span>
+                <span className="text-[#005F73] font-bold">{activeMerchantInfo.myshopifyDomain}</span>
+              </div>
+            </div>
+
+            {/* Error & Success Messages */}
+            {passcodeError && (
+              <div className="p-3 bg-red-100 border-2 border-[#D62828] text-red-900 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-[#D62828]" />
+                <span>{passcodeError}</span>
+              </div>
+            )}
+
+            {passcodeSuccessMsg && (
+              <div className="p-3 bg-emerald-100 border-2 border-emerald-600 text-emerald-950 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>{passcodeSuccessMsg}</span>
+              </div>
+            )}
+
+            {/* Passcode Form */}
+            <form onSubmit={handleUpdateStorePasscode} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-[#111111] uppercase tracking-wider mb-1">
+                  1. Current Passcode
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter current store passcode"
+                  value={passcodeCurrent}
+                  onChange={(e) => setPasscodeCurrent(e.target.value)}
+                  className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3.5 py-2 text-xs text-[#111111] font-bold focus:outline-none focus:bg-white focus:border-[#FFB703]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-[#111111] uppercase tracking-wider mb-1">
+                  2. New Passcode
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Min. 4 characters"
+                  value={passcodeNew}
+                  onChange={(e) => setPasscodeNew(e.target.value)}
+                  className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3.5 py-2 text-xs text-[#111111] font-bold focus:outline-none focus:bg-white focus:border-[#FFB703]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-[#111111] uppercase tracking-wider mb-1">
+                  3. Confirm New Passcode
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Re-enter new passcode"
+                  value={passcodeConfirm}
+                  onChange={(e) => setPasscodeConfirm(e.target.value)}
+                  className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-3.5 py-2 text-xs text-[#111111] font-bold focus:outline-none focus:bg-white focus:border-[#FFB703]"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPasscodeModalOpen(false)}
+                  className="px-4 py-2 border-2 border-[#111111] bg-[#F4F4F0] hover:bg-zinc-200 text-xs font-black uppercase text-[#111111]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={passcodeSubmitting || !passcodeNew.trim()}
+                  className="px-5 py-2 border-2 border-[#111111] bg-[#111111] hover:bg-[#D62828] text-white text-xs font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0px_#FFB703] transition-all disabled:opacity-50"
+                >
+                  {passcodeSubmitting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5 text-[#FFB703]" />
+                      <span>Save New Passcode</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

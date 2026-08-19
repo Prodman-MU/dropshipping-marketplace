@@ -260,3 +260,47 @@ export function updateSlotTags(slotId: string, newTags: string[], currentSlots: 
   saveSlots(updated);
   return updated;
 }
+
+/**
+ * Updates the custom passcode for a specific merchant store.
+ * 
+ * @param {string} merchantId - ID of the merchant.
+ * @param {string} newPasscode - New custom passcode.
+ * @param {MerchantVendor[]} currentMerchants - Current merchants array.
+ * @returns {MerchantVendor[]} Updated array of merchants.
+ */
+export function updateMerchantPasscode(
+  merchantId: string,
+  newPasscode: string,
+  currentMerchants: MerchantVendor[]
+): MerchantVendor[] {
+  const updated = currentMerchants.map((m) =>
+    m.id === merchantId ? { ...m, passcode: newPasscode.trim() } : m
+  );
+  saveMerchants(updated);
+  return updated;
+}
+
+/**
+ * Resets a merchant's passcode back to the formula default (<domain>123).
+ * 
+ * @param {string} merchantId - ID of the merchant.
+ * @param {MerchantVendor[]} currentMerchants - Current merchants array.
+ * @returns {{ updatedMerchants: MerchantVendor[]; defaultPasscode: string }}
+ */
+export function resetMerchantPasscode(
+  merchantId: string,
+  currentMerchants: MerchantVendor[]
+): { updatedMerchants: MerchantVendor[]; defaultPasscode: string } {
+  let defaultPasscode = "vendor123";
+  const updatedMerchants = currentMerchants.map((m) => {
+    if (m.id === merchantId) {
+      defaultPasscode = `${m.myshopifyDomain.split(".")[0].toLowerCase()}123`;
+      return { ...m, passcode: defaultPasscode };
+    }
+    return m;
+  });
+  saveMerchants(updatedMerchants);
+  return { updatedMerchants, defaultPasscode };
+}
+

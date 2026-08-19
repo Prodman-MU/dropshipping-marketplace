@@ -4,7 +4,8 @@
  * 
  * Provides client-side persistence (via localStorage) with cross-component reactivity
  * using custom DOM events ('site-settings-changed'). Handles dynamic parameters such as
- * the dropshipping cohort year, site title branding, announcement ticker text, and hero carousel slides.
+ * the dropshipping cohort year, site title branding, announcement ticker text, hero carousel slides,
+ * and dynamic admin passcode overrides.
  */
 
 /**
@@ -43,6 +44,8 @@ export interface SiteSettings {
   catalogBadgeText: string;
   /** Array of active hero promotional slides */
   carouselSlides: CarouselSlide[];
+  /** Optional dynamic custom Admin passcode override */
+  adminCustomPasscode?: string;
 }
 
 /**
@@ -67,6 +70,9 @@ export const DEFAULT_CAROUSEL_SLIDES: CarouselSlide[] = [
   },
 ];
 
+/** Baseline default admin passcode from environment variable */
+export const DEFAULT_ENV_ADMIN_PASSCODE = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "admin123";
+
 /**
  * Default global site settings used as baseline fallbacks.
  */
@@ -76,6 +82,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   announcementText: "MASTERS UNION PMC — STUDENT-CURATED DROPSHIPPING NETWORK",
   catalogBadgeText: "OFFICIAL CATALOG",
   carouselSlides: DEFAULT_CAROUSEL_SLIDES,
+  adminCustomPasscode: undefined,
 };
 
 /** Key used to store and retrieve site settings in browser localStorage */
@@ -87,7 +94,6 @@ const SETTINGS_KEY = "dropshipping_marketplace_site_settings";
  * @returns {SiteSettings} The active site settings or the default configuration.
  */
 export function getSiteSettings(): SiteSettings {
-  // If running on the server (SSR), return default settings immediately
   if (typeof window === "undefined") return DEFAULT_SITE_SETTINGS;
 
   try {
@@ -97,15 +103,46 @@ export function getSiteSettings(): SiteSettings {
       return {
         ...DEFAULT_SITE_SETTINGS,
         ...parsed,
-        carouselSlides: parsed.carouselSlides && Array.isArray(parsed.carouselSlides) && parsed.carouselSlides.length > 0
-          ? parsed.carouselSlides
-          : DEFAULT_CAROUSEL_SLIDES,
+        carouselSlides:
+          parsed.carouselSlides && Array.isArray(parsed.carouselSlides) && parsed.carouselSlides.length > 0
+            ? parsed.carouselSlides
+            : DEFAULT_CAROUSEL_SLIDES,
       };
     }
   } catch (e) {
     console.error("Error reading site settings from localStorage", e);
   }
   return DEFAULT_SITE_SETTINGS;
+}
+
+/**
+ * Returns the currently active Admin passcode (custom override or .env default).
+ */
+export function getActiveAdminPasscode(): string {
+  const settings = getSiteSettings();
+  return settings.adminCustomPasscode?.trim() || DEFAULT_ENV_ADMIN_PASSCODE;
+}
+
+/**
+ * Updates the custom Admin passcode in site settings.
+ */
+export function setAdminCustomPasscode(newPasscode: string): void {
+  const settings = getSiteSettings();
+  saveSiteSettings({
+    ...settings,
+    adminCustomPasscode: newPasscode.trim(),
+  });
+}
+
+/**
+ * Resets the Admin passcode back to the environment variable default.
+ */
+export function resetAdminPasscodeToDefault(): void {
+  const settings = getSiteSettings();
+  saveSiteSettings({
+    ...settings,
+    adminCustomPasscode: undefined,
+  });
 }
 
 /**
@@ -118,7 +155,6 @@ export function saveSiteSettings(settings: SiteSettings): void {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-      // Dispatch browser event so Header, Hero, and BackgroundVideo update immediately without a page refresh
       window.dispatchEvent(new Event("site-settings-changed"));
     } catch (e) {
       console.error("Error saving site settings to localStorage", e);
