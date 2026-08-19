@@ -9,7 +9,8 @@ import { ListingCard } from "@/components/ListingCard";
 import { ListingDrawer } from "@/components/ListingDrawer";
 import { StoreStatusModal } from "@/components/StoreStatusModal";
 import { SlotListing, MerchantVendor } from "@/data/mock-slots";
-import { PackageCheck, HelpCircle, ChevronLeft, ChevronRight, Store } from "lucide-react";
+import { PackageCheck, HelpCircle, ChevronLeft, ChevronRight, Store, LayoutGrid } from "lucide-react";
+import { VendorGroupedSection } from "@/components/VendorGroupedSection";
 import {
   getInitialMerchants,
   getInitialSlots,
@@ -31,6 +32,9 @@ export default function MarketplaceHomePage() {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isMissingStoreModalOpen, setIsMissingStoreModalOpen] = useState(false);
 
+  // View Mode: 'grid' or 'vendor'
+  const [viewMode, setViewMode] = useState<"grid" | "vendor">("grid");
+
   // Pagination state: 10, 20, or 50 items per page
   const [pageSize, setPageSize] = useState<10 | 20 | 50>(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,6 +45,20 @@ export default function MarketplaceHomePage() {
     setMerchants(getInitialMerchants());
     setSlots(getInitialSlots());
     setSiteSettings(getSiteSettings());
+
+    // Restore viewMode from URL query param or localStorage
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get("view");
+      if (viewParam === "vendor" || viewParam === "grid") {
+        setViewMode(viewParam);
+      } else {
+        const savedView = localStorage.getItem("catalog_view_mode");
+        if (savedView === "vendor" || savedView === "grid") {
+          setViewMode(savedView as "grid" | "vendor");
+        }
+      }
+    }
 
     const handleSettingsChange = () => setSiteSettings(getSiteSettings());
     window.addEventListener("site-settings-changed", handleSettingsChange);
@@ -147,12 +165,48 @@ export default function MarketplaceHomePage() {
     });
   }, [slots, selectedVendorId, selectedCategory, searchQuery, sortBy]);
 
+  // Handler for view mode toggle with URL param & localStorage persistence
+  const handleViewModeChange = (mode: "grid" | "vendor") => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("catalog_view_mode", mode);
+      const url = new URL(window.location.href);
+      url.searchParams.set("view", mode);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
+  // Group slots by Vendor when in "vendor" view mode
+  const vendorGroups = useMemo(() => {
+    const map = new Map<string, { merchant: MerchantVendor; slots: SlotListing[] }>();
+    filteredSlots.forEach((slot) => {
+      const vId = slot.merchant.id || slot.merchant.myshopifyDomain;
+      if (!map.has(vId)) {
+        map.set(vId, {
+          merchant: slot.merchant,
+          slots: [],
+        });
+      }
+      map.get(vId)!.slots.push(slot);
+    });
+
+    // Sort vendors by most matching products first, then alphabetically
+    return Array.from(map.values()).sort((a, b) => {
+      if (b.slots.length !== a.slots.length) {
+        return b.slots.length - a.slots.length;
+      }
+      return (a.merchant.name || a.merchant.myshopifyDomain).localeCompare(
+        b.merchant.name || b.merchant.myshopifyDomain
+      );
+    });
+  }, [filteredSlots]);
+
   // Reset pagination to page 1 whenever filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedVendorId, selectedCategory, sortBy, pageSize]);
 
-  // Paginated slots slice
+  // Paginated slots slice (for Grid View)
   const totalPages = Math.ceil(filteredSlots.length / pageSize) || 1;
   const paginatedSlots = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -222,56 +276,115 @@ export default function MarketplaceHomePage() {
           {/* Right Product Grid Area */}
           <div className="flex-1 w-full space-y-6">
             
-            {/* Top Pagination & Active View Indicator Bar */}
+            {/* Top Toolbar: View Switcher, Active Filter & Page Status */}
             <div className="bg-white border-2 border-[#111111] p-3 sm:p-4 shadow-[4px_4px_0px_#111111] flex flex-wrap items-center justify-between gap-3 font-mono text-xs font-bold">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <span className="px-2.5 py-1 bg-[#111111] text-[#FFB703] font-black uppercase text-[11px]">
                   {selectedCategory}
                 </span>
-                <span className="text-[#2B2D42] text-xs">
-                  Showing {filteredSlots.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filteredSlots.length)} of {filteredSlots.length} Products
-                </span>
+                
+                {viewMode === "grid" ? (
+                  <span className="text-[#2B2D42] text-xs">
+                    Showing {filteredSlots.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filteredSlots.length)} of {filteredSlots.length} Products
+                  </span>
+                ) : (
+                  <span className="text-[#2B2D42] text-xs">
+                    Showing {vendorGroups.length} Store{vendorGroups.length === 1 ? "" : "s"} ({filteredSlots.length} Total Products)
+                  </span>
+                )}
               </div>
 
-              {/* Page Status & Prev/Next Controls */}
-              {filteredSlots.length > 0 && (
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-[#111111] text-[11px] sm:text-xs">
-                    Page <strong>{currentPage}</strong> / <strong>{totalPages}</strong>
-                  </span>
+              <div className="flex items-center gap-3 ml-auto flex-wrap">
+                {/* View Mode Toggle Switcher */}
+                <div className="flex items-center border-2 border-[#111111] p-0.5 bg-[#F4F4F0] shadow-[2px_2px_0px_#111111]">
+                  <button
+                    onClick={() => handleViewModeChange("grid")}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-black uppercase transition-all ${
+                      viewMode === "grid"
+                        ? "bg-[#111111] text-[#FFB703] shadow-[1px_1px_0px_#111111]"
+                        : "text-[#111111] hover:bg-white"
+                    }`}
+                    title="View as Product Grid"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>Grid View</span>
+                  </button>
 
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="p-1.5 bg-[#E5E5E0] hover:bg-[#FFB703] border-2 border-[#111111] disabled:opacity-40 disabled:hover:bg-[#E5E5E0] transition-colors"
-                      title="Previous Page"
-                    >
-                      <ChevronLeft className="w-4 h-4 stroke-[3]" />
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      className="p-1.5 bg-[#E5E5E0] hover:bg-[#FFB703] border-2 border-[#111111] disabled:opacity-40 disabled:hover:bg-[#E5E5E0] transition-colors"
-                      title="Next Page"
-                    >
-                      <ChevronRight className="w-4 h-4 stroke-[3]" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleViewModeChange("vendor")}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-black uppercase transition-all ${
+                      viewMode === "vendor"
+                        ? "bg-[#111111] text-[#FFB703] shadow-[1px_1px_0px_#111111]"
+                        : "text-[#111111] hover:bg-white"
+                    }`}
+                    title="Group Products by Dropshipping Vendor / Website"
+                  >
+                    <Store className="w-3.5 h-3.5" />
+                    <span>By Vendor</span>
+                  </button>
                 </div>
-              )}
+
+                {/* Page Status & Prev/Next Controls (only relevant in Grid view) */}
+                {viewMode === "grid" && filteredSlots.length > 0 && (
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-[#111111] text-[11px] sm:text-xs">
+                      Page <strong>{currentPage}</strong> / <strong>{totalPages}</strong>
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-1.5 bg-[#E5E5E0] hover:bg-[#FFB703] border-2 border-[#111111] disabled:opacity-40 disabled:hover:bg-[#E5E5E0] transition-colors"
+                        title="Previous Page"
+                      >
+                        <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-1.5 bg-[#E5E5E0] hover:bg-[#FFB703] border-2 border-[#111111] disabled:opacity-40 disabled:hover:bg-[#E5E5E0] transition-colors"
+                        title="Next Page"
+                      >
+                        <ChevronRight className="w-4 h-4 stroke-[3]" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Dynamic Product Grid - 2 Columns on Mobile */}
-            {paginatedSlots.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
-                {paginatedSlots.map((slot) => (
-                  <ListingCard
-                    key={slot.id}
-                    slot={slot}
-                  />
-                ))}
-              </div>
+            {/* Catalog Content: Grid View vs Grouped By Vendor View */}
+            {filteredSlots.length > 0 ? (
+              viewMode === "grid" ? (
+                /* Dynamic Product Grid - 2 Columns on Mobile */
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
+                  {paginatedSlots.map((slot) => (
+                    <ListingCard
+                      key={slot.id}
+                      slot={slot}
+                    />
+                  ))}
+                </div>
+              ) : (
+                /* Grouped by Vendor List View */
+                <div className="space-y-6">
+                  {vendorGroups.map((group) => (
+                    <VendorGroupedSection
+                      key={group.merchant.id || group.merchant.myshopifyDomain}
+                      merchant={group.merchant}
+                      slots={group.slots}
+                      onFilterStore={(vendorId) => {
+                        setSelectedVendorId(vendorId);
+                        const el = document.getElementById("product-catalog");
+                        if (el) {
+                          el.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <div className="bg-white border-4 border-[#111111] p-10 sm:p-14 text-center space-y-4 max-w-xl mx-auto my-6 shadow-[8px_8px_0px_#111111]">
                 <div className="w-16 h-16 bg-[#FFB703] border-2 border-[#111111] flex items-center justify-center mx-auto text-2xl font-black">
@@ -304,8 +417,8 @@ export default function MarketplaceHomePage() {
               </div>
             )}
 
-            {/* Bottom Pagination Bar */}
-            {totalPages > 1 && (
+            {/* Bottom Pagination Bar (Only shown in Grid Mode) */}
+            {viewMode === "grid" && totalPages > 1 && (
               <div className="bg-white border-2 border-[#111111] p-4 shadow-[4px_4px_0px_#111111] flex items-center justify-between gap-4 font-mono text-xs font-bold">
                 <span className="text-[#2B2D42]">
                   Showing {((currentPage - 1) * pageSize) + 1}–{Math.min(currentPage * pageSize, filteredSlots.length)} of {filteredSlots.length} items
