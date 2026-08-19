@@ -126,3 +126,32 @@ Update the build pipeline in `package.json` to execute migrations before seeding
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://your-custom-domain.com` |
 | `ADMIN_PASSCODE` | `admin123` | *(Secure custom admin passcode)* |
 | `MASTER_VENDOR_PASSCODE`| `vendor123` | *(Secure custom vendor passcode)* |
+
+---
+
+## 7. Shopify Store Onboarding & Moderation Pipeline Learnings
+
+### A. The Gotcha: State Persistence Gap Between Vendor Onboarding & Admin Moderation
+* **The Symptom**: When submitting a store (e.g. `https://aavo.store/`) through the `/vendor` portal, the backend reported successful product ingestion, but the store never appeared in `/admin` under "Pending Review".
+* **Root Cause Analysis**:
+  1. The backend API (`POST /api/shopify/connect`) successfully connected to Shopify, scraped all products, and generated the `PENDING` merchant object.
+  2. However, in the Vendor Portal frontend (`app/vendor/page.tsx`), the submit handler failed to call `saveMerchants()` and `saveSlots()`. It only re-read `getInitialMerchants()` from `localStorage`, dropping the new store from client state.
+  3. Because the Admin Portal (`app/admin/page.tsx`) reads pending stores from shared state and listens to the `store-state-changed` event, the missing save call left the Admin moderation queue empty.
+* **The Solution**:
+  - In `app/vendor/page.tsx`, `handleEmbeddedConnect` and `handleAddStore` now merge the newly returned store into the active merchant list and invoke `saveMerchants()` and `saveSlots()`.
+  - Added Prisma database upserting in `app/api/shopify/connect/route.ts` as a server-side persistence layer.
+
+### B. Custom Domain Ingestion Mechanics (e.g., `https://aavo.store/`)
+* **How Public Storefront Discovery Works**:
+  - Shopify stores with custom domains (such as `aavo.store`) expose their public catalog via `https://[domain]/products.json?limit=50` or `https://[domain]/collections/all/products.json?limit=50`.
+  - `cleanStoreDomain()` normalizes arbitrary inputs (e.g. `https://aavo.store/`, `aavo.store/`, `www.aavo.store`).
+  - `getDomainCandidates()` iterates through candidate aliases (`aavo.store`, `www.aavo.store`, `aavo.myshopify.com`) to locate active endpoints.
+* **Ingestion Benchmark**: Ingests and normalizes multi-variant products with Shopify CDN image URLs in under 1 second (`~0.88s` for 4 products with 20 variants).
+
+### C. Transparent Vendor Moderation Feedback
+* **User Experience Expectation**: Newly onboarded stores default to `PENDING` moderation status to prevent unmoderated or unverified products from flooding the public catalog.
+* **Feedback Architecture**:
+  - When submitting a store, the confirmation banner explicitly communicates:
+    > *"✅ Store '[Store Name]' connected and sent for approval to the admin! Products will go live on the public catalog once approved."*
+  - The store appears immediately in `/admin` with a 1-click **Approve** action that flips the merchant to `ACTIVE` and publishes its catalog across the marketplace.
+

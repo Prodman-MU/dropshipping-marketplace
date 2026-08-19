@@ -104,14 +104,14 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                 </motion.div>
                 <div className="space-y-1">
                   <h4 className="text-lg font-black text-[#111111] font-display uppercase">
-                    Store Linked & Products Synced!
+                    Store Submitted for Approval!
                   </h4>
                   <p className="text-xs text-[#2B2D42] font-mono font-bold max-w-sm">
                     Fetched products and variants for <span className="text-[#D62828] font-black">{domain}</span>.
                   </p>
                 </div>
                 <div className="p-3 bg-[#005F73] text-white border-2 border-[#111111] text-xs font-mono font-bold shadow-[3px_3px_0px_#111111]">
-                  ✓ Integration complete! Products now visible in moderation panel.
+                  ✓ Store submitted for Admin Approval! Products will be published on the public marketplace once approved.
                 </div>
               </div>
             ) : (

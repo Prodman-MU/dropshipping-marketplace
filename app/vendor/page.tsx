@@ -32,7 +32,13 @@ import {
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency, cleanStoreDomain } from "@/lib/utils";
-import { getInitialMerchants, getInitialSlots, updateMerchantPasscode } from "@/lib/store-manager";
+import {
+  getInitialMerchants,
+  getInitialSlots,
+  saveMerchants,
+  saveSlots,
+  updateMerchantPasscode,
+} from "@/lib/store-manager";
 import { Header } from "@/components/Header";
 import { ListingDrawer } from "@/components/ListingDrawer";
 import { ConnectStoreModal } from "@/components/ConnectStoreModal";
@@ -196,16 +202,27 @@ export default function VendorDashboardPage() {
         return;
       }
 
-      // Reload stores state
-      const updatedM = getInitialMerchants();
-      const updatedS = getInitialSlots();
+      const { merchant, slots: newSlots } = data;
+
+      // Update merchant list (avoid duplicates) and persist
+      const currentM = getInitialMerchants();
+      const currentS = getInitialSlots();
+
+      const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
+      const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
+
+      const updatedM = [merchant, ...filteredM];
+      const updatedS = [...(newSlots || []), ...filteredS];
+
       setMerchants(updatedM);
       setSlots(updatedS);
+      saveMerchants(updatedM);
+      saveSlots(updatedS);
 
-      const createdMerchant = data.merchant as MerchantVendor;
+      const createdMerchant = merchant as MerchantVendor;
 
       setConnectSuccessMsg(
-        `✅ Store "${createdMerchant.name}" connected successfully! You can now log in using your passcode.`
+        `✅ Store "${createdMerchant.name}" connected and sent for approval to the admin! Products will go live on the public catalog once approved.`
       );
       
       // Auto pre-fill login inputs
@@ -219,7 +236,7 @@ export default function VendorDashboardPage() {
       setTimeout(() => {
         setConnectSuccessMsg(null);
         setAccessPaneTab("login");
-      }, 2000);
+      }, 3500);
     } catch (err: any) {
       console.error(err);
       setAuthError(err.message || "Store connection error.");
@@ -249,8 +266,20 @@ export default function VendorDashboardPage() {
         return;
       }
 
-      setMerchants(getInitialMerchants());
-      setSlots(getInitialSlots());
+      const { merchant, slots: newSlots } = data;
+      const currentM = getInitialMerchants();
+      const currentS = getInitialSlots();
+
+      const filteredM = currentM.filter((m) => m.myshopifyDomain !== merchant.myshopifyDomain);
+      const filteredS = currentS.filter((s) => s.merchant.myshopifyDomain !== merchant.myshopifyDomain);
+
+      const updatedM = [merchant, ...filteredM];
+      const updatedS = [...(newSlots || []), ...filteredS];
+
+      setMerchants(updatedM);
+      setSlots(updatedS);
+      saveMerchants(updatedM);
+      saveSlots(updatedS);
     } catch (err) {
       console.error("Add store error:", err);
     }
@@ -652,7 +681,7 @@ export default function VendorDashboardPage() {
         totalSyncedProducts={slots.filter((s) => s.merchant.status === "ACTIVE").length}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-5 py-8 space-y-8">
         
         {/* Banner Title & Vendor Status Header */}
         <div className="bg-white border-4 border-[#111111] p-6 shadow-[8px_8px_0px_#111111] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -665,7 +694,7 @@ export default function VendorDashboardPage() {
               {activeMerchantInfo ? `${activeMerchantInfo.name} Portal` : "Vendor Analytics Desk"}
             </h1>
             <p className="text-xs sm:text-sm font-mono text-[#2B2D42] font-semibold">
-              Manage inventory, analyze catalog performance metrics, and execute AI recommendations.
+              Manage inventory, analyze catalog performance metrics, and inspect storefront listings.
             </p>
           </div>
 
@@ -817,19 +846,19 @@ export default function VendorDashboardPage() {
             </p>
           </div>
 
-          {/* KPI 3: Total Stock Units */}
+          {/* KPI 3: Product Categories */}
           <div className="bg-white border-4 border-[#111111] p-4 shadow-[4px_4px_0px_#111111] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black text-[#005F73] uppercase tracking-wider">INVENTORY STOCK UNITS</span>
+              <span className="text-[10px] font-black text-[#005F73] uppercase tracking-wider">PRODUCT CATEGORIES</span>
               <div className="p-1.5 bg-emerald-400 border border-[#111111]">
                 <Layers className="w-4 h-4 text-[#111111] stroke-[2.5]" />
               </div>
             </div>
             <div className="text-2xl font-black text-[#111111] font-mono">
-              {metrics.totalInventoryUnits} Units
+              {categories.length} Categories
             </div>
             <p className="text-[10px] text-[#2B2D42] font-bold">
-              Avg {Math.round(metrics.totalInventoryUnits / (metrics.totalListings || 1))} units per product
+              Spread across {metrics.totalListings} active catalog listings
             </p>
           </div>
 
@@ -887,30 +916,30 @@ export default function VendorDashboardPage() {
             </div>
           </div>
 
-          {/* Quick AI Tip / Vendor Action Card (Col-span-5) */}
+          {/* Live Shopify Catalog Integration Overview (Col-span-5) */}
           <div className="lg:col-span-5 bg-[#111111] text-white border-4 border-[#111111] p-5 shadow-[6px_6px_0px_#FFB703] flex flex-col justify-between space-y-4 font-mono">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-[#FFB703] fill-[#FFB703]" />
-                <span className="text-xs font-black uppercase text-[#FFB703]">AI Product Recommendation Engine</span>
+                <Layers className="w-5 h-5 text-[#FFB703]" />
+                <span className="text-xs font-black uppercase text-[#FFB703]">Live Catalog Ingestion Engine</span>
               </div>
               <h3 className="text-lg font-black font-display uppercase tracking-tight text-white">
-                Interactive Product Recommendation Panel Included
+                Storefront Inventory & Product Drawer
               </h3>
               <p className="text-xs text-gray-300 font-semibold leading-relaxed">
-                Click on any product card in the catalog table below to open the Product Specification Drawer. Access the dedicated <span className="text-[#FFB703] font-bold">💡 Recommendations</span> tab to execute 1-click price margin updates, inventory restocks, and tag optimization!
+                Click on any product card in the catalog table below to open the Product Specification Drawer. View multi-variant SKU pricing, direct Storefront GraphQL identifiers, and real-time webhook audit trails!
               </p>
             </div>
 
             <div className="p-3 bg-white/10 border border-white/20 text-[11px] font-semibold space-y-1">
               <div className="flex items-center gap-2 text-[#FFB703]">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span className="font-black uppercase">Active Features</span>
+                <span className="font-black uppercase">Active Capabilities</span>
               </div>
               <ul className="list-disc list-inside text-gray-300 text-[10px] space-y-1">
-                <li>Dynamic Price Optimization (+8% Profit Benchmark)</li>
-                <li>Low-Stock Forecasting & Simulated Restock</li>
-                <li>Frequently Bought Together Cross-Sell Bundling</li>
+                <li>Real-Time Shopify Catalog Synchronization</li>
+                <li>Multi-Variant SKU Pricing & Stock Inspector</li>
+                <li>Direct WhatsApp B2B Inquiry Integration</li>
               </ul>
             </div>
           </div>
@@ -930,7 +959,7 @@ export default function VendorDashboardPage() {
                 </h2>
               </div>
               <p className="text-xs font-mono text-[#2B2D42] font-semibold">
-                Click any product to open specs modal with Recommendation Panel.
+                Click any product to inspect specifications, SKU variants, and webhook audit logs.
               </p>
             </div>
 
@@ -1082,7 +1111,7 @@ export default function VendorDashboardPage() {
                           className="px-3 py-1 bg-[#111111] hover:bg-[#D62828] text-white border border-[#111111] text-[11px] font-black uppercase inline-flex items-center gap-1.5 transition-colors"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#FFB703]" />
-                          <span>View & Recs</span>
+                          <span>Inspect Specs</span>
                         </button>
                       </td>
                     </tr>
@@ -1106,7 +1135,7 @@ export default function VendorDashboardPage() {
 
       {/* Footer Navigation Bar at the end of the page */}
       <footer className="bg-[#111111] text-white border-t-4 border-[#111111] py-6 px-4 mt-12 font-mono">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 bg-[#FFB703] border border-white"></span>
             <span className="font-black uppercase text-[#FFB703]">MASTERS UNION VENDOR PORTAL</span>

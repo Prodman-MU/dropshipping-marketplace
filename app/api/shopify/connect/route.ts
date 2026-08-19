@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { fetchProductsFromShopifyStore } from "@/lib/shopify";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Handles POST /api/shopify/connect
@@ -36,6 +37,36 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error }, { status: 500 });
+    }
+
+    // Persist to database if available
+    try {
+      await prisma.merchant.upsert({
+        where: { myshopifyDomain: merchant.myshopifyDomain },
+        update: {
+          name: merchant.name,
+          status: merchant.status as any,
+          totalProducts: slots.length,
+          whatsappNumber: merchant.whatsappNumber,
+          passcode: merchant.passcode,
+          storeLogo: merchant.storeLogo,
+          lastWebhookSync: "Just now",
+        },
+        create: {
+          id: merchant.id,
+          name: merchant.name,
+          myshopifyDomain: merchant.myshopifyDomain,
+          status: merchant.status as any,
+          totalProducts: slots.length,
+          whatsappNumber: merchant.whatsappNumber,
+          passcode: merchant.passcode,
+          storeLogo: merchant.storeLogo,
+          connectedSince: merchant.connectedSince,
+          lastWebhookSync: "Just now",
+        },
+      });
+    } catch (dbErr) {
+      console.warn("[Store Connect API] DB upsert warning (falling back gracefully):", dbErr);
     }
 
     return NextResponse.json({

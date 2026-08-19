@@ -128,6 +128,23 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 ---
 
+## 🔮 10. Future Features & Product Roadmap
+
+### AI Product Recommendation Engine (Planned for Vendor Portal)
+The following automated intelligence modules are planned for future implementation in the Vendor Dashboard (`/vendor`):
+- **1. Dynamic Price & Margin Benchmarks**:
+  - Algorithmic evaluation of category demand elasticity to suggest profit-optimized retail prices (e.g. +8% gross margin lifts).
+  - 1-click price update mutations pushing changes to the local catalog and Shopify Storefront.
+- **2. Inventory Velocity & Stockout Forecasting**:
+  - Automated detection of low-stock thresholds (`< 10 units`) with time-to-stockout predictions based on listing view velocity.
+  - Automated restock trigger simulations.
+- **3. SEO & Discoverability Tag Automation**:
+  - Machine learning analysis of trending search queries to suggest high-converting metadata tags (e.g., `#trending2026`, `#bestseller`, `#verified-stock`).
+- **4. Automated Cross-Sell & Bundle Suggestions**:
+  - Co-occurrence algorithms identifying complementary products across the marketplace to recommend "Frequently Bought Together" bundle packages.
+
+---
+
 ## 📚 Document Index Summary
 
 | Document | Description |

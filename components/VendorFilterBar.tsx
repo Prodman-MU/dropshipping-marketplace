@@ -149,7 +149,7 @@ export function VendorFilterBar({
               <option value="slot-asc">Default Order</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
-              <option value="stock-high">In-Stock First</option>
+              <option value="title-asc">Title: A to Z</option>
             </select>
           </div>
 
@@ -293,7 +293,7 @@ export function VendorFilterBar({
                 <option value="slot-asc">Default Order</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
-                <option value="stock-high">In-Stock First</option>
+                <option value="title-asc">Title: A to Z</option>
               </select>
             </div>
 

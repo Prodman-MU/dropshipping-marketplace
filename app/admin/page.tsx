@@ -407,7 +407,7 @@ export default function AdminPage() {
       
       {/* Admin Top Navigation Bar */}
       <header className="sticky top-0 z-40 w-full bg-white border-b-4 border-[#111111]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5">
           <div className="flex flex-wrap items-center justify-between h-auto py-3 sm:h-20 gap-4">
             
             <div className="flex items-center gap-3">
@@ -476,7 +476,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative z-10">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5 py-8 space-y-8 relative z-10">
         
         {/* Vendor Passcode Action Toast */}
         {vendorKeyToast && (

@@ -6,6 +6,8 @@ export interface VariantOption {
   sku: string;
   inventoryQuantity: number;
   availableForSale: boolean;
+  imageUrl?: string;
+  imageIndex?: number;
 }
 
 export interface WebhookSyncLog {

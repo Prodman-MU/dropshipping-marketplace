@@ -54,7 +54,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
 
   return (
     <section className="relative bg-[#F4F4F0] border-b-2 border-[#111111] py-4 sm:py-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5">
         
         {/* Central Hero Canvas Frame - Fixed height container */}
         <div 

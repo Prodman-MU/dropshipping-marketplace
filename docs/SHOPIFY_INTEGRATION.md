@@ -171,3 +171,23 @@ export function verifyShopifyHmac(bodyText: string, hmacHeader: string | null): 
 
 - **Shopify Leaky Bucket Rate Limit**: Storefront API limits requests to 50 points/second. The application implements standard revalidation headers (`next: { revalidate: 60 }`) to cache Storefront responses for 60 seconds.
 - **Webhook Idempotency**: Webhook processors check `shopifyProductId` and `shopifyVariantId` unique constraints before performing DB upserts to prevent duplicate slot generation.
+
+---
+
+## 🌐 5. Direct Store Ingestion & Multi-Candidate Resolution ([`lib/shopify.ts`](file:///d:/lab/projects/dropshipping-marketplace/lib/shopify.ts))
+
+The marketplace supports 1-click vendor onboarding without requiring manual app installations:
+
+### Domain Normalization & Candidate Pipeline
+1. **Input Normalization**: `cleanStoreDomain(input)` extracts bare hostnames (e.g. `https://aavo.store/` → `aavo.store`).
+2. **Candidate Permutation**: `getDomainCandidates(cleanDomain)` generates lookup aliases:
+   - `aavo.store` (Primary custom domain)
+   - `www.aavo.store` (Subdomain alias)
+   - `aavo.myshopify.com` (Underlying Shopify tenant handle)
+3. **Multi-Method Catalog Fetching**:
+   - **Method 1 (Admin API Token)**: Uses `X-Shopify-Access-Token` if `shpat_` token is provided.
+   - **Method 2 (Storefront GraphQL)**: Queries Storefront GraphQL if public token is provided.
+   - **Method 3 (Public JSON Catalog)**: Fetches `https://[domain]/products.json?limit=50` or `https://[domain]/collections/all/products.json?limit=50`.
+4. **Moderation Queue Registration**:
+   - Stores are created in `PENDING` status and persisted to `localStorage` and `prisma.merchant`.
+   - The platform admin reviews and approves stores in [`/admin`](file:///d:/lab/projects/dropshipping-marketplace/app/admin/page.tsx), publishing products to the public catalog upon approval.

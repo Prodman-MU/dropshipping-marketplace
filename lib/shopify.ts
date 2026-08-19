@@ -529,25 +529,52 @@ export async function fetchProductsFromShopifyStore(
 
       let variants: any[] = [];
       if (isGraphQL && prod.variants?.edges) {
-        variants = prod.variants.edges.map((ve: any, vIdx: number) => ({
-          id: ve.node.id,
-          title: ve.node.title || "Default Variant",
-          price: parseFloat(ve.node.priceV2?.amount || "0"),
-          currencyCode: ve.node.priceV2?.currencyCode || currencyCode,
-          sku: ve.node.sku || `SKU-${index + 1}-${vIdx + 1}`,
-          inventoryQuantity: ve.node.quantityAvailable ?? 15,
-          availableForSale: true,
-        }));
+        variants = prod.variants.edges.map((ve: any, vIdx: number) => {
+          const varImgUrl = ve.node.image?.url;
+          const imgIndex = varImgUrl ? images.indexOf(varImgUrl) : (vIdx < images.length ? vIdx : 0);
+          return {
+            id: ve.node.id,
+            title: ve.node.title || "Default Variant",
+            price: parseFloat(ve.node.priceV2?.amount || "0"),
+            currencyCode: ve.node.priceV2?.currencyCode || currencyCode,
+            sku: ve.node.sku || `SKU-${index + 1}-${vIdx + 1}`,
+            inventoryQuantity: ve.node.quantityAvailable ?? 15,
+            availableForSale: true,
+            imageUrl: varImgUrl || images[imgIndex >= 0 ? imgIndex : 0],
+            imageIndex: imgIndex >= 0 ? imgIndex : (vIdx < images.length ? vIdx : 0),
+          };
+        });
       } else if (Array.isArray(prod.variants)) {
-        variants = prod.variants.map((v: any, vIdx: number) => ({
-          id: String(v.id),
-          title: v.title || "Default Variant",
-          price: parseFloat(v.price || "0"),
-          currencyCode,
-          sku: v.sku || `SKU-${index + 1}-${vIdx + 1}`,
-          inventoryQuantity: v.inventory_quantity ?? 15,
-          availableForSale: (v.inventory_quantity ?? 15) > 0,
-        }));
+        variants = prod.variants.map((v: any, vIdx: number) => {
+          let varImgUrl: string | undefined;
+          if (v.featured_image?.src) {
+            varImgUrl = v.featured_image.src;
+          } else if (v.image_id && Array.isArray(prod.images)) {
+            const matched = prod.images.find((img: any) => typeof img === "object" && (img.id === v.image_id || String(img.id) === String(v.image_id)));
+            if (matched) varImgUrl = matched.src;
+          }
+          let imgIndex = -1;
+          if (varImgUrl) {
+            imgIndex = images.findIndex((img) => img.includes(varImgUrl!) || varImgUrl!.includes(img));
+          }
+          if (imgIndex === -1 && vIdx < images.length) {
+            imgIndex = vIdx;
+          }
+          if (imgIndex === -1) {
+            imgIndex = 0;
+          }
+          return {
+            id: String(v.id),
+            title: v.title || "Default Variant",
+            price: parseFloat(v.price || "0"),
+            currencyCode,
+            sku: v.sku || `SKU-${index + 1}-${vIdx + 1}`,
+            inventoryQuantity: v.inventory_quantity ?? 15,
+            availableForSale: (v.inventory_quantity ?? 15) > 0,
+            imageUrl: varImgUrl || images[imgIndex],
+            imageIndex: imgIndex,
+          };
+        });
       }
 
       const firstVar = variants[0];
