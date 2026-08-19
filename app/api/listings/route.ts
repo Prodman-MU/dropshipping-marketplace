@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SlotListing } from "@/data/mock-slots";
+import { fetchProductsFromShopifyStore } from "@/lib/shopify";
 
 /**
  * Handles GET /api/listings
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const listings = await prisma.listing.findMany({
+    let listings = await prisma.listing.findMany({
       where: whereClause,
       include: {
         merchant: true,
@@ -47,6 +48,108 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
+
+    // If no listings in DB or merchants have 0 listings, query the vendor's Shopify store directly and ingest
+    if (listings.length === 0) {
+      const merchantWhere: any = {};
+      if (merchantId) merchantWhere.id = merchantId;
+      else if (domain) merchantWhere.myshopifyDomain = domain;
+      if (status !== "ALL") merchantWhere.status = status as any;
+
+      const registeredMerchants = await prisma.merchant.findMany({
+        where: merchantWhere,
+      });
+
+      for (const m of registeredMerchants) {
+        try {
+          const { slots: fetchedSlots, error } = await fetchProductsFromShopifyStore(
+            m.myshopifyDomain,
+            m.accessToken || undefined,
+            m.whatsappNumber || undefined,
+            m.passcode || undefined
+          );
+
+          if (!error && fetchedSlots.length > 0) {
+            for (let i = 0; i < fetchedSlots.length; i++) {
+              const slot = fetchedSlots[i];
+              try {
+                const savedListing = await prisma.listing.upsert({
+                  where: { shopifyProductId: slot.shopifyProductId },
+                  update: {
+                    title: slot.title,
+                    description: slot.description,
+                    category: slot.category,
+                    price: Number(slot.price),
+                    compareAtPrice: slot.compareAtPrice ? Number(slot.compareAtPrice) : null,
+                    shopifyVariantId: slot.shopifyVariantId,
+                    merchantId: m.id,
+                    tags: slot.tags,
+                    images: slot.images,
+                    variants: slot.variants as any,
+                    sku: slot.sku,
+                    handle: slot.handle,
+                    productUrl: slot.productUrl,
+                  },
+                  create: {
+                    id: slot.id,
+                    slotNumber: slot.slotNumber || `SLOT #${String(i + 1).padStart(3, "0")}`,
+                    title: slot.title,
+                    description: slot.description,
+                    category: slot.category,
+                    price: Number(slot.price),
+                    compareAtPrice: slot.compareAtPrice ? Number(slot.compareAtPrice) : null,
+                    shopifyProductId: slot.shopifyProductId,
+                    shopifyVariantId: slot.shopifyVariantId,
+                    merchantId: m.id,
+                    tags: slot.tags,
+                    images: slot.images,
+                    variants: slot.variants as any,
+                    sku: slot.sku,
+                    handle: slot.handle,
+                    productUrl: slot.productUrl,
+                  },
+                });
+
+                await prisma.inventory.upsert({
+                  where: { listingId: savedListing.id },
+                  update: {
+                    quantityAvailable: Number(slot.inventoryQuantity || 15),
+                    isUnknownQuantity: Boolean(slot.isUnknownQuantity),
+                    status: (slot.status as any) || "AVAILABLE",
+                    lastSyncedAt: new Date(),
+                  },
+                  create: {
+                    listingId: savedListing.id,
+                    quantityAvailable: Number(slot.inventoryQuantity || 15),
+                    isUnknownQuantity: Boolean(slot.isUnknownQuantity),
+                    status: (slot.status as any) || "AVAILABLE",
+                  },
+                });
+              } catch (listingErr) {
+                console.warn(`[Auto-Ingest] Listing upsert warning:`, listingErr);
+              }
+            }
+
+            await prisma.merchant.update({
+              where: { id: m.id },
+              data: { totalProducts: fetchedSlots.length },
+            });
+          }
+        } catch (fetchErr) {
+          console.warn(`[Listings Auto-Sync] Could not ingest from ${m.myshopifyDomain}:`, fetchErr);
+        }
+      }
+
+      // Re-query listings from database after auto-ingestion
+      listings = await prisma.listing.findMany({
+        where: whereClause,
+        include: {
+          merchant: true,
+          inventory: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
 
     // Format Prisma records into SlotListing interface
     const formattedSlots: SlotListing[] = listings.map((l) => {

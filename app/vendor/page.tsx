@@ -703,6 +703,59 @@ export default function VendorDashboardPage() {
     );
   }
 
+  const [isSyncingStore, setIsSyncingStore] = useState(false);
+  const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
+
+  const handleSyncStore = async (domainToSync?: string) => {
+    const targetDomain = domainToSync || (selectedMerchantId !== "ALL" ? activeMerchantInfo?.myshopifyDomain : undefined);
+    
+    setIsSyncingStore(true);
+    try {
+      if (!targetDomain) {
+        // Trigger all active stores sync via cron endpoint
+        const res = await fetch("/api/cron/sync", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(`Sync failed: ${data.error || "Could not sync stores."}`);
+          return;
+        }
+      } else {
+        const res = await fetch("/api/shopify/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: targetDomain }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(`Sync failed: ${data.error || "Could not reach store."}`);
+          return;
+        }
+      }
+
+      // Re-hydrate listings and merchants from server DB
+      const [mRes, lRes] = await Promise.all([
+        fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+        fetch("/api/listings").then((r) => r.json()).catch(() => null),
+      ]);
+
+      if (mRes?.merchants) {
+        setMerchants(mRes.merchants);
+        saveMerchants(mRes.merchants);
+      }
+      if (lRes?.slots) {
+        setSlots(lRes.slots);
+        saveSlots(lRes.slots);
+      }
+
+      setSyncSuccessToast(`✅ Store catalog updated live from Shopify!`);
+      setTimeout(() => setSyncSuccessToast(null), 4000);
+    } catch (err: any) {
+      alert(`Sync error: ${err.message || "Failed to update catalog."}`);
+    } finally {
+      setIsSyncingStore(false);
+    }
+  };
+
   // 2. AUTHENTICATED: VENDOR DASHBOARD
   return (
     <div className="min-h-screen bg-[#F4F4F0] text-[#111111] flex flex-col selection:bg-[#FFB703]">
@@ -714,6 +767,17 @@ export default function VendorDashboardPage() {
 
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-5 py-8 space-y-8">
         
+        {/* Sync Success Toast */}
+        {syncSuccessToast && (
+          <div className="p-3.5 bg-emerald-300 border-2 border-[#111111] shadow-[4px_4px_0px_#111111] font-mono text-xs font-black uppercase flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-950 shrink-0" />
+              <span>{syncSuccessToast}</span>
+            </div>
+            <button onClick={() => setSyncSuccessToast(null)} className="font-black text-sm">✕</button>
+          </div>
+        )}
+
         {/* Banner Title & Vendor Status Header */}
         <div className="bg-white border-4 border-[#111111] p-6 shadow-[8px_8px_0px_#111111] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -729,8 +793,19 @@ export default function VendorDashboardPage() {
             </p>
           </div>
 
-          {/* Action CTAs: Change Passcode, Connect Store & Logout */}
+          {/* Action CTAs: Sync Catalog, Change Passcode, Connect Store & Logout */}
           <div className="flex items-center flex-wrap gap-2.5 font-mono">
+            {/* Sync Catalog Button */}
+            <button
+              onClick={() => handleSyncStore()}
+              disabled={isSyncingStore}
+              className="py-2.5 px-4 bg-[#005F73] hover:bg-[#111111] text-white border-2 border-[#111111] bauhaus-btn text-xs font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all disabled:opacity-60"
+              title="Pull latest live products, pricing, and variants from Shopify"
+            >
+              <RefreshCw className={`w-4 h-4 text-[#FFB703] ${isSyncingStore ? "animate-spin" : ""}`} />
+              <span>{isSyncingStore ? "Syncing..." : "Sync Store Catalog"}</span>
+            </button>
+
             {activeMerchantInfo && (
               <button
                 onClick={() => {

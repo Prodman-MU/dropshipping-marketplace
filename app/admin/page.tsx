@@ -23,6 +23,7 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -262,6 +263,83 @@ export default function AdminPage() {
       });
     } catch (err) {
       console.warn("DB update warning on merchant rejection:", err);
+    }
+  };
+
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [syncingStoreId, setSyncingStoreId] = useState<string | null>(null);
+  const [syncNoticeToast, setSyncNoticeToast] = useState<string | null>(null);
+
+  const handleSyncStore = async (domain: string, merchantId: string) => {
+    setSyncingStoreId(merchantId);
+    try {
+      const res = await fetch("/api/shopify/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(`Store sync failed: ${data.error || "Could not query store."}`);
+        return;
+      }
+
+      // Refresh listings and merchants from DB
+      const [mRes, lRes] = await Promise.all([
+        fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+        fetch("/api/listings").then((r) => r.json()).catch(() => null),
+      ]);
+
+      if (mRes?.merchants) {
+        setMerchants(mRes.merchants);
+        saveMerchants(mRes.merchants);
+      }
+      if (lRes?.slots) {
+        setSlots(lRes.slots);
+        saveSlots(lRes.slots);
+      }
+
+      setSyncNoticeToast(`✅ Catalog for "${domain}" updated live (${data.syncedSlotsCount} listings synced)!`);
+      setTimeout(() => setSyncNoticeToast(null), 4000);
+    } catch (e: any) {
+      alert(`Sync error: ${e.message || "Failed to sync store."}`);
+    } finally {
+      setSyncingStoreId(null);
+    }
+  };
+
+  const handleSyncAllStores = async () => {
+    setIsSyncingAll(true);
+    try {
+      const res = await fetch("/api/cron/sync", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(`Sync all failed: ${data.error || "Could not sync all stores."}`);
+        return;
+      }
+
+      // Refresh listings and merchants from DB
+      const [mRes, lRes] = await Promise.all([
+        fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+        fetch("/api/listings").then((r) => r.json()).catch(() => null),
+      ]);
+
+      if (mRes?.merchants) {
+        setMerchants(mRes.merchants);
+        saveMerchants(mRes.merchants);
+      }
+      if (lRes?.slots) {
+        setSlots(lRes.slots);
+        saveSlots(lRes.slots);
+      }
+
+      setSyncNoticeToast(`✅ All active store catalogs synchronized live with Shopify!`);
+      setTimeout(() => setSyncNoticeToast(null), 4000);
+    } catch (e: any) {
+      alert(`Sync all error: ${e.message || "Failed to sync."}`);
+    } finally {
+      setIsSyncingAll(false);
     }
   };
 
@@ -544,9 +622,9 @@ export default function AdminPage() {
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5 py-8 space-y-8 relative z-10">
         
-        {/* Vendor Passcode Action Toast */}
+        {/* Vendor Key Updated Toast Banner */}
         {vendorKeyToast && (
-          <div className="p-3.5 bg-[#FFB703] border-4 border-[#111111] font-mono text-xs font-black text-[#111111] shadow-[5px_5px_0px_#111111] flex items-center justify-between animate-fadeIn">
+          <div className="p-3.5 bg-[#FFB703] border-3 border-[#111111] shadow-[4px_4px_0px_#111111] font-mono text-xs font-black uppercase flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <KeyRound className="w-4 h-4 stroke-[2.5]" />
               <span>{vendorKeyToast}</span>
@@ -554,6 +632,22 @@ export default function AdminPage() {
             <button
               onClick={() => setVendorKeyToast(null)}
               className="p-1 hover:bg-[#111111] hover:text-[#FFB703] transition-colors font-black"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Sync Success Toast Banner */}
+        {syncNoticeToast && (
+          <div className="p-3.5 bg-emerald-300 border-3 border-[#111111] shadow-[4px_4px_0px_#111111] font-mono text-xs font-black uppercase flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-950 shrink-0" />
+              <span>{syncNoticeToast}</span>
+            </div>
+            <button
+              onClick={() => setSyncNoticeToast(null)}
+              className="p-1 hover:bg-[#111111] hover:text-white transition-colors font-black"
             >
               ✕
             </button>
@@ -652,13 +746,26 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <button
-                onClick={() => setIsConnectModalOpen(true)}
-                className="px-4 py-2 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black flex items-center gap-2 shadow-[2px_2px_0px_#111111] uppercase"
-              >
-                <Store className="w-4 h-4 text-[#111111]" />
-                <span>Link Shopify Store</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Sync All Stores Catalog Action */}
+                <button
+                  onClick={handleSyncAllStores}
+                  disabled={isSyncingAll}
+                  className="px-4 py-2 bg-[#005F73] hover:bg-[#111111] text-white border-2 border-[#111111] bauhaus-btn text-xs font-black flex items-center gap-2 shadow-[2px_2px_0px_#111111] uppercase transition-all disabled:opacity-60"
+                  title="Daily live sync: Pulls latest products from all active Shopify stores"
+                >
+                  <RefreshCw className={`w-4 h-4 text-[#FFB703] ${isSyncingAll ? "animate-spin" : ""}`} />
+                  <span>{isSyncingAll ? "Syncing All..." : "Sync All Catalogs"}</span>
+                </button>
+
+                <button
+                  onClick={() => setIsConnectModalOpen(true)}
+                  className="px-4 py-2 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black flex items-center gap-2 shadow-[2px_2px_0px_#111111] uppercase"
+                >
+                  <Store className="w-4 h-4 text-[#111111]" />
+                  <span>Link Store</span>
+                </button>
+              </div>
             </div>
 
             {/* Stores List */}
@@ -739,8 +846,19 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        {/* Approve / Reject Controls */}
-                        <div className="flex items-center gap-3">
+                        {/* Approve / Reject / Sync Controls */}
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          {/* Sync Store Catalog Action */}
+                          <button
+                            onClick={() => handleSyncStore(merchant.myshopifyDomain, merchant.id)}
+                            disabled={syncingStoreId === merchant.id}
+                            className="px-3.5 py-2.5 bg-white hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] font-mono text-xs font-black flex items-center gap-1.5 shadow-[2px_2px_0px_#111111] transition-all uppercase disabled:opacity-60"
+                            title="Query Shopify store and pull latest catalog listings"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 text-[#005F73] ${syncingStoreId === merchant.id ? "animate-spin" : ""}`} />
+                            <span>{syncingStoreId === merchant.id ? "Syncing..." : "Refresh Catalog"}</span>
+                          </button>
+
                           {merchant.status !== "ACTIVE" && (
                             <button
                               onClick={() => handleApprove(merchant.id)}
