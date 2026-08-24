@@ -156,3 +156,73 @@ export function normalizeStoreUrl(input: string): string {
   if (!domain) return "";
   return `https://${domain}`;
 }
+
+/**
+ * Extracts a clean, human-readable brand slug from a store domain or name.
+ * 
+ * @example
+ * getStoreSlug("www.pause2play.in") -> "pause2play"
+ * getStoreSlug("apex-gear.myshopify.com") -> "apex-gear"
+ * 
+ * @param {string} input - Raw store domain, myshopify domain, or store name.
+ * @returns {string} Clean URL-safe store brand slug.
+ */
+export function getStoreSlug(input: string): string {
+  if (!input) return "store";
+  let cleaned = cleanStoreDomain(input);
+  if (!cleaned) {
+    cleaned = input.toLowerCase().trim();
+  }
+
+  // Remove .myshopify.com
+  cleaned = cleaned.replace(/\.myshopify\.com$/i, "");
+  // Remove leading www.
+  cleaned = cleaned.replace(/^www\./i, "");
+  // Remove common TLD extensions (.in, .com, .co, .org, .net, .store, .shop, etc.)
+  cleaned = cleaned.replace(/\.(in|com|co|org|net|store|shop|io|ai|biz|online)$/i, "");
+  // Also handle country-code second-level TLDs like .co.in
+  cleaned = cleaned.replace(/\.co$/i, "");
+
+  // Sanitize to alphanumeric and hyphens
+  cleaned = cleaned.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return cleaned || "store";
+}
+
+/**
+ * Derives a clean URL-safe product handle from a listing.
+ * 
+ * @param {{ handle?: string; title: string; id: string }} product - Product listing.
+ * @returns {string} Clean URL-safe product slug handle.
+ */
+export function getProductHandle(product: { handle?: string; title?: string; id?: string }): string {
+  if (product.handle && product.handle.trim()) {
+    return product.handle.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  if (product.title && product.title.trim()) {
+    return product.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  return product.id || "item";
+}
+
+/**
+ * Generates the canonical store-namespaced product URL for marketplace navigation.
+ * 
+ * @example
+ * getProductPageUrl(slot) -> "/product/pause2play/minecraft-blocks-46-pcs"
+ * 
+ * @param {{ handle?: string; title: string; id: string; merchant: { myshopifyDomain: string; name?: string } }} slot - Product listing slot.
+ * @returns {string} Relative URL path to dedicated product page.
+ */
+export function getProductPageUrl(slot: {
+  id: string;
+  title: string;
+  handle?: string;
+  merchant: { myshopifyDomain: string; name?: string };
+}): string {
+  const storeSlug = getStoreSlug(slot.merchant.myshopifyDomain || slot.merchant.name || "store");
+  const handle = getProductHandle(slot);
+  return `/product/${storeSlug}/${handle}`;
+}
+

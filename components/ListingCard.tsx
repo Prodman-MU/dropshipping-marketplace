@@ -18,7 +18,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Eye, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { SlotListing } from "@/data/mock-slots";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getProductPageUrl } from "@/lib/utils";
 
 interface ListingCardProps {
   slot: SlotListing;
@@ -46,7 +46,7 @@ export function ListingCard({ slot, onSelect }: ListingCardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/product/${slot.id}`} className="block flex-1 flex flex-col">
+      <Link href={getProductPageUrl(slot)} className="block flex-1 flex flex-col">
         
         {/* Product Image Frame with Studio Backdrop */}
         <div className="relative w-full aspect-square sm:aspect-[4/5] bg-[#F5F5F7] rounded-xl sm:rounded-2xl overflow-hidden mb-3">

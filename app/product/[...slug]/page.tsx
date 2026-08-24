@@ -1,14 +1,16 @@
 /**
- * @file page.tsx (under app/product/[id]/)
- * @description Apple Store x MR PORTER Gallery-Grade Product Detail Page (PDP).
+ * @file page.tsx (under app/product/[...slug]/)
+ * @description Unified Catch-All Product Detail Page (PDP).
+ * 
+ * Supports:
+ * - Canonical 2-segment URLs: /product/[store]/[handle] (e.g. /product/pause2play/minecraft-blocks-46-pcs)
+ * - Legacy / direct 1-segment URLs: /product/[idOrHandle] (e.g. /product/slot-m-www-pause2play-in-2)
  * 
  * Features:
- * - Pure white canvas with generous spatial architecture
- * - Studio photo gallery with thumbnail rail & subtle hover effects
- * - Sticky purchasing column with Playfair editorial headline
- * - Clean variant selection pills & wholesale margin breakdown
- * - Matte black pill CTAs & WhatsApp merchant checkout
- * - Zero-border "Curated Selections" related products carousel
+ * - Pure white gallery canvas with studio neutral image viewport
+ * - High-contrast Playfair headline, variant pills, and dynamic discount % calculation
+ * - Primary Shopify Store Checkout CTA & secondary WhatsApp B2B bulk inquiry
+ * - Clickable merchant storefront link and "More Products from [Vendor]" showcase
  */
 
 "use client";
@@ -20,7 +22,7 @@ import { Header } from "@/components/Header";
 import { ListingCard } from "@/components/ListingCard";
 import { SlotListing, MerchantVendor } from "@/data/mock-slots";
 import { getInitialSlots, getInitialMerchants, saveSlots, saveMerchants } from "@/lib/store-manager";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getStoreSlug, getProductHandle, isSameStoreDomain, getProductPageUrl } from "@/lib/utils";
 import { getSiteSettings, SiteSettings, DEFAULT_SITE_SETTINGS } from "@/lib/settings-manager";
 import {
   ArrowLeft,
@@ -28,7 +30,6 @@ import {
   ShoppingBag,
   Store,
   ShieldCheck,
-  Copy,
   ChevronLeft,
   ChevronRight,
   Check,
@@ -40,10 +41,16 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-export default function ProductDetailPage() {
+export default function UnifiedProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const productId = params?.id as string;
+  
+  // Extract route segments safely from catch-all [...slug]
+  const rawSlug = params?.slug;
+  const slugArray = Array.isArray(rawSlug) ? rawSlug : typeof rawSlug === "string" ? [rawSlug] : [];
+  
+  const storeParam = slugArray.length > 1 ? slugArray[0] : "";
+  const handleParam = slugArray.length > 1 ? slugArray[1] : slugArray[0] || "";
 
   const [slots, setSlots] = useState<SlotListing[]>([]);
   const [merchants, setMerchants] = useState<MerchantVendor[]>([]);
@@ -51,7 +58,6 @@ export default function ProductDetailPage() {
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
-  const [copiedNotice, setCopiedNotice] = useState<string | null>(null);
 
   // Accordion state
   const [openAccordion, setOpenAccordion] = useState<"description" | "shipping" | "vendor" | null>("description");
@@ -101,13 +107,55 @@ export default function ProductDetailPage() {
   }, []);
 
   const slot = useMemo(() => {
-    if (!productId) return null;
-    return slots.find((s) => s.id === productId || s.slotNumber.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === productId.toLowerCase()) || null;
-  }, [slots, productId]);
+    if (!handleParam) return null;
+    const cleanHandle = handleParam.toLowerCase().trim();
+    const cleanStore = storeParam.toLowerCase().trim();
 
-  const relatedSlots = useMemo(() => {
+    // 1. Primary match: 2-segment store slug + product handle
+    if (cleanStore) {
+      const exactMatch = slots.find((s) => {
+        const sStore = getStoreSlug(s.merchant.myshopifyDomain || s.merchant.name || "");
+        const sHandle = getProductHandle(s);
+        const isStoreMatched = sStore === cleanStore || isSameStoreDomain(s.merchant.myshopifyDomain, cleanStore);
+        const isHandleMatched = sHandle === cleanHandle || (s.handle && s.handle.toLowerCase() === cleanHandle);
+        return isStoreMatched && isHandleMatched;
+      });
+      if (exactMatch) return exactMatch;
+    }
+
+    // 2. Direct ID or slotNumber match (supports legacy /product/slot-m-...)
+    const idMatch = slots.find((s) => {
+      return (
+        s.id.toLowerCase() === cleanHandle ||
+        s.slotNumber.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === cleanHandle
+      );
+    });
+    if (idMatch) return idMatch;
+
+    // 3. Product handle match across all listings
+    const handleOnlyMatch = slots.find((s) => {
+      const sHandle = getProductHandle(s);
+      return sHandle === cleanHandle || (s.handle && s.handle.toLowerCase() === cleanHandle);
+    });
+    if (handleOnlyMatch) return handleOnlyMatch;
+
+    // 4. Fallback match on Shopify Product ID
+    return slots.find((s) => s.shopifyProductId === handleParam) || null;
+  }, [slots, storeParam, handleParam]);
+
+  const vendorSlots = useMemo(() => {
     if (!slot) return [];
-    return slots.filter((s) => s.id !== slot.id && (s.category === slot.category || s.merchant.id === slot.merchant.id)).slice(0, 4);
+    return slots.filter(
+      (s) =>
+        s.id !== slot.id &&
+        (s.merchant.id === slot.merchant.id ||
+          s.merchant.myshopifyDomain === slot.merchant.myshopifyDomain)
+    );
+  }, [slots, slot]);
+
+  const fallbackOtherSlots = useMemo(() => {
+    if (!slot) return [];
+    return slots.filter((s) => s.id !== slot.id).slice(0, 4);
   }, [slots, slot]);
 
   if (!slot) {
@@ -121,7 +169,7 @@ export default function ProductDetailPage() {
             </div>
             <h2 className="font-editorial text-2xl text-neutral-950 font-normal">Product Not Found</h2>
             <p className="text-xs text-neutral-600">
-              The requested catalog product slot could not be located or may have been updated.
+              The requested product (<code className="font-mono text-neutral-900">{slugArray.join("/")}</code>) could not be located in our catalog.
             </p>
             <div className="pt-2">
               <Link
@@ -154,13 +202,6 @@ export default function ProductDetailPage() {
 
   const isOutOfStock = (!slot.isUnknownQuantity && slot.inventoryQuantity <= 0) || slot.status === "SOLD" || !currentVariant.availableForSale;
 
-  const handleCopySpecs = () => {
-    const specsText = `PRODUCT: ${slot.title}\nPRICE: ${formatCurrency(slot.price, slot.currencyCode || "INR")}\nCATEGORY: ${slot.category}\nSKU: ${slot.sku}\nSTORE: ${slot.merchant.name} (${slot.merchant.myshopifyDomain})\nDIRECT CHECKOUT: ${slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}`;
-    navigator.clipboard.writeText(specsText);
-    setCopiedNotice("Product Specifications copied to clipboard!");
-    setTimeout(() => setCopiedNotice(null), 3000);
-  };
-
   const handleSelectVariant = (idx: number) => {
     setSelectedVariantIndex(idx);
     const variant = variants[idx];
@@ -188,15 +229,6 @@ export default function ProductDetailPage() {
 
       {/* Main PDP Container */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-12">
-        
-        {/* Toast Notification for Copied Specs */}
-        {copiedNotice && (
-          <div className="fixed top-20 right-6 z-50 bg-black text-white px-5 py-3 rounded-full text-xs font-mono shadow-lg flex items-center gap-3">
-            <Check className="w-4 h-4 text-emerald-400" />
-            <span>{copiedNotice}</span>
-          </div>
-        )}
-
         {/* 2-Column Product Gallery & Details Split */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
@@ -229,7 +261,7 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition cursor-pointer"
                     title="Previous Image"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -237,7 +269,7 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition cursor-pointer"
                     title="Next Image"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -349,52 +381,29 @@ export default function ProductDetailPage() {
 
             {/* Primary Action Buttons */}
             <div className="space-y-3 pt-2">
-              {/* WhatsApp Purchase / Direct Inquiry */}
+              {/* Direct Checkout on Shopify Store as Primary Action */}
+              <a
+                href={slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pill-btn-primary w-full py-4 text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-md hover:bg-neutral-800 cursor-pointer"
+              >
+                <ShoppingBag className="w-4 h-4 text-white" />
+                <span>Checkout on Shopify Store</span>
+                <ExternalLink className="w-3.5 h-3.5 text-neutral-300" />
+              </a>
+
+              {/* Secondary WhatsApp B2B Wholesale Inquiry */}
               <a
                 href={`https://wa.me/${slot.merchant.whatsappNumber || "919876543210"}?text=${encodeURIComponent(
                   `Hi ${slot.merchant.name}! I want to source "${slot.title}" (Variant: ${currentVariant.title}, SKU: ${currentVariant.sku || slot.sku}). Price: ${formatCurrency(currentVariant.price || slot.price, slot.currencyCode || "INR")}. Please share wholesale dispatch details.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pill-btn-primary w-full py-4 text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2"
+                className="pill-btn-secondary w-full py-3.5 text-xs font-medium uppercase tracking-wider flex items-center justify-center gap-2 text-neutral-800 hover:text-black cursor-pointer"
               >
                 <span>Inquire & Source on WhatsApp</span>
               </a>
-
-              {/* Direct Checkout on Shopify Store */}
-              {slot.productUrl ? (
-                <a
-                  href={slot.productUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="pill-btn-secondary w-full py-3.5 text-xs font-medium uppercase tracking-wider flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag className="w-4 h-4 text-neutral-600" />
-                  <span>Checkout on Merchant Shopify Store</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
-                </a>
-              ) : (
-                <a
-                  href={`https://${slot.merchant.myshopifyDomain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="pill-btn-secondary w-full py-3.5 text-xs font-medium uppercase tracking-wider flex items-center justify-center gap-2"
-                >
-                  <Store className="w-4 h-4 text-neutral-600" />
-                  <span>Visit Merchant Storefront</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
-                </a>
-              )}
-
-              {/* Copy Specs Secondary Action */}
-              <button
-                type="button"
-                onClick={handleCopySpecs}
-                className="w-full text-center text-xs text-neutral-500 hover:text-black font-medium py-1 transition flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copy Product Specifications</span>
-              </button>
             </div>
 
             {/* Collapsible Accordion Sections */}
@@ -439,7 +448,7 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Accordion 2: Merchant & Verification */}
+              {/* Accordion 2: Merchant & Verification (Clickable Store Link) */}
               <div className="py-4">
                 <button
                   type="button"
@@ -452,29 +461,48 @@ export default function ProductDetailPage() {
 
                 {openAccordion === "vendor" && (
                   <div className="pt-3 space-y-3">
-                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#F8F9FA]">
-                      {slot.merchant.storeLogo ? (
-                        <img
-                          src={slot.merchant.storeLogo}
-                          alt={slot.merchant.name}
-                          className="w-10 h-10 rounded-full border border-neutral-200 object-cover bg-white shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center font-semibold text-xs shrink-0 font-mono">
-                          {slot.merchant.name.slice(0, 2).toUpperCase()}
+                    <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#F8F9FA] border border-neutral-200/60">
+                      <a
+                        href={`https://${slot.merchant.myshopifyDomain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 min-w-0 flex-1 group cursor-pointer"
+                        title={`Visit ${slot.merchant.name} storefront`}
+                      >
+                        {slot.merchant.storeLogo ? (
+                          <img
+                            src={slot.merchant.storeLogo}
+                            alt={slot.merchant.name}
+                            className="w-10 h-10 rounded-full border border-neutral-200 object-cover bg-white shrink-0 group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center font-semibold text-xs shrink-0 font-mono">
+                            {slot.merchant.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-neutral-950 truncate group-hover:underline">
+                              {slot.merchant.name}
+                            </h4>
+                            <ShieldCheck className="w-3.5 h-3.5 text-neutral-900 shrink-0" />
+                          </div>
+                          <p className="font-mono text-[10px] text-neutral-500 hover:text-black truncate flex items-center gap-1">
+                            <span>{slot.merchant.myshopifyDomain}</span>
+                            <ExternalLink className="w-3 h-3 text-neutral-400 inline shrink-0" />
+                          </p>
                         </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="text-xs font-semibold text-neutral-950 truncate">
-                            {slot.merchant.name}
-                          </h4>
-                          <ShieldCheck className="w-3.5 h-3.5 text-neutral-900 shrink-0" />
-                        </div>
-                        <p className="font-mono text-[10px] text-neutral-500 truncate">
-                          {slot.merchant.myshopifyDomain}
-                        </p>
-                      </div>
+                      </a>
+
+                      <a
+                        href={`https://${slot.merchant.myshopifyDomain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pill-btn-secondary px-3.5 py-1.5 text-[11px] font-mono shrink-0 flex items-center gap-1 hover:bg-neutral-200 transition cursor-pointer"
+                      >
+                        <span>Visit Store</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
                   </div>
                 )}
@@ -486,25 +514,36 @@ export default function ProductDetailPage() {
 
         </div>
 
-        {/* RELATED CURATED PRODUCTS */}
-        {relatedSlots.length > 0 && (
+        {/* PRODUCTS BY THE SAME VENDOR */}
+        {(vendorSlots.length > 0 || fallbackOtherSlots.length > 0) && (
           <div className="space-y-6 pt-10 border-t border-neutral-200/70">
-            <div className="flex items-center justify-between">
-              <h3 className="font-editorial text-2xl sm:text-3xl text-neutral-950 font-normal">
-                Curated For You
-              </h3>
-              <Link href="/" className="text-xs font-medium text-neutral-600 hover:text-black flex items-center gap-1">
-                <span>View Full Catalog</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-widest block">
+                  {vendorSlots.length > 0 ? "MORE FROM THIS SELLER" : "MARKETPLACE SELECTIONS"}
+                </span>
+                <h3 className="font-editorial text-2xl sm:text-3xl text-neutral-950 font-normal">
+                  {vendorSlots.length > 0 ? `More Products from ${slot.merchant.name}` : "Curated Marketplace Selections"}
+                </h3>
+              </div>
+              
+              <a
+                href={`https://${slot.merchant.myshopifyDomain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-neutral-600 hover:text-black flex items-center gap-1 font-mono cursor-pointer"
+              >
+                <span>Visit {slot.merchant.name}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
-              {relatedSlots.map((relSlot) => (
-                <div key={relSlot.id}>
+              {(vendorSlots.length > 0 ? vendorSlots : fallbackOtherSlots).map((displaySlot) => (
+                <div key={displaySlot.id}>
                   <ListingCard
-                    slot={relSlot}
-                    onSelect={() => router.push(`/product/${relSlot.id}`)}
+                    slot={displaySlot}
+                    onSelect={() => router.push(getProductPageUrl(displaySlot))}
                   />
                 </div>
               ))}
@@ -529,7 +568,7 @@ export default function ProductDetailPage() {
           href={slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="pill-btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
+          className="pill-btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider cursor-pointer"
         >
           Checkout
         </a>

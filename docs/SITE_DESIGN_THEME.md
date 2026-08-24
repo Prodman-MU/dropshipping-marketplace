@@ -118,8 +118,8 @@ const jetbrainsMono = JetBrains_Mono({
 ### 5. Product Detail Page ([`app/product/[id]/page.tsx`](file:///d:/lab/projects/dropshipping-marketplace/app/product/[id]/page.tsx))
 * **2-Column Asymmetric Grid:**
   - **Left (58%):** Vertical studio image roll with thumbnail selector.
-  - **Right (42% Sticky):** Playfair title, brand lockup, wholesale pricing, discount % callout, variant pills, WhatsApp inquiry button, direct Shopify checkout, and collapsible spec accordions.
-* **Bottom Showcase:** "Curated For You" related items showcase.
+  - **Right (42% Sticky):** Playfair title, brand lockup, wholesale pricing, discount % callout, variant pills, primary Shopify Store Checkout CTA, secondary WhatsApp inquiry button, and collapsible spec accordions with clickable merchant storefront links.
+* **Bottom Showcase:** "More Products from [Vendor Name]" same-vendor curated showcase.
 
 ### 6. Admin & Vendor Desks ([`app/admin/page.tsx`](file:///d:/lab/projects/dropshipping-marketplace/app/admin/page.tsx) & [`app/vendor/page.tsx`](file:///d:/lab/projects/dropshipping-marketplace/app/vendor/page.tsx))
 * **Access Gates:** Clean centered authentication cards with circular lock badges and matte black pill buttons.

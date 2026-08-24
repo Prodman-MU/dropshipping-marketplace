@@ -32,7 +32,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SlotListing, VariantOption } from "@/data/mock-slots";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getProductPageUrl } from "@/lib/utils";
 
 interface ListingDrawerProps {
   slot: SlotListing | null;
@@ -146,7 +146,7 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
               )}
 
               <Link
-                href={`/product/${currentSlot.id}`}
+                href={getProductPageUrl(currentSlot)}
                 target="_blank"
                 className="pill-btn-secondary px-3 py-1.5 text-xs font-medium flex items-center gap-1"
                 title="Open dedicated product page"
