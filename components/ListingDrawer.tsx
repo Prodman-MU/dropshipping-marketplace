@@ -1,3 +1,15 @@
+/**
+ * @file ListingDrawer.tsx
+ * @description Apple Store x MR PORTER Gallery-Grade Quick View Modal.
+ * 
+ * Features:
+ * - Frosted backdrop with smooth spring scale animation
+ * - Neutral studio photography carousel with thumbnail selectors
+ * - Grailed micro-data specs & Playfair editorial title
+ * - Margin calculation callouts & variant selection pills
+ * - Matte black pill CTAs for store syncing and copying specifications
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,20 +24,15 @@ import {
   ExternalLink,
   ShieldCheck,
   CheckCircle2,
-  Clock,
-  Tag,
-  Cpu,
-  ShoppingBag,
-  MessageCircle,
   ChevronLeft,
   ChevronRight,
   Copy,
   Check,
   ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import { SlotListing, VariantOption } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
-import { getInitialSlots } from "@/lib/store-manager";
 
 interface ListingDrawerProps {
   slot: SlotListing | null;
@@ -61,8 +68,7 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
   };
 
   const isAvailable = currentSlot.status === "AVAILABLE";
-  const isReserved = currentSlot.status === "RESERVED";
-  const isSold = currentSlot.status === "SOLD";
+  const isOutOfStock = (!currentSlot.isUnknownQuantity && currentSlot.inventoryQuantity <= 0) || currentSlot.status === "SOLD";
 
   const images = currentSlot.images && currentSlot.images.length > 0 ? currentSlot.images : ["/placeholder.jpg"];
   const mainImage = images[selectedImageIndex] || images[0];
@@ -76,7 +82,7 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
   };
 
   const handleCopySpecs = () => {
-    const specsText = `Product: ${currentSlot.title}\nSKU: ${currentVariant.sku || currentSlot.sku}\nVariant: ${currentVariant.title}\nPrice: ₹${currentVariant.price || currentSlot.price}\nCategory: ${currentSlot.category}\nStore: ${currentSlot.merchant.name} (${currentSlot.merchant.myshopifyDomain})\nDetails: ${currentSlot.description}`;
+    const specsText = `Product: ${currentSlot.title}\nSKU: ${currentVariant.sku || currentSlot.sku}\nVariant: ${currentVariant.title}\nWholesale Price: ₹${currentVariant.price || currentSlot.price}\nCategory: ${currentSlot.category}\nStore: ${currentSlot.merchant.name} (${currentSlot.merchant.myshopifyDomain})\nDetails: ${currentSlot.description}`;
     navigator.clipboard.writeText(specsText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -101,447 +107,311 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">
-        {/* Dark Backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
+        {/* Frosted Dark Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-xs cursor-pointer"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
         />
 
-        {/* Modal Window Container */}
+        {/* Modal Sheet Container */}
         <motion.div
-          initial={{ scale: 0.96, opacity: 0, y: 15 }}
+          initial={{ scale: 0.97, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.96, opacity: 0, y: 15 }}
-          transition={{ type: "spring", damping: 25, stiffness: 240 }}
-          className="relative z-10 w-full max-w-6xl bg-[#F4F4F0] border-4 border-[#111111] shadow-[10px_10px_0px_#111111] overflow-hidden flex flex-col max-h-[92vh]"
+          exit={{ scale: 0.97, opacity: 0, y: 10 }}
+          transition={{ type: "spring", damping: 28, stiffness: 280 }}
+          className="relative z-10 w-full max-w-5xl bg-white rounded-3xl border border-neutral-200/80 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
         >
           
           {/* Header Bar */}
-          <div className="px-4 py-3 bg-white border-b-4 border-[#111111] flex items-center justify-between gap-3 shrink-0">
+          <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4 shrink-0">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 bg-[#D62828] border-2 border-[#111111] flex items-center justify-center font-display font-black text-xs text-white shadow-[2px_2px_0px_#111111] shrink-0">
-                MU
-              </div>
-              <div className="min-w-0">
-                <span className="text-[9px] font-mono font-black text-[#005F73] uppercase tracking-wider block">
-                  PRODUCT SPECIFICATION & STOREFRONT SHEET
-                </span>
-                <h2 className="text-sm sm:text-base font-black text-[#111111] font-display uppercase tracking-tight truncate">
-                  {currentSlot.title}
-                </h2>
-              </div>
+              <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-widest truncate">
+                {currentSlot.merchant.name} // {currentSlot.category}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 font-mono">
-              {isAvailable && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-black bg-emerald-300 text-[#111111] border border-[#111111]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse" />
-                  AVAILABLE
-                </span>
-              )}
-              {isReserved && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-black bg-[#FFB703] text-[#111111] border border-[#111111]">
-                  RESERVED
-                </span>
-              )}
-              {isSold && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-black bg-[#E5E5E0] text-[#111111] border border-[#111111]">
+            <div className="flex items-center gap-2.5 shrink-0">
+              {isOutOfStock ? (
+                <span className="status-pill bg-neutral-900 text-white border-neutral-900">
                   SOLD OUT
+                </span>
+              ) : (
+                <span className="status-pill bg-neutral-100 text-neutral-800 border-neutral-200">
+                  AVAILABLE
                 </span>
               )}
 
               <Link
                 href={`/product/${currentSlot.id}`}
                 target="_blank"
-                className="p-1.5 bg-[#F4F4F0] hover:bg-[#111111] hover:text-white border-2 border-[#111111] transition-colors flex items-center gap-1 text-[11px] font-black uppercase"
+                className="pill-btn-secondary px-3 py-1.5 text-xs font-medium flex items-center gap-1"
                 title="Open dedicated product page"
               >
-                <span className="hidden md:inline">Full Page</span>
-                <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Full Page</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500" />
               </Link>
 
               <button
+                type="button"
                 onClick={onClose}
-                className="p-1.5 bg-[#FFB703] border-2 border-[#111111] hover:bg-[#D62828] hover:text-white transition-colors"
-                title="Close Window"
+                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
+                title="Close"
               >
-                <X className="w-4 h-4 stroke-[3]" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Modal Main Body: 3-Column Split */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-white">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+          {/* Modal Content Split */}
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-white">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
-              {/* COLUMN 1: Image Gallery (5 cols / ~42%) */}
-              <div className="lg:col-span-5 space-y-3 sm:space-y-4">
-                {/* Main Image Frame */}
-                <div className="relative w-full aspect-square sm:aspect-4/3 bg-[#F4F4F0] border-4 border-[#111111] shadow-[6px_6px_0px_#111111] overflow-hidden group">
+              {/* LEFT COLUMN: Gallery Viewport (6 cols) */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="relative w-full aspect-square bg-[#F5F5F7] rounded-2xl overflow-hidden group">
                   <img
                     src={mainImage}
                     alt={currentSlot.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
 
-                  {/* Carousel Prev/Next Buttons */}
                   {images.length > 1 && (
                     <>
                       <button
+                        type="button"
                         onClick={handlePrevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/95 hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] transition-all"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition"
                         title="Previous Image"
                       >
-                        <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                        <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={handleNextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/95 hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] shadow-[2px_2px_0px_#111111] transition-all"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-neutral-900 shadow-md flex items-center justify-center transition"
                         title="Next Image"
                       >
-                        <ChevronRight className="w-4 h-4 stroke-[3]" />
+                        <ChevronRight className="w-4 h-4" />
                       </button>
 
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-[#111111] text-white text-[10px] font-mono font-black border border-white">
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-[10px] font-mono">
                         {selectedImageIndex + 1} / {images.length}
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* Mobile View (< sm): Pagination Dots Indicator */}
+                {/* Thumbnails strip */}
                 {images.length > 1 && (
-                  <div className="flex sm:hidden items-center justify-center gap-2 py-1">
-                    {images.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImageIndex(idx)}
-                        className={`transition-all ${
-                          selectedImageIndex === idx
-                            ? "w-6 h-2.5 bg-[#111111] border border-[#111111] rounded-full shadow-[1px_1px_0px_#FFB703]"
-                            : "w-2.5 h-2.5 bg-[#D5D5D0] hover:bg-[#111111] border border-[#111111] rounded-full"
-                        }`}
-                        title={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Tablet & Desktop View (sm+): Thumbnails Row */}
-                {images.length > 1 && (
-                  <div className="hidden sm:flex items-center gap-2.5 overflow-x-auto pb-1">
+                  <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
                     {images.map((img, idx) => (
                       <button
                         key={idx}
+                        type="button"
                         onClick={() => setSelectedImageIndex(idx)}
-                        className={`w-14 h-14 border-2 border-[#111111] shrink-0 transition-all ${
+                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition ${
                           selectedImageIndex === idx
-                            ? "bg-[#FFB703] shadow-[3px_3px_0px_#111111] scale-105"
-                            : "opacity-70 hover:opacity-100 bg-white"
+                            ? "border-black scale-102"
+                            : "border-transparent opacity-60 hover:opacity-100 bg-[#F5F5F7]"
                         }`}
                       >
-                        <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
+                        <img src={img} alt="thumb" className="w-full h-full object-cover" />
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* COLUMN 2: Title, Tabs, Variant Selector, Description & Specs (4 cols / ~33%) */}
-              <div className="lg:col-span-4 space-y-4">
+              {/* RIGHT COLUMN: Spec & Purchase Column (6 cols) */}
+              <div className="lg:col-span-6 space-y-6">
                 
-                {/* 1. Category Tag & Full Product Title */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="inline-block px-2.5 py-0.5 text-[11px] font-mono font-black uppercase bg-[#005F73] text-white border border-[#111111]">
-                      {currentSlot.category}
+                {/* Brand & Title */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">
+                      {currentSlot.merchant.name}
                     </span>
-
-                    {/* Tab Navigation Controls */}
-                    <div className="flex items-center gap-1 font-mono text-xs">
-                      <button
-                        onClick={() => setActiveTab("specs")}
-                        className={`px-2 py-0.5 font-black uppercase border border-[#111111] text-[10px] transition-all ${
-                          activeTab === "specs"
-                            ? "bg-[#111111] text-[#FFB703] shadow-[1px_1px_0px_#111111]"
-                            : "bg-[#F4F4F0] text-[#111111] hover:bg-white"
-                        }`}
-                      >
-                        Specs
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("shopify")}
-                        className={`px-2 py-0.5 font-black uppercase border border-[#111111] text-[10px] transition-all ${
-                          activeTab === "shopify"
-                            ? "bg-[#111111] text-[#FFB703] shadow-[1px_1px_0px_#111111]"
-                            : "bg-[#F4F4F0] text-[#111111] hover:bg-white"
-                        }`}
-                      >
-                        Data
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("webhooks")}
-                        className={`px-2 py-0.5 font-black uppercase border border-[#111111] text-[10px] flex items-center gap-1 transition-all ${
-                          activeTab === "webhooks"
-                            ? "bg-[#111111] text-[#FFB703] shadow-[1px_1px_0px_#111111]"
-                            : "bg-[#F4F4F0] text-[#111111] hover:bg-white"
-                        }`}
-                      >
-                        <Activity className="w-3 h-3" />
-                        <span>Logs ({currentSlot.syncLogs.length})</span>
-                      </button>
-                    </div>
+                    <ShieldCheck className="w-3.5 h-3.5 text-neutral-900" />
                   </div>
 
-                  <h1 className="text-lg sm:text-xl font-black text-[#111111] font-display uppercase tracking-tight leading-tight">
+                  <h1 className="font-editorial text-2xl sm:text-3xl text-neutral-950 font-normal leading-tight">
                     {currentSlot.title}
                   </h1>
-                </div>
 
-                {/* TAB 1: PRODUCT SPECS */}
-                {activeTab === "specs" && (
-                  <div className="space-y-3.5">
-                    
-                    {/* 2. Variant Selector */}
-                    {variants.length > 1 && (
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider block">
-                          Select Variant ({variants.length} Available):
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {variants.map((v, idx) => (
-                            <button
-                              key={v.id || idx}
-                              onClick={() => handleSelectVariant(idx)}
-                              className={`p-2 border-2 border-[#111111] text-left font-mono text-xs transition-all ${
-                                selectedVariantIndex === idx
-                                  ? "bg-[#111111] text-white shadow-[2px_2px_0px_#FFB703]"
-                                  : "bg-white text-[#111111] hover:bg-[#F4F4F0]"
-                              }`}
-                            >
-                              <span className="font-black block line-clamp-1 text-[11px]">{v.title}</span>
-                              <span className="text-[10px] opacity-80 block">{formatCurrency(v.price, v.currencyCode || currentSlot.currencyCode || "INR")}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  {/* Clean Price Line */}
+                  <div className="flex items-baseline gap-3 pt-1 flex-wrap">
+                    <span className="font-semibold text-2xl text-neutral-950">
+                      {formatCurrency(currentVariant.price || currentSlot.price, currentVariant.currencyCode || currentSlot.currencyCode || "INR")}
+                    </span>
 
-                    {/* 3. Product Description */}
-                    <div className="space-y-1 font-mono text-xs">
-                      <span className="text-[10px] font-bold text-[#2B2D42] uppercase block">
-                        Product Description & Specification:
-                      </span>
-                      <div className="text-zinc-800 leading-relaxed font-sans text-xs sm:text-sm font-semibold bg-[#F4F4F0] p-3.5 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] min-h-[90px] max-h-52 overflow-y-auto pr-2">
-                        <p className="whitespace-pre-line">{currentSlot.description}</p>
-                      </div>
-                    </div>
-
-                    {/* 4. Product Discovery Tags */}
-                    {currentSlot.tags && currentSlot.tags.length > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap gap-1">
-                          {currentSlot.tags.map((t, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-[#F4F4F0] border border-[#111111] text-[10px] font-mono font-bold text-[#111111]"
-                            >
-                              #{t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  </div>
-                )}
-
-                {/* TAB 2: SHOPIFY INVENTORY & DATA */}
-                {activeTab === "shopify" && (
-                  <div className="space-y-3 font-mono">
-                    <div className="bg-white p-3.5 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] space-y-2">
-                      <div className="text-xs font-black text-[#111111] uppercase border-b border-[#111111] pb-1 flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-[#005F73]" />
-                        <span>Storefront GraphQL Identifiers</span>
-                      </div>
-                      <div className="text-[11px] space-y-1.5">
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Shopify Product ID:</span>
-                          <span className="font-bold truncate max-w-[170px]">{currentSlot.shopifyProductId}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Primary Variant ID:</span>
-                          <span className="font-bold truncate max-w-[170px]">{currentVariant.id}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Handle / Slug:</span>
-                          <span className="font-bold">{currentSlot.handle || "default-slug"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">SKU Code:</span>
-                          <span className="font-black text-[#D62828]">{currentVariant.sku || currentSlot.sku}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white p-3.5 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] space-y-2">
-                      <div className="text-xs font-black text-[#111111] uppercase border-b border-[#111111] pb-1 flex items-center gap-1.5">
-                        <Package className="w-3.5 h-3.5 text-[#D62828]" />
-                        <span>Inventory Warehouse Health</span>
-                      </div>
-                      <div className="text-[11px] space-y-1.5">
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Status Tag:</span>
-                          <span className={`font-black ${isAvailable ? "text-emerald-600" : isReserved ? "text-amber-600" : "text-rose-600"}`}>
-                            {currentSlot.status}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Stock Availability:</span>
-                          <span className={`font-black ${isAvailable ? "text-emerald-700" : "text-rose-600"}`}>
-                            {isAvailable ? "IN STOCK (ACTIVE)" : "OUT OF STOCK"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Store Domain:</span>
-                          <span className="font-bold">{currentSlot.merchant.myshopifyDomain}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: REAL-TIME AUDIT WEBHOOK LOGS */}
-                {activeTab === "webhooks" && (
-                  <div className="space-y-2 font-mono">
-                    {currentSlot.syncLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="bg-white p-3 border-2 border-[#111111] shadow-[2px_2px_0px_#111111] space-y-1"
-                      >
-                        <div className="flex items-center justify-between text-xs font-black">
-                          <span className="px-2 py-0.5 bg-[#FFB703] border border-[#111111] text-[10px]">
-                            {log.eventType}
-                          </span>
-                          <span className="text-[#2B2D42] text-[10px] font-bold flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {log.timestamp}
-                          </span>
-                        </div>
-                        <p className="text-[#111111] text-[11px] font-semibold">{log.details}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-              </div>
-
-              {/* COLUMN 3: Sticky Buy Box & Vendor Card (3 cols / ~25%) */}
-              <div className="lg:col-span-3 space-y-3.5">
-                
-                {/* Price & Stock Status Box (Clean Informational Display) */}
-                <div className="bg-transparent border-b-2 border-[#111111] pb-2.5 space-y-1">
-                  <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-black font-mono text-[#111111]">
-                        {formatCurrency(currentVariant.price || currentSlot.price, currentVariant.currencyCode || currentSlot.currencyCode || "INR")}
-                      </span>
-                      {currentSlot.compareAtPrice && currentSlot.compareAtPrice > currentSlot.price && (
-                        <span className="text-xs font-mono text-zinc-500 line-through font-bold">
+                    {currentSlot.compareAtPrice && currentSlot.compareAtPrice > (currentVariant.price || currentSlot.price) && (
+                      <>
+                        <span className="text-sm text-neutral-400 line-through">
                           {formatCurrency(currentSlot.compareAtPrice, currentSlot.currencyCode || "INR")}
                         </span>
+                        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          {Math.round(((currentSlot.compareAtPrice - (currentVariant.price || currentSlot.price)) / currentSlot.compareAtPrice) * 100)}% OFF
+                        </span>
+                      </>
+                    )}
+
+                    <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+                      WHOLESALE RATE
+                    </span>
+                  </div>
+                </div>
+
+                {/* Variant Selection Pills */}
+                {variants.length > 1 && (
+                  <div className="space-y-2.5">
+                    <label className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+                      Select Variant ({variants.length})
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {variants.map((v, idx) => {
+                        const isSelected = selectedVariantIndex === idx;
+                        return (
+                          <button
+                            key={v.id || idx}
+                            type="button"
+                            onClick={() => handleSelectVariant(idx)}
+                            className={`px-4 py-2 rounded-full text-xs font-medium transition cursor-pointer ${
+                              isSelected
+                                ? "bg-black text-white shadow-xs"
+                                : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                            }`}
+                          >
+                            <span>{v.title}</span>
+                            <span className={`ml-2 font-mono text-[10px] ${isSelected ? "text-neutral-300" : "text-neutral-500"}`}>
+                              {formatCurrency(v.price, v.currencyCode || currentSlot.currencyCode || "INR")}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tabs for Specification vs Data */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("specs")}
+                      className={`pb-1 text-xs font-medium transition relative ${
+                        activeTab === "specs"
+                          ? "text-black font-semibold"
+                          : "text-neutral-400 hover:text-neutral-700"
+                      }`}
+                    >
+                      Specifications
+                      {activeTab === "specs" && (
+                        <span className="absolute bottom-0 inset-x-0 h-0.5 bg-black" />
                       )}
-                    </div>
+                    </button>
 
-                    {((!currentSlot.isUnknownQuantity && currentSlot.inventoryQuantity <= 0) || currentSlot.status === "SOLD" || !currentVariant.availableForSale) && (
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#D62828] text-white border border-[#111111] uppercase">
-                        OUT OF STOCK
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-wider block">
-                    Retail Price (Taxes Included)
-                  </span>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("shopify")}
+                      className={`pb-1 text-xs font-medium transition relative ${
+                        activeTab === "shopify"
+                          ? "text-black font-semibold"
+                          : "text-neutral-400 hover:text-neutral-700"
+                      }`}
+                    >
+                      Shopify Metadata
+                      {activeTab === "shopify" && (
+                        <span className="absolute bottom-0 inset-x-0 h-0.5 bg-black" />
+                      )}
+                    </button>
 
-                {/* Action CTAs for Buying & Inquiries */}
-                <div className="space-y-2.5">
-                  {/* WhatsApp Vendor Inquiry */}
-                  <a
-                    href={`https://wa.me/${currentSlot.merchant.whatsappNumber || "919876543210"}?text=${encodeURIComponent(
-                      `Hi ${currentSlot.merchant.name}! I want to purchase "${currentSlot.title}" (Variant: ${currentVariant.title}, SKU: ${currentVariant.sku || currentSlot.sku}). Price: ${formatCurrency(currentVariant.price || currentSlot.price, currentSlot.currencyCode || "INR")}. Please share purchase & delivery details.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-3 bg-[#25D366] hover:bg-[#128C7E] text-white border-3 border-[#111111] text-xs font-mono font-black flex items-center justify-center gap-1.5 shadow-[3px_3px_0px_#111111] hover:shadow-[1px_1px_0px_#111111] transition-all uppercase tracking-wider text-center"
-                  >
-                    <MessageCircle className="w-4 h-4 fill-current shrink-0" />
-                    <span>CONTACT / BUY ON WHATSAPP</span>
-                  </a>
-
-                  {/* Direct Checkout on Shopify */}
-                  <a
-                    href={currentSlot.productUrl || `https://${currentSlot.merchant.myshopifyDomain}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-3 bg-[#111111] hover:bg-[#D62828] text-white border-3 border-[#111111] text-xs font-mono font-black flex items-center justify-center gap-1.5 shadow-[3px_3px_0px_#FFB703] hover:shadow-[1px_1px_0px_#FFB703] transition-all uppercase tracking-wider text-center"
-                  >
-                    <ShoppingBag className="w-4 h-4 text-[#FFB703] shrink-0" />
-                    <span>CHECKOUT ON SHOPIFY</span>
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  </a>
-                </div>
-
-                {/* Vendor Information Box (Clean Profile Card) */}
-                <div className="bg-[#F4F4F0] border-2 border-[#111111] p-3 space-y-2 font-mono">
-                  <div className="flex items-center justify-between border-b border-[#111111]/30 pb-1">
-                    <span className="text-[10px] font-black text-[#111111] uppercase tracking-wider flex items-center gap-1.5">
-                      <Store className="w-3.5 h-3.5 text-[#005F73]" />
-                      <span>Merchant Vendor</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-100 border border-emerald-500 px-1.5 py-0.5 text-[9px]">
-                      <ShieldCheck className="w-3 h-3" /> VERIFIED
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("webhooks")}
+                      className={`pb-1 text-xs font-medium transition relative ${
+                        activeTab === "webhooks"
+                          ? "text-black font-semibold"
+                          : "text-neutral-400 hover:text-neutral-700"
+                      }`}
+                    >
+                      Sync Logs ({currentSlot.syncLogs.length})
+                      {activeTab === "webhooks" && (
+                        <span className="absolute bottom-0 inset-x-0 h-0.5 bg-black" />
+                      )}
+                    </button>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
-                    {currentSlot.merchant.storeLogo ? (
-                      <img
-                        src={currentSlot.merchant.storeLogo}
-                        alt={currentSlot.merchant.name}
-                        className="w-9 h-9 border border-[#111111] object-cover bg-white shrink-0"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 bg-[#FFB703] border border-[#111111] flex items-center justify-center font-black text-xs shrink-0">
-                        {currentSlot.merchant.name.slice(0, 2).toUpperCase()}
+                  {/* Tab Content */}
+                  {activeTab === "specs" && (
+                    <div className="space-y-3 text-xs text-neutral-600 leading-relaxed max-h-44 overflow-y-auto pr-1">
+                      <p className="whitespace-pre-line font-normal">{currentSlot.description}</p>
+                      
+                      <div className="pt-2 flex flex-wrap gap-2">
+                        <div className="px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200/60 font-mono text-[11px]">
+                          <span className="text-neutral-400 mr-1.5">SKU:</span>
+                          <span className="font-semibold text-neutral-900">{currentVariant.sku || currentSlot.sku || "N/A"}</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200/60 font-mono text-[11px]">
+                          <span className="text-neutral-400 mr-1.5">STOCK:</span>
+                          <span className="font-semibold text-neutral-900">{currentVariant.inventoryQuantity || currentSlot.inventoryQuantity || "In Stock"}</span>
+                        </div>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-black text-[#111111] font-display uppercase truncate">
-                        {currentSlot.merchant.name}
-                      </h4>
-                      <a
-                        href={`https://${currentSlot.merchant.myshopifyDomain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-[#005F73] font-bold hover:underline flex items-center gap-1 truncate"
-                      >
-                        <span className="truncate">{currentSlot.merchant.myshopifyDomain}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
                     </div>
+                  )}
+
+                  {activeTab === "shopify" && (
+                    <div className="space-y-2 text-xs font-mono max-h-44 overflow-y-auto">
+                      <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-200/60 space-y-1">
+                        <div><span className="text-neutral-400">PRODUCT ID:</span> {currentSlot.shopifyProductId}</div>
+                        <div><span className="text-neutral-400">STORE DOMAIN:</span> {currentSlot.merchant.myshopifyDomain}</div>
+                        <div><span className="text-neutral-400">SLOT ID:</span> {currentSlot.slotNumber}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "webhooks" && (
+                    <div className="space-y-2 text-xs font-mono max-h-44 overflow-y-auto">
+                      {currentSlot.syncLogs.map((log) => (
+                        <div key={log.id} className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200/60 flex items-center justify-between">
+                          <span className="font-medium text-neutral-800">{log.eventType}</span>
+                          <span className="text-[10px] text-neutral-400">{log.timestamp}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary & Secondary Action CTAs */}
+                <div className="space-y-2.5 pt-4 border-t border-neutral-100">
+                  <a
+                    href={`https://${currentSlot.merchant.myshopifyDomain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="pill-btn-primary w-full py-3.5 text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2"
+                  >
+                    <span>View on Merchant Store</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopySpecs}
+                      className="pill-btn-secondary flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copied ? "Specs Copied to Clipboard" : "Copy Product Specs"}</span>
+                    </button>
                   </div>
                 </div>
 
               </div>
 
             </div>
-
           </div>
 
         </motion.div>
@@ -549,6 +419,3 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
     </AnimatePresence>
   );
 }
-
-
-

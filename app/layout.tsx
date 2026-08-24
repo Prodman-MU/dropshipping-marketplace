@@ -2,33 +2,46 @@
  * @file layout.tsx (under app/)
  * @description Global Root Layout for Next.js 16 App Router.
  * 
- * Sets up custom Google Fonts (Inter for body typography and Space Grotesk for Bauhaus display headings),
- * global SEO metadata, light-mode `#F4F4F0` canvas styling, and high-contrast text selection highlights.
+ * Sets up custom Google Fonts:
+ * - Inter for crisp UI and body typography
+ * - Playfair Display for high-contrast MR PORTER-style editorial headlines
+ * - JetBrains Mono for Grailed-style micro-data tags and spec details
+ * 
+ * Pure white `#FFFFFF` gallery canvas with subtle dark text selection highlights.
  */
 
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 // Configure body sans-serif font
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 });
 
-// Configure display heading font for Bauhaus aesthetic
-const spaceGrotesk = Space_Grotesk({
+// Configure editorial serif font for MR PORTER aesthetic headlines
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+// Configure monospace font for Grailed micro-data & SKU tags
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
 /**
  * Default global application metadata
  */
 export const metadata: Metadata = {
-  title: "MASTERS UNION // Dropshipping 2026 — Bauhaus Marketplace",
+  title: "MASTERS UNION // DROPSHIPPING 2026 — Curated Marketplace",
   description:
-    "High-margin architectural & minimalist catalog for Masters Union dropshippers. Direct Shopify integration and webhook moderation.",
+    "Gallery-grade dropshipping marketplace inspired by Apple Store, MR PORTER, and Grailed. Direct Shopify synchronization and curated supplier network.",
 };
 
 /**
@@ -42,11 +55,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased scroll-smooth`}
+      className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col bg-[#F4F4F0] text-[#111111] font-sans selection:bg-[#FFB703] selection:text-[#111111]">
+      <body className="min-h-full flex flex-col bg-white text-[#111111] font-sans selection:bg-[#111111] selection:text-white">
         {children}
       </body>
     </html>
   );
 }
+

@@ -1,7 +1,17 @@
+/**
+ * @file VendorGroupedSection.tsx
+ * @description Modern Editorial Store Section (MR PORTER x Apple Store).
+ * 
+ * Features:
+ * - Curated store brand header with verified badge and micro-data domain
+ * - Seamless zero-border product card grid
+ * - Responsive 4-col / 2-col layout with minimalist expand/collapse controls
+ */
+
 "use client";
 
 import React, { useState } from "react";
-import { ExternalLink, Filter, ChevronDown, ChevronUp, Store } from "lucide-react";
+import { ExternalLink, Filter, ChevronDown, ChevronUp, Store, ShieldCheck } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { ListingCard } from "./ListingCard";
 
@@ -20,23 +30,21 @@ export function VendorGroupedSection({
 }: VendorGroupedSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Normalize store URL
   const storeUrl = merchant.myshopifyDomain.startsWith("http")
     ? merchant.myshopifyDomain
     : `https://${merchant.myshopifyDomain}`;
 
-  // When collapsed, we only render up to 3 items (items 0 & 1 on mobile, 0, 1 & 2 on lg desktop)
-  const displayedSlots = isExpanded ? slots : slots.slice(0, 3);
-  const hasMoreThan3 = slots.length > 3;
-  const hasMoreThan2 = slots.length > 2;
+  // When collapsed, show up to 4 items on desktop (2 on mobile)
+  const displayedSlots = isExpanded ? slots : slots.slice(0, 4);
+  const hasMoreThan4 = slots.length > 4;
 
   return (
-    <section className="bg-white border-2 border-[#111111] shadow-[6px_6px_0px_#111111] p-4 sm:p-6 space-y-5">
-      {/* Streamlined Horizontal Vendor Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 border-b-2 border-[#111111]">
-        {/* Left Side: Store Logo + Name */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-[#F4F4F0] border-2 border-[#111111] flex items-center justify-center shrink-0 overflow-hidden shadow-[2px_2px_0px_#111111]">
+    <section className="bg-white border-b border-neutral-200/70 pb-10 pt-4 space-y-6">
+      {/* Editorial Store Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Left Side: Store Monogram / Logo + Store Name */}
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center shrink-0 overflow-hidden text-neutral-800">
             {merchant.storeLogo ? (
               <img
                 src={merchant.storeLogo}
@@ -44,81 +52,76 @@ export function VendorGroupedSection({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Store className="w-6 h-6 text-[#005F73]" />
+              <span className="font-semibold text-xs font-mono uppercase">
+                {(merchant.name || "ST").slice(0, 2)}
+              </span>
             )}
           </div>
 
           <div className="min-w-0">
-            <h3 className="text-base sm:text-lg font-black text-[#111111] font-display uppercase tracking-tight truncate">
-              {merchant.name || merchant.myshopifyDomain}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-semibold text-neutral-950 truncate tracking-tight">
+                {merchant.name || merchant.myshopifyDomain}
+              </h3>
+              <ShieldCheck className="w-4 h-4 text-neutral-900 shrink-0" />
+            </div>
 
-            <p className="text-[11px] font-mono text-zinc-500 font-bold truncate">
-              {merchant.myshopifyDomain}
+            <p className="font-mono text-[11px] text-neutral-500 font-medium truncate">
+              {merchant.myshopifyDomain} • {slots.length} Curated Item{slots.length === 1 ? "" : "s"}
             </p>
           </div>
         </div>
 
-        {/* Right Side: External Store Link + Filter Store Button */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap">
-          {/* External Storefront Link */}
+        {/* Right Side: Action Pills */}
+        <div className="flex items-center gap-2 shrink-0">
           <a
             href={storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 bg-[#F4F4F0] hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] font-mono text-xs font-bold flex items-center gap-1.5 transition-all shadow-[2px_2px_0px_#111111] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+            className="pill-btn-secondary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5"
             title={`Open ${merchant.myshopifyDomain} in new tab`}
           >
-            <span>Visit Store</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Visit Storefront</span>
+            <ExternalLink className="w-3 h-3 text-neutral-400" />
           </a>
 
-          {/* Filter This Store Button */}
           <button
+            type="button"
             onClick={() => onFilterStore(merchant.id)}
-            className="px-3 py-1.5 bg-[#111111] hover:bg-[#D62828] text-white border-2 border-[#111111] font-mono text-xs font-black flex items-center gap-1.5 transition-all shadow-[2px_2px_0px_#111111] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+            className="pill-btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
             title="Filter catalog to only show products from this store"
           >
-            <Filter className="w-3.5 h-3.5" />
+            <Filter className="w-3 h-3" />
             <span>Filter Store</span>
           </button>
         </div>
       </div>
 
-      {/* Nested Product Grid - 1 Row (2 on mobile, 3 on desktop) when collapsed */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
-        {displayedSlots.map((slot, index) => {
-          // If collapsed, hide the 3rd item on mobile (< lg) so mobile stays strictly 1 row (2 columns)
-          const isThirdItem = !isExpanded && index === 2;
-          return (
-            <div
-              key={slot.id}
-              className={isThirdItem ? "hidden lg:block" : "block"}
-            >
-              <ListingCard
-                slot={slot}
-                onSelect={onSelectSlot}
-              />
-            </div>
-          );
-        })}
+      {/* Zero-Border Product Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+        {displayedSlots.map((slot) => (
+          <div key={slot.id}>
+            <ListingCard slot={slot} onSelect={onSelectSlot} />
+          </div>
+        ))}
       </div>
 
-      {/* Expand / Collapse Toggle if more items exist beyond 1 row */}
-      {(hasMoreThan3 || hasMoreThan2) && (
-        <div className={`pt-2 text-center ${!hasMoreThan3 && hasMoreThan2 && !isExpanded ? "block lg:hidden" : "block"}`}>
+      {/* Expand / Collapse Control */}
+      {hasMoreThan4 && (
+        <div className="pt-2 text-center">
           <button
+            type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#F4F4F0] hover:bg-[#FFB703] text-[#111111] border-2 border-[#111111] font-mono text-xs font-black uppercase transition-all shadow-[3px_3px_0px_#111111] active:translate-x-[2px] active:translate-y-[2px]"
+            className="pill-btn-secondary px-5 py-2 text-xs font-medium tracking-wide flex items-center gap-2 mx-auto cursor-pointer"
           >
             {isExpanded ? (
               <>
-                <ChevronUp className="w-4 h-4" />
-                <span>Show 1 Row Only</span>
+                <ChevronUp className="w-3.5 h-3.5" />
+                <span>Show Less</span>
               </>
             ) : (
               <>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-3.5 h-3.5" />
                 <span>Show All {slots.length} Products from {merchant.name || "this store"}</span>
               </>
             )}

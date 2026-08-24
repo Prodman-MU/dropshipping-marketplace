@@ -1,3 +1,14 @@
+/**
+ * @file ConnectStoreModal.tsx
+ * @description Apple Store Minimalist Shopify Store Connection Modal.
+ * 
+ * Features:
+ * - Frosted backdrop with smooth spring scaling
+ * - Clean input styling with hairline borders
+ * - Subtle verification status feedback
+ * - Matte black pill submit button
+ */
+
 "use client";
 
 import React, { useState } from "react";
@@ -49,48 +60,45 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          {/* Frosted Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/75 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
           />
 
-          {/* Bauhaus Modal Container */}
+          {/* Modal Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative w-full max-w-lg bg-white border-4 border-[#111111] p-6 sm:p-8 shadow-[10px_10px_0px_#111111] z-10 my-8 overflow-hidden font-mono text-[#111111]"
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+            className="relative w-full max-w-lg bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-2xl z-10 my-8 overflow-hidden"
           >
-            {/* Top Accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-2 bg-[#FFB703] border-b-2 border-[#111111]" />
-
             {/* Close Button */}
             <button
+              type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 bg-[#FFB703] border-2 border-[#111111] hover:bg-[#D62828] hover:text-white transition-colors"
+              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
               title="Close modal"
             >
-              <X className="w-4 h-4 stroke-[3]" />
+              <X className="w-4 h-4" />
             </button>
 
             {/* Header */}
-            <div className="flex items-center gap-3 pb-4 border-b-2 border-[#111111] mt-2">
-              <div className="w-12 h-12 bg-[#FFB703] border-2 border-[#111111] flex items-center justify-center text-[#111111] shadow-[3px_3px_0px_#111111] shrink-0">
-                <Store className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-[#111111] font-display uppercase tracking-tight">
-                  Link Shopify Store
-                </h3>
-                <p className="text-xs text-[#2B2D42] font-mono font-bold">
-                  Connect & Sync Storefront Catalog Items
-                </p>
-              </div>
+            <div className="space-y-1 pr-8 mb-6">
+              <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-widest block">
+                SHOPIFY INTEGRATION
+              </span>
+              <h3 className="font-editorial text-2xl sm:text-3xl text-neutral-950 font-normal">
+                Link Shopify Store
+              </h3>
+              <p className="text-xs text-neutral-600">
+                Connect your storefront to sync live inventory and product catalog items.
+              </p>
             </div>
 
             {success ? (
@@ -98,107 +106,88 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="w-14 h-14 bg-[#005F73] text-white border-2 border-[#111111] flex items-center justify-center shadow-[4px_4px_0px_#111111]"
+                  className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center"
                 >
-                  <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
+                  <CheckCircle2 className="w-8 h-8" />
                 </motion.div>
                 <div className="space-y-1">
-                  <h4 className="text-lg font-black text-[#111111] font-display uppercase">
-                    Store Submitted for Approval!
+                  <h4 className="text-lg font-semibold text-neutral-950">
+                    Store Connected!
                   </h4>
-                  <p className="text-xs text-[#2B2D42] font-mono font-bold max-w-sm">
-                    Fetched products and variants for <span className="text-[#D62828] font-black">{domain}</span>.
+                  <p className="text-xs text-neutral-600 max-w-sm">
+                    Fetched products and inventory for <span className="font-medium text-black">{domain}</span>.
                   </p>
-                </div>
-                <div className="p-3 bg-[#005F73] text-white border-2 border-[#111111] text-xs font-mono font-bold shadow-[3px_3px_0px_#111111]">
-                  ✓ Store submitted for Admin Approval! Products will be published on the public marketplace once approved.
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMessage && (
-                  <div className="p-3 bg-[#D62828]/10 border-2 border-[#D62828] text-[#D62828] text-xs font-mono font-bold flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-[#D62828] mt-0.5" />
+                  <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 border border-red-200 text-xs font-medium flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                     <span>{errorMessage}</span>
                   </div>
                 )}
 
-                {/* 1. Shopify Site Domain */}
                 <div>
-                  <label className="block text-xs font-mono font-black text-[#111111] uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                    <span>1. Shopify Site Name / Domain *</span>
-                    <span className="px-2 py-0.5 text-[10px] bg-[#FFB703] text-[#111111] border border-[#111111]">REQUIRED</span>
+                  <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                    Shopify Domain *
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. apex-gear or apex-gear.myshopify.com"
+                    placeholder="mybrand.myshopify.com"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     required
-                    className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-4 py-2.5 text-sm text-[#111111] font-mono font-bold placeholder-zinc-500 focus:outline-none focus:bg-white focus:border-[#FFB703] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
                   />
                 </div>
 
-                {/* 2. Store Vendor Passcode */}
                 <div>
-                  <label className="block text-xs font-mono font-black text-[#111111] uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                    <span>2. Set Store Passcode *</span>
-                    <span className="px-2 py-0.5 text-[10px] bg-[#FFB703] text-[#111111] border border-[#111111]">REQUIRED</span>
+                  <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span>Store Passcode *</span>
+                    <span className="text-[10px] text-neutral-400 lowercase">for vendor portal</span>
                   </label>
                   <input
                     type="password"
-                    placeholder="Create passcode for store owner (e.g. apex123)"
+                    placeholder="Create portal login passcode"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
                     required
-                    className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-4 py-2.5 text-sm text-[#111111] font-mono font-bold placeholder-zinc-500 focus:outline-none focus:bg-white focus:border-[#FFB703] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
                   />
-                  <p className="text-[11px] text-[#2B2D42] mt-1 font-mono font-bold">
-                    🔑 Passcode used by store owner to login to the /vendor portal desk.
-                  </p>
                 </div>
 
-                {/* 3. Optional Storefront Token */}
                 <div>
-                  <label className="block text-xs font-mono font-black text-[#111111] uppercase tracking-wider mb-1.5">
-                    Storefront API Access Token (Optional)
+                  <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                    Storefront Access Token (Optional)
                   </label>
                   <input
                     type="password"
                     placeholder="shpat_xxxxxxxxxxxxxxxxxxxx"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-4 py-2.5 text-sm text-[#111111] font-mono font-bold placeholder-zinc-500 focus:outline-none focus:bg-white focus:border-[#FFB703] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
                   />
-                  <p className="text-[11px] text-[#2B2D42] mt-1 font-mono font-bold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#005F73]" />
-                    Webhooks for inventory_levels/update & products/update auto-configured.
-                  </p>
                 </div>
 
-                {/* 4. Optional WhatsApp Number */}
                 <div>
-                  <label className="block text-xs font-mono font-black text-[#111111] uppercase tracking-wider mb-1.5">
-                    WhatsApp Owner Phone Number (Optional)
+                  <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                    Vendor WhatsApp Number (Optional)
                   </label>
                   <input
                     type="tel"
-                    placeholder="e.g. +91 9876543210 or +1 555 123 4567"
+                    placeholder="+91 9876543210"
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value)}
-                    className="w-full bg-[#F4F4F0] border-2 border-[#111111] px-4 py-2.5 text-sm text-[#111111] font-mono font-bold placeholder-zinc-500 focus:outline-none focus:bg-white focus:border-[#FFB703] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
                   />
-                  <p className="text-[11px] text-[#2B2D42] mt-1 font-mono font-bold">
-                    Enables direct 1-click WhatsApp purchase inquiries for customers. Include country code.
-                  </p>
                 </div>
 
-                {/* Footer Controls */}
-                <div className="pt-4 flex items-center justify-between gap-3 border-t-2 border-[#111111]">
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-neutral-100">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2.5 bg-[#E5E5E0] text-[#111111] border-2 border-[#111111] font-mono text-xs font-black uppercase hover:bg-[#D62828] hover:text-white transition-colors"
+                    className="pill-btn-secondary px-4 py-2.5 text-xs font-medium"
                   >
                     Cancel
                   </button>
@@ -206,17 +195,17 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                   <button
                     type="submit"
                     disabled={isSubmitting || !domain || !passcode}
-                    className="px-5 py-2.5 bg-[#FFB703] text-[#111111] border-2 border-[#111111] bauhaus-btn text-xs font-black uppercase flex items-center gap-2 shadow-[3px_3px_0px_#111111] disabled:opacity-50"
+                    className="pill-btn-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center gap-2 disabled:opacity-40"
                   >
                     {isSubmitting ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verifying Store...</span>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Verifying...</span>
                       </>
                     ) : (
                       <>
-                        <span>Connect & Sync Store</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <span>Connect Store</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </>
                     )}
                   </button>

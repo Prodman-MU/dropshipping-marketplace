@@ -1,128 +1,110 @@
-# Design System Specification: Cyber Gold & Pure Black
+# Design System Specification: Gallery-Grade Marketplace
+### Apple Store × MR PORTER × Grailed
 
-This document outlines the design architecture, color tokens, typography rules, scroll-reactive animation formulas, and component interfaces for the **Masters' Union Dark Mode Marketplace**.
+This document specifies the design architecture, tokens, typography rules, component interfaces, and micro-interaction guidelines for the **Masters' Union Marketplace**.
 
 ---
 
 ## 🎨 1. Theme Tokens & CSS Custom Properties
 
-The system is built on a high-contrast luxury dark theme using pure black `#000000` backgrounds and Cyber Gold / Amber Yellow (`#f59e0b` / `#fbbf24`) accent tokens defined in `app/globals.css`.
+The system is built on a clean, high-contrast gallery aesthetic featuring a pure white `#FFFFFF` canvas, subtle off-white `#F8F9FA` breakout surfaces, neutral studio photography backdrops (`#F5F5F7`), and matte black `#000000` pill controls defined in [`app/globals.css`](file:///d:/lab/projects/dropshipping-marketplace/app/globals.css).
 
 ### Base Color System
 
 ```css
 :root {
   /* Surface Palette */
-  --bg-obsidian: #000000;       /* Pure black main background */
-  --card-surface: #121216;      /* Dark glassmorphic card container */
-  --card-elevated: #16161c;     /* Elevated surfaces for drawers & modals */
+  --color-canvas: #FFFFFF;
+  --color-surface-subtle: #F8F9FA;
+  --color-surface-muted: #F4F4F5;
+  --color-surface-studio: #F5F5F7;
   
-  /* Borders & Cyber Gold Glows */
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --border-glow: rgba(245, 158, 11, 0.4);
-
-  /* Status Badges */
-  --color-available: #f59e0b;   /* Amber 500 */
-  --color-reserved: #eab308;    /* Yellow 500 */
-  --color-sold: #71717a;         /* Zinc 500 */
+  /* Text Palette */
+  --color-text-primary: #111111;
+  --color-text-secondary: #666666;
+  --color-text-muted: #8E8E93;
+  
+  /* Borders & Accents */
+  --color-border-hairline: #E5E7EB;
+  --color-accent-discount: #059669;
 }
 ```
 
-### Glassmorphism CSS Utilities
+### Frosted Glass & Pill Utilities
 
 ```css
-.glass-panel {
-  background: rgba(18, 18, 22, 0.85);
+.glass-header {
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.7);
 }
 
-.glass-nav {
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.pill-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000000;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-card {
-  background: rgba(18, 18, 22, 0.9);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.pill-btn-primary:hover {
+  background-color: #1C1C1E;
+  transform: scale(1.01);
 }
 
-.glass-card:hover {
-  border-color: rgba(245, 158, 11, 0.35);
-  box-shadow: 0 0 25px rgba(245, 158, 11, 0.08);
-  transform: translateY(-2px);
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  border: 1px solid #E5E7EB;
+  background-color: #FFFFFF;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #111111;
 }
 ```
 
 ---
 
-## ✒️ 2. Monospaced Typography System
+## ✒️ 2. Typography System
 
-Specific metadata elements strictly use monospaced typography (`font-mono`) to evoke a high-tech industrial aesthetic:
-
-| UI Element | Styling & Utility Class | Example Output |
+| Typeface | Class / Role | Purpose / Application |
 |---|---|---|
-| Product Price | `font-mono font-black text-white text-lg` | `$149.00` |
-| Available Stock Count | `font-mono font-bold text-amber-400` | `240 Units` |
-| Product SKU | `font-mono text-zinc-400 text-xs` | `APX-MAG-CB-10K` |
-| Shopify Product GID | `font-mono text-white bg-black/90 font-mono` | `gid://shopify/Product/9842019481` |
-| Webhook Timestamps | `font-mono text-zinc-500 text-[11px]` | `2026-08-08 15:58:12` |
+| **Inter** | `font-sans` | Primary UI typography, buttons, tables, descriptive copy |
+| **Playfair Display** | `font-editorial` | High-contrast editorial serif headlines and product titles |
+| **JetBrains Mono** | `font-mono` | 11px uppercase metadata tags, SKUs, timestamps, discount % |
 
 ---
 
-## 🌌 3. Contained Hero Background Video Canvas ([`components/BackgroundVideo.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/BackgroundVideo.tsx))
+## 🧩 3. Component Interfaces
 
-The ambient background video component is rendered as a contained hero card container (`Hero.tsx` & `BackgroundVideo.tsx`) with ambient toggles and video play/pause controls:
-
-### Container Structure & Overlay Tints
-
+### `ListingCard`
 ```typescript
-/* File: components/BackgroundVideo.tsx */
-<div className="relative w-full h-full min-h-[340px] sm:min-h-[420px] rounded-3xl overflow-hidden border border-white/15 bg-zinc-950 shadow-2xl group">
-  {/* Subtle Bottom Fade Overlay */}
-  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
-```
-
----
-
-## 🎨 4. Product Grid Background & Obsidian Card High Contrast
-
-- **Grid Canvas**: Background color `#FFE082` (`bg-[#FFE082] rounded-3xl p-6 sm:p-8 border border-[#FFE082]/50 shadow-2xl`).
-- **Product Cards**: Solid obsidian surface (`bg-zinc-950/95`), crisp borders (`border-zinc-800`), price badges, and vendor badges for maximum legibility and contrast.
-
----
-
-## 🧩 5. Component Interface Reference
-
-### `Header` Props Interface
-```typescript
-interface HeaderProps {
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
-  activeVendorCount: number;
-  totalSyncedProducts: number;
-  isVideoEnabled: boolean;
-  onToggleVideo: () => void;
-  onAddStore: (domain: string) => void;
+interface ListingCardProps {
+  slot: SlotListing;
+  onSelect?: (slot: SlotListing) => void;
 }
 ```
+* **Features:** Zero-border card, `#F5F5F7` studio frame, hover image scale & secondary preview, discount badge (`-35%`), slide-up Quick View pill.
 
-### `Hero` Props Interface
+### `Hero`
 ```typescript
 interface HeroProps {
-  isVideoEnabled: boolean;
-  onToggleVideo: () => void;
-  activeVendorCount?: number;
-  totalSyncedProducts?: number;
+  isVideoEnabled?: boolean;
+  onToggleVideo?: () => void;
 }
 ```
+* **Features:** `#F8F9FA` editorial breakout card, animated SVG squiggle draw animation, slide carousel with hairline progress bar.
 
-### `VendorFilterBar` Props Interface
+### `VendorFilterBar`
 ```typescript
 interface VendorFilterBarProps {
   searchQuery: string;
@@ -138,19 +120,14 @@ interface VendorFilterBarProps {
   totalResultsCount: number;
 }
 ```
+* **Features:** Horizontal category pill rail, search input, slide-over filter drawer.
 
-### `ListingCard` Props Interface
-```typescript
-interface ListingCardProps {
-  slot: SlotListing;
-  onSelect: (slot: SlotListing) => void;
-}
-```
-
-### `ListingDrawer` Props Interface
+### `ListingDrawer`
 ```typescript
 interface ListingDrawerProps {
   slot: SlotListing | null;
   onClose: () => void;
+  onSelectRelatedSlot?: (slot: SlotListing) => void;
 }
 ```
+* **Features:** Apple Store product sheet modal, variant pill selection, dynamic discount % calculation, wholesale pricing callouts, WhatsApp B2B inquiry integration.
