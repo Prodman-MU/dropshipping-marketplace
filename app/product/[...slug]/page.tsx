@@ -423,17 +423,6 @@ export default function UnifiedProductDetailPage() {
                 {openAccordion === "description" && (
                   <div className="pt-3 text-xs text-neutral-600 leading-relaxed space-y-3">
                     <p className="whitespace-pre-line font-normal">{slot.description}</p>
-                    
-                    <div className="grid grid-cols-2 gap-2 pt-2">
-                      <div className="p-3 rounded-xl bg-[#F8F9FA] font-mono text-[11px]">
-                        <span className="text-neutral-400 block mb-0.5">SKU ID:</span>
-                        <span className="font-semibold text-neutral-900">{currentVariant.sku || slot.sku || "N/A"}</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-[#F8F9FA] font-mono text-[11px]">
-                        <span className="text-neutral-400 block mb-0.5">INVENTORY:</span>
-                        <span className="font-semibold text-neutral-900">{currentVariant.inventoryQuantity || slot.inventoryQuantity || "Live Sync"}</span>
-                      </div>
-                    </div>
 
                     {slot.tags && slot.tags.length > 0 && (
                       <div className="pt-2 flex flex-wrap gap-1.5">

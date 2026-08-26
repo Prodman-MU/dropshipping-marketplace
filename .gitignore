@@ -27,6 +27,11 @@ next-env.d.ts
 /coverage
 *.lcov
 .nyc_output
+.vitest/
+vitest.config.*.timestamp-*
+vite.config.*.timestamp-*
+test-results/
+playwright-report/
 
 # ------------------------------------------------------------------------------
 # Logs & Debug Output
@@ -84,6 +89,9 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea/
+.gemini/
+.cursor/
+.claude/
 *.suo
 *.ntvs*
 *.njsproj

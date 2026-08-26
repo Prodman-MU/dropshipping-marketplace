@@ -349,17 +349,6 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
                   {activeTab === "specs" && (
                     <div className="space-y-3 text-xs text-neutral-600 leading-relaxed max-h-44 overflow-y-auto pr-1">
                       <p className="whitespace-pre-line font-normal">{currentSlot.description}</p>
-                      
-                      <div className="pt-2 flex flex-wrap gap-2">
-                        <div className="px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200/60 font-mono text-[11px]">
-                          <span className="text-neutral-400 mr-1.5">SKU:</span>
-                          <span className="font-semibold text-neutral-900">{currentVariant.sku || currentSlot.sku || "N/A"}</span>
-                        </div>
-                        <div className="px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200/60 font-mono text-[11px]">
-                          <span className="text-neutral-400 mr-1.5">STOCK:</span>
-                          <span className="font-semibold text-neutral-900">{currentVariant.inventoryQuantity || currentSlot.inventoryQuantity || "In Stock"}</span>
-                        </div>
-                      </div>
                     </div>
                   )}
 

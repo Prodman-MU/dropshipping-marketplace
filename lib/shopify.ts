@@ -25,16 +25,24 @@ const SHOPIFY_WEBHOOK_SECRET = process.env.SHOPIFY_WEBHOOK_SECRET;
  * @param {string | null} hmacHeader - The value of the `x-shopify-hmac-sha256` header.
  * @returns {boolean} True if the signature matches or fallback is active in local development.
  */
-export function verifyShopifyHmac(bodyText: string, hmacHeader: string | null): boolean {
-  if (!SHOPIFY_WEBHOOK_SECRET || !hmacHeader) return true; // Fallback in dev mode
+export function verifyShopifyHmac(bodyText: string, hmacHeader: string | null, secret?: string): boolean {
+  const webhookSecret = secret || process.env.SHOPIFY_WEBHOOK_SECRET || SHOPIFY_WEBHOOK_SECRET;
+  if (!webhookSecret || !hmacHeader) return true; // Fallback in dev mode
 
   try {
     const hash = crypto
-      .createHmac("sha256", SHOPIFY_WEBHOOK_SECRET)
+      .createHmac("sha256", webhookSecret)
       .update(bodyText, "utf8")
       .digest("base64");
 
-    return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(hmacHeader));
+    const hashBuf = Buffer.from(hash);
+    const headerBuf = Buffer.from(hmacHeader);
+
+    if (hashBuf.length !== headerBuf.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(hashBuf, headerBuf);
   } catch (error) {
     console.error("HMAC verification error:", error);
     return false;

@@ -122,7 +122,22 @@ model SiteSetting {
   siteTitle        String   @default("MASTERS UNION")   /// Primary organization title
   announcementText String   @default("2026 B2B DIRECT DROPSHIPPING CATALOG") /// Header ticker banner text
   catalogBadgeText String   @default("OFFICIAL CATALOG")/// Verified catalog badge text
+  adminPasscode    String?                              /// Optional database-persisted Admin passcode override
   updatedAt        DateTime @updatedAt
 
   @@map("site_settings")
 }
+
+/// Secure One-Time Passcodes for Admin Email Password Reset
+model AdminOtp {
+  id        String   @id @default(uuid())
+  email     String                                      /// Target admin email
+  otp       String                                      /// 6-digit OTP
+  expiresAt DateTime                                    /// Expiry timestamp (typically 10 minutes)
+  used      Boolean  @default(false)                    /// Prevents replay attacks
+  createdAt DateTime @default(now())
+
+  @@index([email, otp])
+  @@map("admin_otps")
+}
+

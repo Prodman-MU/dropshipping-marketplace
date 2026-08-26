@@ -36,6 +36,10 @@ import {
   AlertTriangle,
   RefreshCw,
   X,
+  Mail,
+  Loader2,
+  Check,
+  Send,
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -89,6 +93,27 @@ export default function AdminPage() {
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [vendorKeyToast, setVendorKeyToast] = useState<string | null>(null);
 
+  // Admin Passcode Reset via Email Modal State
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetStep, setResetStep] = useState<"REQUEST" | "VERIFY">("REQUEST");
+  const [resetMaskedEmail, setResetMaskedEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetNewPasscode, setResetNewPasscode] = useState("");
+  const [resetConfirmPasscode, setResetConfirmPasscode] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Cooldown timer for OTP resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   // Load initial store state & site settings on mount, and hydrate live records from PostgreSQL
   useEffect(() => {
     setMerchants(getInitialMerchants());
@@ -104,10 +129,19 @@ export default function AdminPage() {
 
     const fetchLiveDbData = async () => {
       try {
-        const [mRes, lRes] = await Promise.all([
+        const [mRes, lRes, pRes] = await Promise.all([
           fetch("/api/merchants").then((r) => r.json()).catch(() => null),
           fetch("/api/listings").then((r) => r.json()).catch(() => null),
+          fetch("/api/auth/passcode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "get_admin_default" }),
+          }).then((r) => r.json()).catch(() => null),
         ]);
+
+        if (pRes?.activeDbPasscode) {
+          setAdminCustomPasscode(pRes.activeDbPasscode);
+        }
 
         if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
           const currentLocal = getInitialMerchants();
@@ -148,6 +182,84 @@ export default function AdminPage() {
       window.removeEventListener("site-settings-changed", handleSettingsChange);
     };
   }, []);
+
+  const handleSendOtp = async () => {
+    setResetLoading(true);
+    setResetError("");
+    try {
+      const res = await fetch("/api/auth/admin/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setResetError(data.error || "Failed to dispatch verification code.");
+      } else {
+        setResetMaskedEmail(data.maskedEmail || "admin email");
+        setResetStep("VERIFY");
+        setResendCooldown(60);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Network error sending OTP.";
+      setResetError(msg);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError("");
+    setResetSuccess("");
+
+    if (resetOtp.trim().length !== 6) {
+      setResetError("Please enter the complete 6-digit verification code.");
+      return;
+    }
+    if (resetNewPasscode.trim().length < 4) {
+      setResetError("New passcode must be at least 4 characters long.");
+      return;
+    }
+    if (resetNewPasscode !== resetConfirmPasscode) {
+      setResetError("Passcodes do not match.");
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const res = await fetch("/api/auth/admin/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          otp: resetOtp.trim(),
+          newPasscode: resetNewPasscode.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setResetError(data.error || "Failed to verify OTP.");
+      } else {
+        setAdminCustomPasscode(resetNewPasscode.trim());
+        setResetSuccess("Admin passcode reset successfully! Logging you in...");
+        setTimeout(() => {
+          setIsResetModalOpen(false);
+          setIsAuthenticated(true);
+          sessionStorage.setItem("admin_authenticated", "true");
+          setPasscode(resetNewPasscode.trim());
+          setResetOtp("");
+          setResetNewPasscode("");
+          setResetConfirmPasscode("");
+          setResetStep("REQUEST");
+          setResetSuccess("");
+        }, 1200);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Network error verifying OTP.";
+      setResetError(msg);
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -531,6 +643,26 @@ export default function AdminPage() {
             >
               Authenticate & Enter Desk
             </button>
+
+            {/* Forgot Passcode / Reset via Email Trigger */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsResetModalOpen(true);
+                  setResetStep("REQUEST");
+                  setResetError("");
+                  setResetSuccess("");
+                  setResetOtp("");
+                  setResetNewPasscode("");
+                  setResetConfirmPasscode("");
+                }}
+                className="w-full py-2.5 px-3 rounded-xl border border-neutral-200/90 hover:border-neutral-400 bg-neutral-50/70 hover:bg-neutral-100/80 text-xs font-medium text-neutral-700 hover:text-black flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <Mail className="w-3.5 h-3.5 text-neutral-500" />
+                <span>Forgot Passcode? Reset via Email</span>
+              </button>
+            </div>
           </form>
 
           <div className="pt-4 border-t border-neutral-100">
@@ -543,6 +675,180 @@ export default function AdminPage() {
             </Link>
           </div>
         </div>
+
+        {/* ==================================================================== */}
+        {/* ADMIN PASSCODE RESET VIA EMAIL OTP MODAL                             */}
+        {/* ==================================================================== */}
+        {isResetModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-5 text-left">
+              
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-600 hover:text-black transition cursor-pointer"
+                title="Close Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 font-mono text-[10px] font-semibold tracking-wider uppercase mb-1">
+                  <Mail className="w-3 h-3" />
+                  <span>Email Verification</span>
+                </div>
+                <h3 className="font-editorial text-2xl text-neutral-950 font-normal">
+                  Reset Admin Passcode
+                </h3>
+                <p className="text-xs text-neutral-600">
+                  {resetStep === "REQUEST"
+                    ? "We will send a 6-digit one-time verification code to the registered Administrator email address."
+                    : `Enter the 6-digit code sent to ${resetMaskedEmail} to establish your new passcode.`}
+                </p>
+              </div>
+
+              {resetError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200/80 text-xs text-red-700 flex items-center gap-2">
+                  <XCircle className="w-4 h-4 shrink-0 text-red-500" />
+                  <span>{resetError}</span>
+                </div>
+              )}
+
+              {resetSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-800 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{resetSuccess}</span>
+                </div>
+              )}
+
+              {/* STEP 1: REQUEST OTP */}
+              {resetStep === "REQUEST" && (
+                <div className="space-y-4 pt-1">
+                  <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/70 space-y-1 text-xs text-neutral-600">
+                    <p className="font-medium text-neutral-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-neutral-700" />
+                      <span>Zero-Trust Security</span>
+                    </p>
+                    <p>The verification code expires in 10 minutes. Only the server administrator receives this notification.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={resetLoading}
+                    className="pill-btn-primary w-full py-3.5 text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Sending Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Send 6-Digit Code</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* STEP 2: VERIFY OTP & SET NEW PASSCODE */}
+              {resetStep === "VERIFY" && (
+                <form onSubmit={handleVerifyOtp} className="space-y-4 pt-1">
+                  <div>
+                    <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                      6-Digit Code
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="e.g. 849201"
+                      value={resetOtp}
+                      onChange={(e) => setResetOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-center font-mono text-lg tracking-widest text-neutral-900 focus:outline-none transition"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                        New Admin Passcode
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="At least 4 characters"
+                        value={resetNewPasscode}
+                        onChange={(e) => setResetNewPasscode(e.target.value)}
+                        required
+                        className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs font-mono text-neutral-900 focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
+                        Confirm Passcode
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Re-enter new passcode"
+                        value={resetConfirmPasscode}
+                        onChange={(e) => setResetConfirmPasscode(e.target.value)}
+                        required
+                        className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs font-mono text-neutral-900 focus:outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 space-y-2">
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="pill-btn-primary w-full py-3.5 text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {resetLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Verifying & Resetting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>Reset & Authenticate</span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center justify-between text-xs pt-1 px-1">
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={resetLoading || resendCooldown > 0}
+                        className="text-neutral-500 hover:text-black font-medium transition cursor-pointer disabled:opacity-50"
+                      >
+                        {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend Code"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetStep("REQUEST");
+                          setResetError("");
+                        }}
+                        className="text-neutral-500 hover:text-black transition"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+
+            </div>
+          </div>
+        )}
       </div>
     );
   }

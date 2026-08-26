@@ -68,15 +68,15 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
     <section className="relative bg-white py-4 sm:py-8 overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Central Hero Frame - Off-white editorial card with subtle border */}
+        {/* Central Hero Frame - Off-white editorial card with consistent fixed height */}
         <div 
-          className="relative bg-[#F8F9FA] rounded-2xl sm:rounded-3xl border border-neutral-200/70 p-4 sm:p-8 md:p-10 min-h-[380px] sm:min-h-[460px] md:min-h-[500px] flex flex-col justify-between overflow-hidden shadow-xs transition-all"
+          className="relative bg-[#F8F9FA] rounded-2xl sm:rounded-3xl border border-neutral-200/70 p-4 sm:p-8 md:p-10 h-[440px] sm:h-[480px] md:h-[520px] flex flex-col justify-between overflow-hidden shadow-xs"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           
-          {/* Main Carousel Slide Area */}
-          <div className="relative z-20 w-full flex-1 flex flex-col items-center justify-center my-auto py-2">
+          {/* Main Carousel Slide Area with stable full-height viewport */}
+          <div className="relative z-20 w-full flex-1 flex flex-col items-center justify-center my-auto py-1 overflow-hidden">
             <AnimatePresence mode="wait">
               {activeSlide.type === "svg" ? (
                 /* Slide Type 1: Masters' Union Logo + Animated SVG Squiggle */
@@ -86,7 +86,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full max-w-4xl flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 my-auto"
+                  className="w-full max-w-4xl flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 my-auto h-full"
                 >
                   <MastersUnionLogo
                     showSubtitle={true}
@@ -105,7 +105,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-64 sm:h-80 md:h-96 relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden group bg-neutral-900"
+                  className="w-full h-full min-h-[240px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden group bg-neutral-900"
                 >
                   <Image
                     src={activeSlide.mediaSrc || "/assets/wp1959356-mob-psycho-100-wallpapers.jpg"}
@@ -153,7 +153,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-64 sm:h-80 md:h-96 relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden bg-black"
+                  className="w-full h-full min-h-[240px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden bg-black"
                 >
                   <video
                     autoPlay
@@ -200,9 +200,9 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10"
+                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10 my-auto"
                 >
-                  <div className="relative w-full md:w-1/2 h-52 sm:h-72 rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-200/80 shadow-xs">
+                  <div className="relative w-full md:w-1/2 h-44 sm:h-64 md:h-72 rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-200/80 shadow-xs shrink-0">
                     <video
                       autoPlay
                       loop
@@ -213,24 +213,24 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     />
                   </div>
 
-                  <div className="w-full md:w-1/2 text-left space-y-4">
+                  <div className="w-full md:w-1/2 text-left space-y-3 sm:space-y-4">
                     <span className="font-mono text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
                       FEATURED CAMPAIGN
                     </span>
 
-                    <h2 className="font-editorial text-2xl sm:text-4xl text-neutral-950 font-normal leading-tight">
+                    <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight">
                       {activeSlide.title || "Curated Video Spotlight"}
                     </h2>
 
-                    <p className="text-sm text-neutral-600 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-3">
                       {activeSlide.subtitle || "Direct dropshipping showcase curated from our verified supplier network."}
                     </p>
 
                     {activeSlide.ctaText && (
-                      <div className="pt-2">
+                      <div className="pt-1">
                         <a
                           href={activeSlide.ctaLink || "#product-catalog"}
-                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2"
+                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
                         >
                           <span>{activeSlide.ctaText}</span>
                           <ArrowRight className="w-4 h-4" />
@@ -247,9 +247,9 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10"
+                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10 my-auto"
                 >
-                  <div className="relative w-full md:w-1/2 h-52 sm:h-72 rounded-2xl overflow-hidden bg-[#F5F5F7] border border-neutral-200/80 shadow-xs">
+                  <div className="relative w-full md:w-1/2 h-44 sm:h-64 md:h-72 rounded-2xl overflow-hidden bg-[#F5F5F7] border border-neutral-200/80 shadow-xs shrink-0">
                     <Image
                       src={activeSlide.mediaSrc || "/assets/wp1959356-mob-psycho-100-wallpapers.jpg"}
                       alt={activeSlide.title || "Featured Showcase"}
@@ -260,24 +260,24 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     />
                   </div>
 
-                  <div className="w-full md:w-1/2 text-left space-y-4">
+                  <div className="w-full md:w-1/2 text-left space-y-3 sm:space-y-4">
                     <span className="font-mono text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
                       EDITORIAL SELECTION
                     </span>
 
-                    <h2 className="font-editorial text-2xl sm:text-4xl text-neutral-950 font-normal leading-tight">
+                    <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight">
                       {activeSlide.title || "The Archive Collection"}
                     </h2>
 
-                    <p className="text-sm text-neutral-600 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-3">
                       {activeSlide.subtitle || "Curated merchandise directly sourced for Masters Union student merchants."}
                     </p>
 
                     {activeSlide.ctaText && (
-                      <div className="pt-2">
+                      <div className="pt-1">
                         <a
                           href={activeSlide.ctaLink || "#product-catalog"}
-                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2"
+                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
                         >
                           <span>{activeSlide.ctaText}</span>
                           <ArrowRight className="w-4 h-4" />

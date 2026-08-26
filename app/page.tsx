@@ -45,8 +45,8 @@ export default function MarketplaceHomePage() {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isMissingStoreModalOpen, setIsMissingStoreModalOpen] = useState(false);
 
-  // View Mode: 'grid' or 'vendor'
-  const [viewMode, setViewMode] = useState<"grid" | "vendor">("grid");
+  // View Mode: 'vendor' or 'grid' (default: 'vendor')
+  const [viewMode, setViewMode] = useState<"grid" | "vendor">("vendor");
 
   // Pagination state: 10, 20, or 50 items per page
   const [pageSize, setPageSize] = useState<10 | 20 | 50>(20);
@@ -99,6 +99,8 @@ export default function MarketplaceHomePage() {
         const savedView = localStorage.getItem("catalog_view_mode");
         if (savedView === "vendor" || savedView === "grid") {
           setViewMode(savedView as "grid" | "vendor");
+        } else {
+          setViewMode("vendor");
         }
       }
     }
@@ -281,8 +283,22 @@ export default function MarketplaceHomePage() {
           </div>
 
           <div className="flex items-center gap-3 self-start sm:self-end shrink-0">
-            {/* View Mode Toggle Switcher */}
+            {/* View Mode Toggle Switcher (Store View 1st, Grid View 2nd) */}
             <div className="flex items-center p-1 rounded-full bg-neutral-100 border border-neutral-200/80">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("vendor")}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                  viewMode === "vendor"
+                    ? "bg-white text-black shadow-xs"
+                    : "text-neutral-600 hover:text-black"
+                }`}
+                title="Group by Store"
+              >
+                <Store className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">By Store</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleViewModeChange("grid")}
@@ -295,20 +311,6 @@ export default function MarketplaceHomePage() {
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Grid</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleViewModeChange("vendor")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
-                  viewMode === "vendor"
-                    ? "bg-white text-black shadow-xs"
-                    : "text-neutral-600 hover:text-black"
-                }`}
-                title="Group by Vendor"
-              >
-                <Store className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">By Store</span>
               </button>
             </div>
 

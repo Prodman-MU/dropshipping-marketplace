@@ -111,12 +111,17 @@ export async function POST(req: NextRequest) {
     }
 
     // --------------------------------------------------------------------------
-    // ACTION 3: VERIFY ADMIN DEFAULT
+    // ACTION 3: VERIFY ADMIN DEFAULT / GET ACTIVE OVERRIDE
     // --------------------------------------------------------------------------
     if (action === "get_admin_default") {
+      const siteSetting = await prisma.siteSetting.findUnique({
+        where: { id: "default" },
+      });
+
       return NextResponse.json({
         success: true,
         defaultConfigured: !!process.env.ADMIN_PASSCODE,
+        activeDbPasscode: siteSetting?.adminPasscode || null,
       });
     }
 
