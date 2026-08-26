@@ -132,6 +132,11 @@ export default function VendorDashboardPage() {
   const [adSubmitError, setAdSubmitError] = useState<string | null>(null);
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
 
+  // Store Sync State
+  const [isSyncingStore, setIsSyncingStore] = useState(false);
+  const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
+  const [syncErrorToast, setSyncErrorToast] = useState<string | null>(null);
+
   // Load state on mount, hydrate live records from PostgreSQL, & check session storage auth
   useEffect(() => {
     const loadedMerchants = getInitialMerchants();
@@ -627,6 +632,66 @@ export default function VendorDashboardPage() {
     }
   };
 
+  const handleSyncStore = async (domainToSync?: string) => {
+    const targetDomain = domainToSync || (selectedMerchantId !== "ALL" ? activeMerchantInfo?.myshopifyDomain : undefined);
+    
+    setIsSyncingStore(true);
+    setSyncErrorToast(null);
+    try {
+      if (!targetDomain) {
+        const res = await fetch("/api/cron/sync", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setSyncErrorToast(`Sync failed: ${data.error || "Could not sync stores."}`);
+          setTimeout(() => setSyncErrorToast(null), 5000);
+          return;
+        }
+      } else {
+        const res = await fetch("/api/shopify/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: targetDomain }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setSyncErrorToast(`Sync failed: ${data.error || "Could not reach store."}`);
+          setTimeout(() => setSyncErrorToast(null), 5000);
+          return;
+        }
+      }
+
+      const [mRes, lRes] = await Promise.all([
+        fetch("/api/merchants").then((r) => r.json()).catch(() => null),
+        fetch("/api/listings").then((r) => r.json()).catch(() => null),
+      ]);
+
+      if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+        const currentLocal = getInitialMerchants();
+        const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+        const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+        const mergedM = [...mRes.merchants, ...localOnly];
+        setMerchants(mergedM);
+        saveMerchants(mergedM);
+      }
+      if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+        const currentLocalSlots = getInitialSlots();
+        const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+        const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+        const mergedS = [...lRes.slots, ...localOnlySlots];
+        setSlots(mergedS);
+        saveSlots(mergedS);
+      }
+
+      setSyncSuccessToast(`Store catalog updated live from Shopify!`);
+      setTimeout(() => setSyncSuccessToast(null), 4000);
+    } catch (err: any) {
+      setSyncErrorToast(`Sync error: ${err.message || "Failed to update catalog."}`);
+      setTimeout(() => setSyncErrorToast(null), 5000);
+    } finally {
+      setIsSyncingStore(false);
+    }
+  };
+
   // 1. UNAUTHENTICATED: DUAL-PANE VENDOR PORTAL ACCESS SCREEN (Login | Connect Store)
   if (!isAuthenticated) {
     return (
@@ -937,57 +1002,6 @@ export default function VendorDashboardPage() {
     );
   }
 
-  const [isSyncingStore, setIsSyncingStore] = useState(false);
-  const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
-
-  const handleSyncStore = async (domainToSync?: string) => {
-    const targetDomain = domainToSync || (selectedMerchantId !== "ALL" ? activeMerchantInfo?.myshopifyDomain : undefined);
-    
-    setIsSyncingStore(true);
-    try {
-      if (!targetDomain) {
-        const res = await fetch("/api/cron/sync", { method: "POST" });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          alert(`Sync failed: ${data.error || "Could not sync stores."}`);
-          return;
-        }
-      } else {
-        const res = await fetch("/api/shopify/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain: targetDomain }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          alert(`Sync failed: ${data.error || "Could not reach store."}`);
-          return;
-        }
-      }
-
-      const [mRes, lRes] = await Promise.all([
-        fetch("/api/merchants").then((r) => r.json()).catch(() => null),
-        fetch("/api/listings").then((r) => r.json()).catch(() => null),
-      ]);
-
-      if (mRes?.merchants) {
-        setMerchants(mRes.merchants);
-        saveMerchants(mRes.merchants);
-      }
-      if (lRes?.slots) {
-        setSlots(lRes.slots);
-        saveSlots(lRes.slots);
-      }
-
-      setSyncSuccessToast(`Store catalog updated live from Shopify!`);
-      setTimeout(() => setSyncSuccessToast(null), 4000);
-    } catch (err: any) {
-      alert(`Sync error: ${err.message || "Failed to update catalog."}`);
-    } finally {
-      setIsSyncingStore(false);
-    }
-  };
-
   // 2. AUTHENTICATED: VENDOR DASHBOARD
   return (
     <div className="min-h-screen bg-white text-[#111111] flex flex-col font-sans">
@@ -1005,7 +1019,18 @@ export default function VendorDashboardPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{syncSuccessToast}</span>
             </div>
-            <button type="button" onClick={() => setSyncSuccessToast(null)} className="text-emerald-700 hover:text-emerald-950">✕</button>
+            <button type="button" onClick={() => setSyncSuccessToast(null)} className="text-emerald-700 hover:text-emerald-950 cursor-pointer">✕</button>
+          </div>
+        )}
+
+        {/* Sync Error Toast */}
+        {syncErrorToast && (
+          <div className="p-3.5 rounded-2xl bg-red-50 text-red-800 border border-red-200 text-xs font-medium flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{syncErrorToast}</span>
+            </div>
+            <button type="button" onClick={() => setSyncErrorToast(null)} className="text-red-700 hover:text-red-950 cursor-pointer">✕</button>
           </div>
         )}
 

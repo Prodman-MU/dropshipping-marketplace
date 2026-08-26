@@ -90,6 +90,12 @@ export default function AdminPage() {
   const [expandedMerchantId, setExpandedMerchantId] = useState<string | null>(null);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
+  // Store Catalog Synchronization State
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [syncingStoreId, setSyncingStoreId] = useState<string | null>(null);
+  const [syncNoticeToast, setSyncNoticeToast] = useState<string | null>(null);
+  const [syncErrorToast, setSyncErrorToast] = useState<string | null>(null);
+
   // Admin Navigation Tab ("STORES" | "HERO_BANNERS" | "SETTINGS")
   const [adminTab, setAdminTab] = useState<"STORES" | "HERO_BANNERS" | "SETTINGS">("STORES");
 
@@ -500,12 +506,9 @@ export default function AdminPage() {
     }
   };
 
-  const [isSyncingAll, setIsSyncingAll] = useState(false);
-  const [syncingStoreId, setSyncingStoreId] = useState<string | null>(null);
-  const [syncNoticeToast, setSyncNoticeToast] = useState<string | null>(null);
-
   const handleSyncStore = async (domain: string, merchantId: string) => {
     setSyncingStoreId(merchantId);
+    setSyncErrorToast(null);
     try {
       const res = await fetch("/api/shopify/sync", {
         method: "POST",
@@ -515,7 +518,8 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(`Store sync failed: ${data.error || "Could not query store."}`);
+        setSyncErrorToast(`Store sync failed: ${data.error || "Could not query store."}`);
+        setTimeout(() => setSyncErrorToast(null), 5000);
         return;
       }
 
@@ -524,19 +528,28 @@ export default function AdminPage() {
         fetch("/api/listings").then((r) => r.json()).catch(() => null),
       ]);
 
-      if (mRes?.merchants) {
-        setMerchants(mRes.merchants);
-        saveMerchants(mRes.merchants);
+      if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+        const currentLocal = getInitialMerchants();
+        const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+        const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+        const mergedM = [...mRes.merchants, ...localOnly];
+        setMerchants(mergedM);
+        saveMerchants(mergedM);
       }
-      if (lRes?.slots) {
-        setSlots(lRes.slots);
-        saveSlots(lRes.slots);
+      if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+        const currentLocalSlots = getInitialSlots();
+        const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+        const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+        const mergedS = [...lRes.slots, ...localOnlySlots];
+        setSlots(mergedS);
+        saveSlots(mergedS);
       }
 
       setSyncNoticeToast(`Catalog for "${domain}" updated live (${data.syncedSlotsCount} listings synced)!`);
       setTimeout(() => setSyncNoticeToast(null), 4000);
     } catch (e: any) {
-      alert(`Sync error: ${e.message || "Failed to sync store."}`);
+      setSyncErrorToast(`Sync error: ${e.message || "Failed to sync store."}`);
+      setTimeout(() => setSyncErrorToast(null), 5000);
     } finally {
       setSyncingStoreId(null);
     }
@@ -544,11 +557,13 @@ export default function AdminPage() {
 
   const handleSyncAllStores = async () => {
     setIsSyncingAll(true);
+    setSyncErrorToast(null);
     try {
       const res = await fetch("/api/cron/sync", { method: "POST" });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(`Sync all failed: ${data.error || "Could not sync all stores."}`);
+        setSyncErrorToast(`Sync all failed: ${data.error || "Could not sync all stores."}`);
+        setTimeout(() => setSyncErrorToast(null), 5000);
         return;
       }
 
@@ -557,19 +572,28 @@ export default function AdminPage() {
         fetch("/api/listings").then((r) => r.json()).catch(() => null),
       ]);
 
-      if (mRes?.merchants) {
-        setMerchants(mRes.merchants);
-        saveMerchants(mRes.merchants);
+      if (mRes?.merchants && Array.isArray(mRes.merchants) && mRes.merchants.length > 0) {
+        const currentLocal = getInitialMerchants();
+        const dbDomains = new Set(mRes.merchants.map((m: any) => m.myshopifyDomain));
+        const localOnly = currentLocal.filter((m) => !dbDomains.has(m.myshopifyDomain));
+        const mergedM = [...mRes.merchants, ...localOnly];
+        setMerchants(mergedM);
+        saveMerchants(mergedM);
       }
-      if (lRes?.slots) {
-        setSlots(lRes.slots);
-        saveSlots(lRes.slots);
+      if (lRes?.slots && Array.isArray(lRes.slots) && lRes.slots.length > 0) {
+        const currentLocalSlots = getInitialSlots();
+        const dbSlotIds = new Set(lRes.slots.map((s: any) => s.shopifyProductId || s.id));
+        const localOnlySlots = currentLocalSlots.filter((s) => !dbSlotIds.has(s.shopifyProductId) && !dbSlotIds.has(s.id));
+        const mergedS = [...lRes.slots, ...localOnlySlots];
+        setSlots(mergedS);
+        saveSlots(mergedS);
       }
 
       setSyncNoticeToast(`All active store catalogs synchronized live with Shopify!`);
       setTimeout(() => setSyncNoticeToast(null), 4000);
     } catch (e: any) {
-      alert(`Sync all error: ${e.message || "Failed to sync."}`);
+      setSyncErrorToast(`Sync all error: ${e.message || "Failed to sync."}`);
+      setTimeout(() => setSyncErrorToast(null), 5000);
     } finally {
       setIsSyncingAll(false);
     }
@@ -1063,7 +1087,23 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setSyncNoticeToast(null)}
-              className="text-emerald-700 hover:text-emerald-950"
+              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {syncErrorToast && (
+          <div className="p-3.5 rounded-2xl bg-red-50 text-red-800 border border-red-200 text-xs font-medium flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{syncErrorToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSyncErrorToast(null)}
+              className="text-red-700 hover:text-red-950 cursor-pointer"
             >
               ✕
             </button>

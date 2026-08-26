@@ -92,8 +92,9 @@ model Merchant {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  listings Listing[]
-  syncLogs SyncLog[]
+  listings      Listing[]
+  syncLogs      SyncLog[]
+  adSubmissions AdSubmission[]
 
   @@map("merchants")
 }
@@ -161,6 +162,38 @@ model SiteSetting {
   updatedAt        DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+enum AdSubmissionType {
+  IMAGE_AD
+  VIDEO_AD
+  SHOWCASE
+}
+
+enum AdSubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model AdSubmission {
+  id              String             @id @default(uuid())
+  merchantId      String
+  merchant        Merchant           @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  type            AdSubmissionType   @default(IMAGE_AD)
+  status          AdSubmissionStatus @default(PENDING)
+  badge           String             @default("EXCLUSIVE DROP")
+  title           String?
+  subtitle        String?
+  mediaSrc        String             @db.Text
+  ctaText         String             @default("Explore Collection")
+  ctaLink         String             @default("#product-catalog")
+  rejectionReason String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([merchantId, status])
+  @@map("ad_submissions")
 }
 ```
 

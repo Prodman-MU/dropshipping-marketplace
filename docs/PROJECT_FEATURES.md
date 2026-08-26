@@ -106,29 +106,54 @@ Welcome to the comprehensive feature catalog for the **Masters' Union Shopify Mu
 
 - **Store Moderation Suite (`/admin`)**:
   - Tabbed admin portal for approving, rejecting, or disconnecting candidate Shopify storefronts.
+  - Granular single-store refresh (`handleSyncStore`) and bulk synchronizer (`handleSyncAllStores`) with non-blocking error toast feedback.
+- **Dedicated Hero Banners & Ads Desk**:
+  - Centralized moderation control for vendor ad campaign submissions, admin brand asset toggles, and live slide sequence reordering.
 - **Dynamic Site Settings (`settings-manager.ts`)**:
-  - Form to customize global parameters: Dropshipping Year (e.g. `2026`, `2027`), Site Title, Announcement Text, and Catalog Badge Text.
+  - Consolidated settings form: Dropshipping Year (e.g. `2026`, `2027`), Marketplace Organization Title, and Admin Passcode Security.
   - Real-time UI mockup preview and site-wide DOM event synchronization (`"site-settings-changed"`).
+  - Quick-action cross-link card into the dedicated Hero Desk.
 - **Master Vendor Key**:
   - Super-passcode allowing marketplace admins to inspect any store workspace in `/vendor`.
 
 ---
 
-## 🗄️ 9. Cloud Database & Prisma 7 Architecture
+## 📣 10. Hero Banner & Vendor Co-Marketing Ad Spotlight
 
-- **Decoupled Prisma 7 Schema (`schema.prisma`)**:
-  - Separate `Listing` (Catalog) and `Inventory` models linked by 1-to-1 relationships.
-  - `SiteSetting` model for global website configuration.
-- **Local Development via Supabase CLI**:
-  - `supabase/config.toml` configuring local Docker stack with PostgreSQL (`:54322`), Studio Dashboard (`:54323`), and Inbucket (`:54324`).
-- **Supabase Cloud Deployment Setup**:
-  - `DATABASE_URL` (Port 6543 transaction pooler for serverless App Router API routes).
-  - `DIRECT_URL` (Port 5432 session pooler for Prisma CLI migrations).
-  - Automated `prisma generate && next build` pipeline for zero-downtime Vercel deployments.
+- **Vendor Ad Submission Portal (`/vendor`)**:
+  - Sub-navigation tab: `"HERO_ADS"` alongside `"INVENTORY"`.
+  - **3 Distinct Ad Formats**:
+    1. **Image Ad (`IMAGE_AD`)**: Studio product photography campaign slide.
+    2. **Video Ad (`VIDEO_AD`)**: Autoplaying background video slide.
+    3. **Editorial Showcase (`SHOWCASE`)**: Curated editorial drop with headline and description copy.
+  - **Dual Media Ingestion**: Direct file upload to Supabase Storage bucket (`marketplace-assets`) or external CDN image/video URL input.
+  - **Live Mockup Simulator**: Interactive real-time preview reflecting the exact proportions, badge typography, and CTA button layout of the live homepage Hero.
+  - **My Requests Queue**: Live status tracker (`PENDING REVIEW`, `LIVE ON HERO`, `REJECTED`) displaying admin feedback on rejected submissions.
+- **Admin Moderation & Carousel Management (`/admin`)**:
+  - **Vendor Ad Requests Desk**: Card grid with format pills, creative previews, vendor domain, and 1-click **"Approve & Add to Hero"** (updates DB via `PATCH /api/ads` + adds slide to carousel in one click) or **"Reject"** with custom feedback modal.
+  - **Official Admin System Banners**: Curated library of brand templates headed by the **Masters' Union Animated SVG Squiggle** banner, featuring 1-click toggle switches to activate or deactivate each banner from the live homepage carousel.
+  - **Active Hero Carousel Sequence Manager**: Visual sequence inspector with Move Up / Move Down reordering controls and delete actions.
 
 ---
 
-## 🔮 10. Future Features & Product Roadmap
+## 🧪 11. Automated Testing & Quality Engineering
+
+- **Vitest Unit & Integration Test Suite**:
+  - **8 Test Suites**, **67 Unit & Integration Tests** passing at 100%.
+  - Run via `npm test`.
+- **Test Coverage Areas**:
+  - **`__tests__/api/ads.test.ts`**: Tests `GET`, `POST`, `PATCH`, and `DELETE` flows on `/api/ads`.
+  - **`__tests__/api/auth-passcode.test.ts`**: Tests passcode updates, admin overrides, and formula-based resets.
+  - **`__tests__/lib/settings-manager.test.ts`**: Tests carousel slide additions, removals, admin banner toggles, and settings persistence.
+  - **`__tests__/lib/store-manager.test.ts`**: Tests store approval, rejection, deletion, and reactive state management.
+  - **`__tests__/lib/shopify.test.ts`**: Tests domain cleaning, candidate domain generation, and reachability.
+  - **`__tests__/lib/utils.test.ts`**: Tests pricing calculations, discount percentages, and string helpers.
+  - **`__tests__/lib/email.test.ts`**: Tests OTP generation and verification flows.
+  - **`__tests__/components/ListingCard.test.tsx`**: Tests component rendering, discount pill visibility, and stock badges.
+
+---
+
+## 🔮 12. Future Features & Product Roadmap
 
 ### AI Product Recommendation Engine (Planned for Vendor Portal)
 The following automated intelligence modules are planned for future implementation in the Vendor Dashboard (`/vendor`):

@@ -164,3 +164,187 @@ const url = getAssetPublicUrl(`logos/${merchantId}.png`);
 
 ### `ensureMarketplaceBucket()`
 Server-side initialization utility that verifies the `marketplace-assets` public bucket exists with MIME type restrictions.
+
+---
+
+## 7. Hero Banner & Co-Marketing Ad Submissions (`/api/ads`)
+
+Manages vendor co-marketing banner campaigns displayed in the homepage Hero Carousel.
+
+### `GET /api/ads`
+Fetches ad submissions with optional status or merchant filtering.
+
+- **Query Parameters**:
+  - `status` (optional, string): `"PENDING" | "APPROVED" | "REJECTED" | "ALL"` (defaults to `"ALL"`).
+  - `merchantId` (optional, string): Filter by fulfilling merchant UUID.
+- **Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "submissions": [
+    {
+      "id": "ad-1740562800000",
+      "merchantId": "m-001",
+      "type": "IMAGE_AD",
+      "status": "APPROVED",
+      "badge": "SUMMER COLLECTION",
+      "title": "Tactical Everyday Carry Drop",
+      "subtitle": "Engineered for durability and precision.",
+      "mediaSrc": "https://example.supabase.co/storage/v1/object/public/marketplace-assets/ads/hero.jpg",
+      "ctaText": "Explore Drop",
+      "ctaLink": "#product-catalog",
+      "rejectionReason": null,
+      "createdAt": "2026-08-26T14:30:00.000Z",
+      "merchant": {
+        "id": "m-001",
+        "name": "Apex Gear",
+        "myshopifyDomain": "apex-gear.myshopify.com",
+        "storeLogo": "/assets/store-logos/apex.png"
+      }
+    }
+  ]
+}
+```
+
+### `POST /api/ads`
+Submits a new vendor ad request for administrator moderation.
+
+- **Headers**: `Content-Type: application/json`
+- **Body**:
+```json
+{
+  "merchantId": "m-001",
+  "type": "IMAGE_AD",
+  "badge": "EXCLUSIVE DROP",
+  "title": "Ultra-light EDC Titanium Pen",
+  "subtitle": "Available in limited quantities this cohort.",
+  "mediaSrc": "https://cdn.example.com/edc-banner.jpg",
+  "ctaText": "Shop Collection",
+  "ctaLink": "/product/slot-001"
+}
+```
+- **Supported Formats**:
+  - `"IMAGE_AD"`: High-contrast studio product campaign banner.
+  - `"VIDEO_AD"`: Autoplaying ambient video slide (`.mp4` / `.webm`).
+  - `"SHOWCASE"`: Curated editorial collection layout with title and subtitle.
+- **Success Response (`201 Created`)**:
+```json
+{
+  "success": true,
+  "submission": { "id": "ad-...", "status": "PENDING", ... }
+}
+```
+
+### `PATCH /api/ads`
+Admin moderation action to approve or reject a vendor ad submission.
+
+- **Headers**: `Content-Type: application/json`
+- **Body (Approve)**:
+```json
+{
+  "id": "ad-1740562800000",
+  "status": "APPROVED",
+  "addToCarousel": true
+}
+```
+- **Body (Reject)**:
+```json
+{
+  "id": "ad-1740562800000",
+  "status": "REJECTED",
+  "rejectionReason": "Creative image resolution does not meet 1920x800 minimum standard."
+}
+```
+- **Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "submission": { "id": "ad-1740562800000", "status": "APPROVED" },
+  "carouselSlideAdded": true
+}
+```
+
+### `DELETE /api/ads`
+Permanently removes an ad submission from the database.
+
+- **Query Parameters**:
+  - `id` (required, string): Submission UUID.
+- **Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "deletedId": "ad-1740562800000"
+}
+```
+
+---
+
+## 8. Authentication & Passcode Operations (`POST /api/auth/passcode`)
+
+Secure endpoint for vendor passcode changes, admin resets, and credential verification.
+
+### Actions Supported:
+1. `update_vendor_passcode`: Vendor self-service passcode update (validates current passcode or master admin override).
+2. `reset_vendor_passcode`: Admin 1-click reset to default formula (`<domain>123`).
+3. `verify_admin_passcode`: Admin login verification.
+4. `update_admin_passcode`: Admin updates their master password.
+
+### Example Request (`update_vendor_passcode`):
+```json
+{
+  "action": "update_vendor_passcode",
+  "merchantId": "m-001",
+  "currentPasscode": "apex123",
+  "newPasscode": "ApexSecure2026!",
+  "isAdminOverride": false
+}
+```
+
+### Success Response (`200 OK`):
+```json
+{
+  "success": true,
+  "message": "Passcode updated successfully."
+}
+```
+
+---
+
+## 9. Bulk & Scheduled Catalog Synchronization (`/api/cron/sync`)
+
+Synchronizes all active supplier stores with their live Shopify catalogs in a single batch.
+
+- **Methods**: `GET`, `POST`
+- **Headers**:
+  - `Authorization: Bearer <CRON_SECRET>` (optional, required if `CRON_SECRET` is configured)
+- **Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "message": "Scheduled daily sync completed.",
+  "timestamp": "2026-08-26T04:00:00.000Z",
+  "storesChecked": 6,
+  "syncResults": [
+    {
+      "domain": "apex-gear.myshopify.com",
+      "status": "SUCCESS",
+      "productsCount": 12
+    }
+  ]
+}
+```
+
+---
+
+## 10. Merchants & Listings CRUD Endpoints
+
+### `/api/merchants`
+- **`GET /api/merchants`**: Fetches all connected merchants with optional status filter (`?status=ACTIVE`).
+- **`POST /api/merchants`**: Direct merchant store registration.
+- **`PATCH /api/merchants`**: Update merchant status (`ACTIVE`, `REJECTED`, `PENDING`) or details.
+- **`DELETE /api/merchants?id=<id>`**: Disconnects store and cascades removal.
+
+### `/api/listings`
+- **`GET /api/listings`**: Returns formatted catalog slots with inventory quantities and fulfilling merchant relations.
+  - Query filters: `?status=ACTIVE`, `?merchantId=<id>`, `?domain=<domain>`.
+- **`PATCH /api/listings`**: Updates listing retail price, tags, or promotional compareAtPrice.

@@ -23,9 +23,16 @@
   - Automatic discount percentage calculation (`compareAtPrice` vs `price`).
   - Corner discount pill badge (e.g. `-35%`) on product cards.
   - Inline price tag with slashed comparison amount and `{discount}% OFF` label in emerald green.
-- 🌀 **Animated SVG Squiggle Hero Carousel**:
-  - Continuous multi-color gradient SVG stroke draw-and-erase animation.
+- 🌀 **Animated SVG Squiggle Hero Carousel & Co-Marketing**:
+  - Continuous multi-color gradient SVG stroke draw-and-erase animation (Masters' Union baseline).
   - Auto-rotating slides with hairline progress bar, dot navigation, and next/prev controls.
+  - Live slide sequence reordering and deletion in Admin portal.
+- 📣 **Hero Banner & Vendor Co-Marketing Ad Spotlight**:
+  - **Vendor Submission Desk**: Vendors submit campaign ads in 3 formats: **Image Ad**, **Video Ad**, and **Editorial Showcase**.
+  - **Dual Media Ingestion**: Direct file upload to Supabase Storage bucket (`marketplace-assets`) with fallback, or external CDN URL.
+  - **Live Mockup Simulator**: Interactive real-time hero slide preview before submission.
+  - **Admin Approval Queue**: 1-click **"Approve & Add to Hero"** (updates PostgreSQL and live homepage carousel rotation) or **"Reject"** with custom feedback.
+  - **Admin System Banners**: Curated library of brand assets (featuring Masters' Union animated SVG squiggle) with 1-click toggle switches.
 - 🔀 **Control Bar & Slide-Over Filter Drawer**:
   - 1-tap horizontal category pill rail with active pill indicator.
   - Slide-over filter drawer with store selector, category checklist, and sorting controls.
@@ -33,13 +40,18 @@
   - 2-column asymmetric layout with studio vertical photo gallery and sticky purchase column.
   - Variant selector pills, wholesale rate callouts, 1-click WhatsApp B2B inquiry CTA, and direct Shopify checkout.
 - 🛡️ **Minimalist Admin Moderation Desk (`/admin`)**:
-  - Protected passcode access gate (`admin123`).
-  - Store moderation tabs (`Pending`, `Active`, `Rejected`), product preview drawers, live sync triggers, and carousel settings manager.
+  - Protected passcode access gate (`admin123`) with email OTP reset flow.
+  - Store moderation tabs (`Pending`, `Active`, `Rejected`), granular per-store refresh, bulk sync triggers, dedicated **Hero Banners & Ads** desk, and consolidated Website Settings.
 - 💼 **Vendor Analytics Desk (`/vendor`)**:
   - Dual-pane access gate (`Vendor Login` | `Connect Store`).
-  - KPI metric cards, store view selector, and inventory inspection table with search filters.
+  - Sub-navigation tabs: **Inventory Management** and **Hero Ad Spotlight**.
+  - KPI metric cards, store catalog live sync, passcode self-service update modal, and inventory inspection table.
 - 🔄 **Real-Time Shopify Storefront & Webhook Synchronization**:
   - Connect stores via myshopify domain with automated product, variant, image, and inventory ingestion.
+  - Dual sync pipelines: granular single-store sync (`/api/shopify/sync`) and scheduled bulk sync (`/api/cron/sync`).
+  - Non-blocking error alerts and cross-tab reactivity via `"store-state-changed"` event broadcasting.
+- 🧪 **Comprehensive Automated Unit Testing Suite**:
+  - 8 test suites with 67 tests passing (100% pass rate) using Vitest covering API endpoints, settings manager, store manager, Shopify utilities, passcode security, and UI components.
 
 ---
 
@@ -86,6 +98,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 npx next build
 ```
+
+### 4. Run Automated Test Suite
+```bash
+npm test
+```
+Executes 8 Vitest test suites (67 tests) verifying REST API endpoints, Shopify parsers, store management, and UI components.
 
 ---
 
