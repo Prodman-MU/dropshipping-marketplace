@@ -8,6 +8,10 @@ import {
   resetAdminPasscodeToDefault,
   DEFAULT_SITE_SETTINGS,
   DEFAULT_ENV_ADMIN_PASSCODE,
+  getAdminSystemBanners,
+  addVendorAdToCarousel,
+  removeVendorAdFromCarousel,
+  toggleAdminBannerInCarousel,
 } from "@/lib/settings-manager";
 
 describe("lib/settings-manager - Global Site Configuration", () => {
@@ -96,4 +100,64 @@ describe("lib/settings-manager - Global Site Configuration", () => {
       expect(getActiveAdminPasscode()).toBe(DEFAULT_ENV_ADMIN_PASSCODE);
     });
   });
+
+  describe("Hero Carousel Banner & Ad Submissions Management", () => {
+    it("getAdminSystemBanners returns predefined official assets with SVG squiggle as baseline", () => {
+      const banners = getAdminSystemBanners();
+      expect(banners.length).toBeGreaterThanOrEqual(3);
+      expect(banners[0].id).toBe("admin-asset-svg-squiggle");
+      expect(banners[0].type).toBe("svg");
+      expect(banners[0].source).toBe("ADMIN_ASSET");
+    });
+
+    it("addVendorAdToCarousel adds vendor ad to live carousel slides", () => {
+      const ad = {
+        id: "ad-test-123",
+        type: "IMAGE_AD" as const,
+        badge: "VENDOR DROP",
+        title: "Test Streetwear Drop",
+        subtitle: "Exclusive hoodies",
+        mediaSrc: "https://example.com/ad.jpg",
+        ctaText: "Shop Drop",
+        ctaLink: "/products/hoodie",
+        merchantName: "Apex Gear",
+      };
+
+      const updated = addVendorAdToCarousel(ad);
+      const slide = updated.carouselSlides.find((s) => s.adSubmissionId === "ad-test-123");
+      expect(slide).toBeDefined();
+      expect(slide?.type).toBe("image_ad");
+      expect(slide?.source).toBe("VENDOR_AD");
+      expect(slide?.merchantName).toBe("Apex Gear");
+      expect(slide?.title).toBe("Test Streetwear Drop");
+    });
+
+    it("removeVendorAdFromCarousel removes vendor ad from live carousel slides", () => {
+      addVendorAdToCarousel({
+        id: "ad-to-remove",
+        type: "VIDEO_AD" as const,
+        title: "Video Ad",
+        mediaSrc: "https://example.com/video.mp4",
+      });
+
+      const afterRemove = removeVendorAdFromCarousel("ad-to-remove");
+      const found = afterRemove.carouselSlides.find((s) => s.adSubmissionId === "ad-to-remove");
+      expect(found).toBeUndefined();
+    });
+
+    it("toggleAdminBannerInCarousel toggles banner active and inactive", () => {
+      // Toggle off default SVG squiggle
+      const isNowActive1 = toggleAdminBannerInCarousel("admin-asset-svg-squiggle");
+      expect(isNowActive1).toBe(false);
+      let current = getSiteSettings();
+      expect(current.carouselSlides.some((s) => s.id === "admin-asset-svg-squiggle")).toBe(false);
+
+      // Toggle back on
+      const isNowActive2 = toggleAdminBannerInCarousel("admin-asset-svg-squiggle");
+      expect(isNowActive2).toBe(true);
+      current = getSiteSettings();
+      expect(current.carouselSlides.some((s) => s.id === "admin-asset-svg-squiggle")).toBe(true);
+    });
+  });
 });
+

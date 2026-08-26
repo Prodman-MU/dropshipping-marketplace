@@ -11,7 +11,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   ShieldAlert,
@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Trash2,
   Sliders,
   Globe,
@@ -40,6 +41,12 @@ import {
   Loader2,
   Check,
   Send,
+  Plus,
+  Tv,
+  Image as ImageIcon,
+  LayoutTemplate,
+  ExternalLink,
+  Clock,
 } from "lucide-react";
 import { MerchantVendor, SlotListing } from "@/data/mock-slots";
 import { formatCurrency } from "@/lib/utils";
@@ -65,6 +72,11 @@ import {
   SiteSettings,
   CarouselSlide,
   DEFAULT_SITE_SETTINGS,
+  getAdminSystemBanners,
+  addVendorAdToCarousel,
+  removeVendorAdFromCarousel,
+  toggleAdminBannerInCarousel,
+  ADMIN_SYSTEM_BANNERS,
 } from "@/lib/settings-manager";
 
 export default function AdminPage() {
@@ -78,8 +90,15 @@ export default function AdminPage() {
   const [expandedMerchantId, setExpandedMerchantId] = useState<string | null>(null);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
-  // Admin Navigation Tab ("STORES" | "SETTINGS")
-  const [adminTab, setAdminTab] = useState<"STORES" | "SETTINGS">("STORES");
+  // Admin Navigation Tab ("STORES" | "HERO_BANNERS" | "SETTINGS")
+  const [adminTab, setAdminTab] = useState<"STORES" | "HERO_BANNERS" | "SETTINGS">("STORES");
+
+  // Vendor Ad Requests & Hero Banner Management State
+  const [adRequests, setAdRequests] = useState<any[]>([]);
+  const [isLoadingAds, setIsLoadingAds] = useState(false);
+  const [adActionToast, setAdActionToast] = useState<string | null>(null);
+  const [rejectModalAd, setRejectModalAd] = useState<any | null>(null);
+  const [rejectFeedback, setRejectFeedback] = useState("");
 
   // Website Settings Form State
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
@@ -182,6 +201,107 @@ export default function AdminPage() {
       window.removeEventListener("site-settings-changed", handleSettingsChange);
     };
   }, []);
+
+  const fetchAdRequests = useCallback(async () => {
+    setIsLoadingAds(true);
+    try {
+      const res = await fetch("/api/ads");
+      const data = await res.json();
+      if (data?.ads) {
+        setAdRequests(data.ads);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch ad requests:", e);
+    } finally {
+      setIsLoadingAds(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdRequests();
+    }
+  }, [isAuthenticated, fetchAdRequests]);
+
+  const handleApproveAd = async (ad: any) => {
+    try {
+      const res = await fetch("/api/ads", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: ad.id, status: "APPROVED" }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to approve ad.");
+      }
+
+      addVendorAdToCarousel({
+        id: ad.id,
+        type: ad.type,
+        badge: ad.badge,
+        title: ad.title,
+        subtitle: ad.subtitle,
+        mediaSrc: ad.mediaSrc,
+        ctaText: ad.ctaText,
+        ctaLink: ad.ctaLink,
+        merchantName: ad.merchant?.name,
+      });
+
+      setSiteSettings(getSiteSettings());
+      fetchAdRequests();
+      setAdActionToast(`Ad from "${ad.merchant?.name || "Vendor"}" approved & activated in Hero Carousel!`);
+      setTimeout(() => setAdActionToast(null), 4000);
+    } catch (e: any) {
+      alert(e.message || "Failed to approve ad.");
+    }
+  };
+
+  const handleRejectAd = async () => {
+    if (!rejectModalAd) return;
+    try {
+      const res = await fetch("/api/ads", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: rejectModalAd.id,
+          status: "REJECTED",
+          adminFeedback: rejectFeedback.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to reject ad.");
+      }
+
+      removeVendorAdFromCarousel(rejectModalAd.id);
+      setSiteSettings(getSiteSettings());
+      fetchAdRequests();
+      setAdActionToast(`Ad from "${rejectModalAd.merchant?.name || "Vendor"}" rejected.`);
+      setTimeout(() => setAdActionToast(null), 4000);
+      setRejectModalAd(null);
+      setRejectFeedback("");
+    } catch (e: any) {
+      alert(e.message || "Failed to reject ad.");
+    }
+  };
+
+  const handleToggleAdminBanner = (bannerId: string) => {
+    const isNowActive = toggleAdminBannerInCarousel(bannerId);
+    setSiteSettings(getSiteSettings());
+    setAdActionToast(
+      isNowActive
+        ? "Admin System Banner added to live Hero Carousel!"
+        : "Admin System Banner removed from live Hero Carousel."
+    );
+    setTimeout(() => setAdActionToast(null), 3500);
+  };
+
+  const handleRemoveVendorAd = (adSubmissionId: string) => {
+    removeVendorAdFromCarousel(adSubmissionId);
+    setSiteSettings(getSiteSettings());
+    setAdActionToast("Vendor ad slide removed from live Hero Carousel.");
+    setTimeout(() => setAdActionToast(null), 3500);
+  };
 
   const handleSendOtp = async () => {
     setResetLoading(true);
@@ -519,32 +639,6 @@ export default function AdminPage() {
       setSettingsSaveSuccess(true);
       setTimeout(() => setSettingsSaveSuccess(false), 3000);
     }
-  };
-
-  const handleAddSlide = (type: "svg" | "image" | "video" | "image_ad" | "video_ad") => {
-    const newSlide: CarouselSlide = {
-      id: `slide-${Date.now()}`,
-      type,
-      badge: type === "svg" ? "CURATED DROP" : type === "video_ad" ? "FEATURED VIDEO" : type === "image_ad" ? "FEATURED COLLECTION" : "EDITORIAL SELECTION",
-      title: type !== "svg" ? "NEW CURATED SHOWCASE" : undefined,
-      subtitle: type === "svg" ? "dropshipping 2026" : "Add custom description for this slide in Admin Portal.",
-      mediaSrc: type.includes("video") ? "/assets/masters_union_dropshipping_v1.mp4" : type === "svg" ? undefined : "/assets/wp1959356-mob-psycho-100-wallpapers.jpg",
-      ctaText: type !== "svg" ? "Explore Collection" : undefined,
-      ctaLink: type !== "svg" ? "#product-catalog" : undefined,
-    };
-    setSiteSettings((prev) => ({
-      ...prev,
-      carouselSlides: [...(prev.carouselSlides || []), newSlide],
-    }));
-  };
-
-  const handleUpdateSlide = (id: string, updated: Partial<CarouselSlide>) => {
-    setSiteSettings((prev) => ({
-      ...prev,
-      carouselSlides: (prev.carouselSlides || []).map((slide) =>
-        slide.id === id ? { ...slide, ...updated } : slide
-      ),
-    }));
   };
 
   const handleDeleteSlide = (id: string) => {
@@ -897,6 +991,24 @@ export default function AdminPage() {
 
               <button
                 type="button"
+                onClick={() => setAdminTab("HERO_BANNERS")}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                  adminTab === "HERO_BANNERS"
+                    ? "bg-white text-black shadow-xs"
+                    : "text-neutral-600 hover:text-black"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Hero Banners & Ads</span>
+                {adRequests.filter((a) => a.status === "PENDING").length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[9px] font-mono font-bold">
+                    {adRequests.filter((a) => a.status === "PENDING").length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setAdminTab("SETTINGS")}
                 className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
                   adminTab === "SETTINGS"
@@ -952,6 +1064,22 @@ export default function AdminPage() {
               type="button"
               onClick={() => setSyncNoticeToast(null)}
               className="text-emerald-700 hover:text-emerald-950"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {adActionToast && (
+          <div className="p-3.5 rounded-2xl bg-neutral-900 text-white text-xs font-mono flex items-center justify-between gap-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>{adActionToast}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAdActionToast(null)}
+              className="text-neutral-400 hover:text-white cursor-pointer"
             >
               ✕
             </button>
@@ -1243,7 +1371,432 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* TAB 2: WEBSITE SETTINGS */}
+        {/* TAB 2: HERO BANNERS & VENDOR ADS DESK */}
+        {adminTab === "HERO_BANNERS" && (
+          <div className="space-y-8">
+            {/* Header Card */}
+            <div className="bg-[#F8F9FA] rounded-3xl border border-neutral-200/80 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 font-mono text-[10px] font-semibold uppercase">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>HOMEPAGE HERO ROTATION CONTROL</span>
+                </div>
+                <h2 className="font-editorial text-2xl sm:text-3xl text-neutral-950 font-normal">
+                  Hero Banners & Vendor Co-Marketing Desk
+                </h2>
+                <p className="text-xs text-neutral-600 max-w-2xl">
+                  Moderate vendor ad requests, activate official Admin System Banners (featuring the Masters' Union Animated SVG Squiggle), and arrange the live public Hero Carousel sequence.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fetchAdRequests}
+                  className="pill-btn-secondary px-3.5 py-2 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAds ? "animate-spin" : ""}`} />
+                  <span>Refresh Queue</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTION 1: VENDOR AD REQUESTS QUEUE */}
+            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="border-b border-neutral-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-editorial text-xl text-neutral-950 font-normal flex items-center gap-2">
+                    <Send className="w-4 h-4 text-neutral-600" />
+                    <span>Vendor Campaign Ad Requests</span>
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Review incoming promotional campaigns submitted by student merchant stores.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px]">
+                    {adRequests.filter((a) => a.status === "PENDING").length} PENDING
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-700 text-[10px]">
+                    {adRequests.length} TOTAL
+                  </span>
+                </div>
+              </div>
+
+              {adRequests.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {adRequests.map((ad) => {
+                    const isLiveInCarousel = (siteSettings.carouselSlides || []).some(
+                      (s) => s.adSubmissionId === ad.id || s.id === `ad-${ad.id}`
+                    );
+
+                    return (
+                      <div
+                        key={ad.id}
+                        className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/80 p-4 flex flex-col justify-between space-y-4 hover:border-neutral-300 transition shadow-xs"
+                      >
+                        {/* Media Preview Box */}
+                        <div className="relative w-full h-44 rounded-xl overflow-hidden bg-neutral-900 border border-neutral-200 shrink-0">
+                          {ad.type === "VIDEO_AD" ? (
+                            <video
+                              src={ad.mediaSrc}
+                              controls
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={ad.mediaSrc}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+
+                          {/* Top Pill Badges */}
+                          <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                            <span className="px-2 py-0.5 rounded-full bg-black/80 text-white font-mono text-[9px] font-semibold uppercase">
+                              {ad.type.replace("_", " ")}
+                            </span>
+                            {ad.status === "APPROVED" ? (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[9px] font-bold">
+                                APPROVED
+                              </span>
+                            ) : ad.status === "REJECTED" ? (
+                              <span className="px-2 py-0.5 rounded-full bg-red-600 text-white font-mono text-[9px] font-bold">
+                                REJECTED
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[9px] font-bold">
+                                PENDING
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Ad Details */}
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex items-center justify-between font-mono text-[10px] text-neutral-500">
+                            <span className="font-semibold text-neutral-800 truncate uppercase">
+                              {ad.merchant?.name || "Merchant Store"}
+                            </span>
+                            <span className="truncate">({ad.merchant?.myshopifyDomain})</span>
+                          </div>
+
+                          <h4 className="font-editorial text-base text-neutral-950 font-normal leading-snug">
+                            {ad.title}
+                          </h4>
+
+                          {ad.subtitle && (
+                            <p className="text-xs text-neutral-600 line-clamp-2">
+                              {ad.subtitle}
+                            </p>
+                          )}
+
+                          <div className="pt-1 flex items-center justify-between font-mono text-[10px] text-neutral-500">
+                            <span>Badge: &quot;{ad.badge}&quot;</span>
+                            <span className="truncate max-w-[120px]">Link: {ad.ctaLink}</span>
+                          </div>
+
+                          {ad.adminFeedback && (
+                            <div className="p-2 rounded-lg bg-red-50 text-red-700 text-[11px]">
+                              <strong>Feedback:</strong> {ad.adminFeedback}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="pt-2 border-t border-neutral-200/60 flex items-center gap-2">
+                          {ad.status !== "APPROVED" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleApproveAd(ad)}
+                              className="pill-btn-primary flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Approve & Add to Hero</span>
+                            </button>
+                          ) : isLiveInCarousel ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVendorAd(ad.id)}
+                              className="pill-btn-secondary flex-1 py-2 text-[11px] font-medium text-amber-800 hover:bg-amber-50 flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <span>Remove from Hero</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleApproveAd(ad)}
+                              className="pill-btn-primary flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Re-add to Hero</span>
+                            </button>
+                          )}
+
+                          {ad.status !== "REJECTED" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRejectModalAd(ad);
+                                setRejectFeedback("");
+                              }}
+                              className="pill-btn-secondary px-3 py-2 text-[11px] font-medium text-red-600 hover:bg-red-50 cursor-pointer"
+                              title="Reject Ad"
+                            >
+                              Reject
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-10 rounded-2xl bg-[#F8F9FA] text-center space-y-2 font-mono">
+                  <Sparkles className="w-6 h-6 text-neutral-400 mx-auto" />
+                  <h4 className="text-xs font-semibold text-neutral-900">No Vendor Ad Requests</h4>
+                  <p className="text-[11px] text-neutral-500">
+                    Vendor submissions from the /vendor portal will appear here for review and 1-click carousel activation.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 2: OFFICIAL ADMIN SYSTEM BANNERS & ASSETS */}
+            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="border-b border-neutral-100 pb-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-editorial text-xl text-neutral-950 font-normal flex items-center gap-2">
+                    <Store className="w-4 h-4 text-neutral-600" />
+                    <span>Admin System Banners & Assets</span>
+                  </h3>
+                  <span className="px-2.5 py-1 rounded-full bg-neutral-100 font-mono text-[10px] text-neutral-700">
+                    Official Brand Library
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Permanent official banners and brand templates. Toggle any asset to instantly add or remove it from the active homepage Hero carousel.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {ADMIN_SYSTEM_BANNERS.map((banner) => {
+                  const isActive = (siteSettings.carouselSlides || []).some((s) => s.id === banner.id);
+
+                  return (
+                    <div
+                      key={banner.id}
+                      className={`p-5 rounded-2xl border transition flex flex-col justify-between space-y-4 ${
+                        isActive
+                          ? "bg-white border-black shadow-xs ring-1 ring-black/5"
+                          : "bg-[#F8F9FA] border-neutral-200 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      {/* Asset Header */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-full bg-neutral-100 font-mono text-[9px] font-semibold uppercase text-neutral-700">
+                            {banner.type === "svg" ? "Brand Baseline (SVG)" : banner.type.replace("_", " ")}
+                          </span>
+                          {isActive ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[9px] font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span>LIVE IN CAROUSEL</span>
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-600 font-mono text-[9px]">
+                              INACTIVE
+                            </span>
+                          )}
+                        </div>
+
+                        {banner.type === "svg" ? (
+                          <div className="h-32 rounded-xl bg-neutral-100 border border-neutral-200/80 flex flex-col items-center justify-center p-4 text-center">
+                            <span className="font-editorial text-lg text-black font-semibold">
+                              MASTERS UNION
+                            </span>
+                            <span className="text-[10px] text-neutral-500 font-mono">
+                              Animated SVG Squiggle Brand Slide
+                            </span>
+                          </div>
+                        ) : banner.mediaSrc && banner.type.includes("video") ? (
+                          <div className="h-32 rounded-xl bg-black border border-neutral-200 overflow-hidden relative">
+                            <video src={banner.mediaSrc} className="w-full h-full object-cover" muted />
+                          </div>
+                        ) : (
+                          <div className="h-32 rounded-xl bg-[#F5F5F7] border border-neutral-200 overflow-hidden relative">
+                            <img src={banner.mediaSrc || ""} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+
+                        <div>
+                          <h4 className="font-editorial text-base text-neutral-950 font-normal leading-tight">
+                            {banner.title || "Masters Union Animated Squiggle"}
+                          </h4>
+                          <p className="text-[11px] text-neutral-600 line-clamp-2 mt-1">
+                            {banner.subtitle || "The primary official brand banner rendered with the animated SVG squiggle."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Toggle Button */}
+                      <div className="pt-2 border-t border-neutral-100">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAdminBanner(banner.id)}
+                          className={`w-full py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+                            isActive
+                              ? "bg-neutral-100 text-neutral-800 hover:bg-red-50 hover:text-red-700"
+                              : "pill-btn-primary"
+                          }`}
+                        >
+                          {isActive ? (
+                            <span>Turn Off from Carousel</span>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Activate in Carousel</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SECTION 3: ACTIVE HERO CAROUSEL SEQUENCE */}
+            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="border-b border-neutral-100 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="font-editorial text-xl text-neutral-950 font-normal">Active Carousel Sequence</h3>
+                  <p className="text-xs text-neutral-500">
+                    These slides are currently rotating on the public homepage. Use the arrows to reorder.
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-neutral-100 font-mono text-xs font-semibold text-neutral-800">
+                  {(siteSettings.carouselSlides || []).length} Active Slides
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {(siteSettings.carouselSlides || []).map((slide, idx) => (
+                  <div
+                    key={slide.id}
+                    className="p-4 bg-[#F8F9FA] rounded-2xl border border-neutral-200/80 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-8 h-8 rounded-full bg-white border border-neutral-200 text-xs font-mono font-bold flex items-center justify-center text-neutral-900 shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <div className="min-w-0 truncate">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-white border border-neutral-200 uppercase font-semibold">
+                            {slide.type}
+                          </span>
+                          <span className="font-mono text-[10px] text-neutral-500 uppercase">
+                            {slide.source === "VENDOR_AD" ? `Vendor Ad: ${slide.merchantName || "Merchant"}` : "Admin Asset"}
+                          </span>
+                        </div>
+                        <h4 className="font-medium text-xs text-neutral-900 truncate mt-0.5">
+                          {slide.title || slide.badge || "Masters Union Banner"}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveSlideUp(idx)}
+                        disabled={idx === 0}
+                        className="w-7 h-7 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-100 disabled:opacity-30 flex items-center justify-center text-neutral-700 cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveSlideDown(idx)}
+                        disabled={idx === (siteSettings.carouselSlides || []).length - 1}
+                        className="w-7 h-7 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-100 disabled:opacity-30 flex items-center justify-center text-neutral-700 cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSlide(slide.id)}
+                        className="w-7 h-7 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 flex items-center justify-center ml-1 cursor-pointer"
+                        title="Remove from Carousel"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* REJECT MODAL PROMPT */}
+            {rejectModalAd && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm font-sans">
+                <div className="w-full max-w-md bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xl space-y-4">
+                  <div className="border-b border-neutral-100 pb-3 flex items-center justify-between">
+                    <h3 className="font-editorial text-lg text-neutral-950 font-normal">
+                      Reject Ad Submission
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setRejectModalAd(null)}
+                      className="text-neutral-400 hover:text-black cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-neutral-600">
+                    Provide optional feedback for &quot;{rejectModalAd.title}&quot; from {rejectModalAd.merchant?.name || "the vendor"}.
+                  </p>
+
+                  <div>
+                    <label className="block font-mono text-[10px] font-semibold text-neutral-600 uppercase mb-1">
+                      Revision Feedback
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={rejectFeedback}
+                      onChange={(e) => setRejectFeedback(e.target.value)}
+                      placeholder="e.g. Please use a higher resolution image and update CTA link to an active listing..."
+                      className="w-full px-3.5 py-2 rounded-xl bg-neutral-50 border border-neutral-200 text-xs focus:outline-none focus:border-black"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setRejectModalAd(null)}
+                      className="pill-btn-secondary px-4 py-2 text-xs font-medium cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRejectAd}
+                      className="pill-btn-primary bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-medium cursor-pointer"
+                    >
+                      Confirm Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* TAB 3: WEBSITE SETTINGS */}
         {adminTab === "SETTINGS" && (
           <div className="space-y-8">
             
@@ -1303,115 +1856,27 @@ export default function AdminPage() {
                     />
                   </div>
 
-                  {/* Hero Carousel Manager */}
-                  <div className="p-4 rounded-2xl bg-[#F8F9FA] border border-neutral-200/60 space-y-4">
-                    <div className="flex items-center justify-between border-b border-neutral-200/60 pb-3">
-                      <div>
-                        <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">
-                          Hero Carousel Slides ({siteSettings.carouselSlides?.length || 0})
-                        </label>
+                  {/* Dedicated Hero Banners & Ads Portal Shortcut */}
+                  <div className="p-5 rounded-2xl bg-[#F8F9FA] border border-neutral-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span className="font-mono text-[11px] font-semibold text-neutral-800 uppercase tracking-wider">
+                          Hero Carousel Banners & Vendor Ads
+                        </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleAddSlide("image_ad")}
-                          className="pill-btn-secondary px-2.5 py-1 text-[10px] font-medium"
-                        >
-                          + Image Ad
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSlide("video_ad")}
-                          className="pill-btn-secondary px-2.5 py-1 text-[10px] font-medium"
-                        >
-                          + Video Ad
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSlide("image")}
-                          className="pill-btn-secondary px-2.5 py-1 text-[10px] font-medium"
-                        >
-                          + Showcase
-                        </button>
-                      </div>
+                      <p className="text-xs text-neutral-500 max-w-md">
+                        Hero carousel slides, vendor ad requests, and official brand assets are now centrally managed in the dedicated Hero Desk.
+                      </p>
                     </div>
-
-                    {/* Slides List */}
-                    <div className="space-y-3 pt-1">
-                      {(siteSettings.carouselSlides || []).map((slide, idx) => (
-                        <div
-                          key={slide.id}
-                          className="p-3.5 bg-white rounded-xl border border-neutral-200 space-y-3 text-xs"
-                        >
-                          <div className="flex items-center justify-between font-mono pb-2 border-b border-neutral-100">
-                            <span className="font-semibold text-neutral-900">
-                              Slide #{idx + 1} ({slide.type.toUpperCase()})
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleMoveSlideUp(idx)}
-                                disabled={idx === 0}
-                                className="w-6 h-6 rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-30 flex items-center justify-center text-neutral-700"
-                              >
-                                <ChevronUp className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleMoveSlideDown(idx)}
-                                disabled={idx === (siteSettings.carouselSlides || []).length - 1}
-                                className="w-6 h-6 rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-30 flex items-center justify-center text-neutral-700"
-                              >
-                                <ChevronDown className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteSlide(slide.id)}
-                                className="w-6 h-6 rounded bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center ml-1"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            <div>
-                              <label className="block font-mono text-[10px] text-neutral-500 uppercase mb-1">Badge</label>
-                              <input
-                                type="text"
-                                value={slide.badge}
-                                onChange={(e) => handleUpdateSlide(slide.id, { badge: e.target.value })}
-                                className="w-full px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 text-xs font-mono"
-                              />
-                            </div>
-
-                            {slide.type !== "svg" && (
-                              <div>
-                                <label className="block font-mono text-[10px] text-neutral-500 uppercase mb-1">Headline</label>
-                                <input
-                                  type="text"
-                                  value={slide.title || ""}
-                                  onChange={(e) => handleUpdateSlide(slide.id, { title: e.target.value })}
-                                  placeholder="Headline"
-                                  className="w-full px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 text-xs"
-                                />
-                              </div>
-                            )}
-
-                            <div className="sm:col-span-2">
-                              <label className="block font-mono text-[10px] text-neutral-500 uppercase mb-1">Subtitle</label>
-                              <input
-                                type="text"
-                                value={slide.subtitle || ""}
-                                onChange={(e) => handleUpdateSlide(slide.id, { subtitle: e.target.value })}
-                                placeholder="Subtitle text..."
-                                className="w-full px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 text-xs"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAdminTab("HERO_BANNERS")}
+                      className="pill-btn-secondary px-4 py-2 text-xs font-semibold flex items-center gap-1.5 shrink-0 hover:border-black cursor-pointer"
+                    >
+                      <span>Open Hero Desk</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
 
                   {/* Actions */}

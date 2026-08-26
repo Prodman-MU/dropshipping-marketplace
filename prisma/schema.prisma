@@ -52,8 +52,9 @@ model Merchant {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  listings Listing[]                                  /// Products belonging to this merchant
-  syncLogs SyncLog[]                                  /// Webhook audit trail for this merchant
+  listings      Listing[]                                  /// Products belonging to this merchant
+  syncLogs      SyncLog[]                                  /// Webhook audit trail for this merchant
+  adSubmissions AdSubmission[]                             /// Hero banner ad requests submitted by this merchant
 
   @@map("merchants")
 }
@@ -139,5 +140,42 @@ model AdminOtp {
 
   @@index([email, otp])
   @@map("admin_otps")
+}
+
+// ------------------------------------------------------------------------------
+// HERO BANNER AD SUBMISSIONS
+// ------------------------------------------------------------------------------
+
+enum AdSubmissionType {
+  IMAGE_AD   /// Full-width edge-to-edge photographic banner with text overlay
+  VIDEO_AD   /// Full-width looping video banner with text overlay
+  SHOWCASE   /// Two-column split layout (framed media on left + story/copy on right)
+}
+
+enum AdSubmissionStatus {
+  PENDING    /// Submitted by vendor, awaiting admin moderation
+  APPROVED   /// Approved and published / activated on the Hero Carousel
+  REJECTED   /// Declined by admin with optional revision feedback
+}
+
+/// Vendor requests to feature promotional banners on the homepage Hero carousel
+model AdSubmission {
+  id            String             @id @default(uuid())
+  merchantId    String
+  merchant      Merchant           @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  type          AdSubmissionType   @default(IMAGE_AD)
+  badge         String             @default("VENDOR SPOTLIGHT")
+  title         String
+  subtitle      String?
+  mediaSrc      String
+  ctaText       String?            @default("Explore Drop")
+  ctaLink       String?            @default("#product-catalog")
+  status        AdSubmissionStatus @default(PENDING)
+  adminFeedback String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([merchantId, status])
+  @@map("ad_submissions")
 }
 

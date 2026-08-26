@@ -28,6 +28,12 @@ export interface CarouselSlide {
   ctaText?: string;
   /** Destination anchor link or external URL for the CTA button */
   ctaLink?: string;
+  /** Source attribution: system baseline or vendor submitted */
+  source?: "ADMIN_ASSET" | "VENDOR_AD";
+  /** Optional associated vendor store name */
+  merchantName?: string;
+  /** Optional reference to the vendor ad submission UUID */
+  adSubmissionId?: string;
 }
 
 /**
@@ -49,17 +55,19 @@ export interface SiteSettings {
 }
 
 /**
- * Fallback carousel slides displayed on initial load or reset.
+ * Permanent Catalog of Admin System Banners & Brand Assets.
+ * Features the Masters' Union Animated SVG Squiggle banner at the top.
  */
-export const DEFAULT_CAROUSEL_SLIDES: CarouselSlide[] = [
+export const ADMIN_SYSTEM_BANNERS: CarouselSlide[] = [
   {
-    id: "slide-1",
+    id: "admin-asset-svg-squiggle",
     type: "svg",
     badge: "MASTERS UNION PMC",
     subtitle: "dropshipping 2026",
+    source: "ADMIN_ASSET",
   },
   {
-    id: "slide-2",
+    id: "admin-asset-featured-merch",
     type: "image",
     badge: "FEATURED MERCHANDISE",
     title: "EXCLUSIVE COLLECTIBLES & ANIME MERCH",
@@ -67,7 +75,27 @@ export const DEFAULT_CAROUSEL_SLIDES: CarouselSlide[] = [
     mediaSrc: "/assets/wp1959356-mob-psycho-100-wallpapers.jpg",
     ctaText: "Explore Featured Merch",
     ctaLink: "#product-catalog",
+    source: "ADMIN_ASSET",
   },
+  {
+    id: "admin-asset-video-anthem",
+    type: "video_ad",
+    badge: "VENTURE NETWORK",
+    title: "MASTERS UNION STUDENT VENTURES",
+    subtitle: "Real-time Shopify dropshipping ecosystem curated across premier student-led digital brands.",
+    mediaSrc: "/assets/masters_union_dropshipping_v1.mp4",
+    ctaText: "Watch & Shop",
+    ctaLink: "#product-catalog",
+    source: "ADMIN_ASSET",
+  },
+];
+
+/**
+ * Fallback carousel slides displayed on initial load or reset.
+ */
+export const DEFAULT_CAROUSEL_SLIDES: CarouselSlide[] = [
+  ADMIN_SYSTEM_BANNERS[0],
+  ADMIN_SYSTEM_BANNERS[1],
 ];
 
 /** Baseline default admin passcode from environment variable */
@@ -178,3 +206,118 @@ export function resetSiteSettings(): SiteSettings {
   }
   return DEFAULT_SITE_SETTINGS;
 }
+
+/**
+ * Retrieves the catalog of permanent Admin System Banners.
+ */
+export function getAdminSystemBanners(): CarouselSlide[] {
+  return ADMIN_SYSTEM_BANNERS;
+}
+
+/**
+ * Injects an approved vendor ad submission into the live hero carousel.
+ */
+export function addVendorAdToCarousel(ad: {
+  id: string;
+  type: "IMAGE_AD" | "VIDEO_AD" | "SHOWCASE" | "image_ad" | "video_ad" | "image" | "video";
+  badge?: string | null;
+  title: string;
+  subtitle?: string | null;
+  mediaSrc: string;
+  ctaText?: string | null;
+  ctaLink?: string | null;
+  merchantName?: string;
+}): SiteSettings {
+  const settings = getSiteSettings();
+  const currentSlides = settings.carouselSlides || [];
+
+  // Map submission type to CarouselSlide type
+  let slideType: CarouselSlide["type"] = "image_ad";
+  const upper = String(ad.type).toUpperCase();
+  if (upper === "VIDEO_AD" || upper === "VIDEO") {
+    slideType = "video_ad";
+  } else if (upper === "SHOWCASE" || upper === "IMAGE") {
+    slideType = "image";
+  } else {
+    slideType = "image_ad";
+  }
+
+  const existingIndex = currentSlides.findIndex(
+    (s) => s.adSubmissionId === ad.id || s.id === `ad-${ad.id}`
+  );
+
+  const newSlide: CarouselSlide = {
+    id: `ad-${ad.id}`,
+    adSubmissionId: ad.id,
+    source: "VENDOR_AD",
+    type: slideType,
+    badge: ad.badge || "VENDOR SPOTLIGHT",
+    title: ad.title,
+    subtitle: ad.subtitle || undefined,
+    mediaSrc: ad.mediaSrc,
+    ctaText: ad.ctaText || "Explore Drop",
+    ctaLink: ad.ctaLink || "#product-catalog",
+    merchantName: ad.merchantName,
+  };
+
+  let updatedSlides: CarouselSlide[];
+  if (existingIndex >= 0) {
+    updatedSlides = [...currentSlides];
+    updatedSlides[existingIndex] = newSlide;
+  } else {
+    updatedSlides = [...currentSlides, newSlide];
+  }
+
+  const updatedSettings: SiteSettings = {
+    ...settings,
+    carouselSlides: updatedSlides,
+  };
+
+  saveSiteSettings(updatedSettings);
+  return updatedSettings;
+}
+
+/**
+ * Removes a vendor ad slide from the live carousel.
+ */
+export function removeVendorAdFromCarousel(adSubmissionId: string): SiteSettings {
+  const settings = getSiteSettings();
+  const currentSlides = settings.carouselSlides || [];
+  const updatedSlides = currentSlides.filter(
+    (s) => s.adSubmissionId !== adSubmissionId && s.id !== `ad-${adSubmissionId}`
+  );
+
+  const updatedSettings: SiteSettings = {
+    ...settings,
+    carouselSlides: updatedSlides.length > 0 ? updatedSlides : DEFAULT_CAROUSEL_SLIDES,
+  };
+
+  saveSiteSettings(updatedSettings);
+  return updatedSettings;
+}
+
+/**
+ * Toggles an Admin System Banner (such as the Masters' Union Animated SVG Squiggle)
+ * into or out of the live Hero Carousel.
+ */
+export function toggleAdminBannerInCarousel(adminBannerId: string): boolean {
+  const settings = getSiteSettings();
+  const currentSlides = settings.carouselSlides || [];
+  const exists = currentSlides.some((s) => s.id === adminBannerId);
+
+  if (exists) {
+    if (currentSlides.length <= 1) {
+      return false; // Prevent removing the last remaining slide
+    }
+    const updated = currentSlides.filter((s) => s.id !== adminBannerId);
+    saveSiteSettings({ ...settings, carouselSlides: updated });
+    return false; // Inactive now
+  } else {
+    const template = ADMIN_SYSTEM_BANNERS.find((b) => b.id === adminBannerId);
+    if (!template) return false;
+    const updated = [template, ...currentSlides];
+    saveSiteSettings({ ...settings, carouselSlides: updated });
+    return true; // Active now
+  }
+}
+
