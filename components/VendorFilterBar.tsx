@@ -81,7 +81,7 @@ export function VendorFilterBar({
                 key={cat}
                 type="button"
                 onClick={() => onSelectCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
+                className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
                   isSelected
                     ? "bg-black text-white shadow-xs"
                     : "bg-neutral-100/80 text-neutral-700 hover:bg-neutral-200/70 hover:text-black"
@@ -94,24 +94,24 @@ export function VendorFilterBar({
         </div>
 
         {/* Right Action Island: Search, Filter Trigger, Sort Dropdown */}
-        <div className="flex items-center gap-2.5 shrink-0 ml-auto w-full md:w-auto justify-between md:justify-end">
+        <div className="flex items-center gap-2 shrink-0 ml-auto w-full md:w-auto">
           {/* Quick Pill Search Input */}
-          <div className="relative w-full md:w-56">
+          <div className="relative flex-1 md:w-56">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
             <input
               type="text"
               placeholder="Search catalog..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 rounded-full bg-neutral-100/90 border border-transparent hover:border-neutral-300 focus:border-black focus:bg-white text-xs text-neutral-900 placeholder:text-neutral-400 font-normal focus:outline-none transition-all"
+              className="w-full pl-8 pr-7 py-2 md:py-1.5 rounded-full bg-neutral-100/90 border border-transparent hover:border-neutral-300 focus:border-black focus:bg-white text-xs text-neutral-900 placeholder:text-neutral-400 font-normal focus:outline-none transition-all"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black p-0.5"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -120,7 +120,7 @@ export function VendorFilterBar({
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className={`pill-btn-secondary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            className={`pill-btn-secondary px-3.5 py-2 md:py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeFiltersCount > 0 ? "border-black text-black font-semibold" : ""
             }`}
           >
@@ -323,11 +323,11 @@ export function VendorFilterBar({
               </div>
 
               {/* Drawer Sticky Bottom Footer */}
-              <div className="p-6 border-t border-neutral-100 bg-white">
+              <div className="p-5 sm:p-6 border-t border-neutral-100 bg-white pb-safe">
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(false)}
-                  className="pill-btn-primary w-full py-3 text-xs font-semibold tracking-wider uppercase"
+                  className="pill-btn-primary w-full py-3.5 sm:py-3 text-xs font-semibold tracking-wider uppercase cursor-pointer"
                 >
                   Show {totalResultsCount} Curated Results
                 </button>

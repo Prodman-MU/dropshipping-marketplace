@@ -701,8 +701,8 @@ export default function VendorDashboardPage() {
           totalSyncedProducts={slots.filter((s) => s.merchant.status === "ACTIVE").length}
         />
 
-        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
-          <div className="w-full max-w-md bg-white rounded-3xl border border-neutral-200/80 p-8 sm:p-10 shadow-xl space-y-6">
+        <div className="flex-1 flex items-center justify-center p-3 sm:p-6 my-4 sm:my-8">
+          <div className="w-full max-w-md bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-10 shadow-xl space-y-6">
             
             {/* Header Icon & Title */}
             <div className="text-center space-y-1">
@@ -1049,12 +1049,12 @@ export default function VendorDashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2">
+          <div className="grid grid-cols-2 sm:flex items-center flex-wrap gap-2 w-full md:w-auto">
             <button
               type="button"
               onClick={() => handleSyncStore()}
               disabled={isSyncingStore}
-              className="pill-btn-secondary px-4 py-2 text-xs font-medium flex items-center gap-1.5 disabled:opacity-50"
+              className="pill-btn-secondary px-3 sm:px-4 py-2 text-xs font-medium flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingStore ? "animate-spin" : ""}`} />
               <span>{isSyncingStore ? "Syncing..." : "Sync Catalog"}</span>
@@ -1071,17 +1071,17 @@ export default function VendorDashboardPage() {
                   setPasscodeConfirm("");
                   setIsPasscodeModalOpen(true);
                 }}
-                className="pill-btn-secondary px-4 py-2 text-xs font-medium flex items-center gap-1.5"
+                className="pill-btn-secondary px-3 sm:px-4 py-2 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <KeyRound className="w-3.5 h-3.5" />
-                <span>Change Passcode</span>
+                <span>Passcode</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setIsConnectModalOpen(true)}
-              className="pill-btn-primary px-4 py-2 text-xs font-medium flex items-center gap-1.5"
+              className="pill-btn-primary px-3 sm:px-4 py-2 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Link Store</span>
@@ -1090,7 +1090,7 @@ export default function VendorDashboardPage() {
             <button
               type="button"
               onClick={handleVendorLogout}
-              className="pill-btn-secondary text-red-600 hover:bg-red-50 hover:border-red-300 px-4 py-2 text-xs font-medium flex items-center gap-1.5"
+              className="pill-btn-secondary text-red-600 hover:bg-red-50 hover:border-red-300 px-3 sm:px-4 py-2 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Logout</span>
@@ -1163,49 +1163,49 @@ export default function VendorDashboardPage() {
         {vendorTab === "INVENTORY" && (
           <div className="space-y-8">
         {/* METRICS KPI CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           
-          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-5 space-y-1">
-            <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-4 sm:p-5 space-y-1">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
               Est. Catalog Value
             </span>
-            <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">
+            <div className="text-xl sm:text-3xl font-semibold text-neutral-950 truncate">
               {formatCurrency(metrics.totalCatalogValue, "INR")}
             </div>
-            <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" />
-              <span>Catalog value</span>
+            <p className="text-[10px] sm:text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+              <TrendingUp className="w-3 h-3 shrink-0" />
+              <span className="truncate">Catalog value</span>
             </p>
           </div>
 
-          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-5 space-y-1">
-            <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-4 sm:p-5 space-y-1">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
               Active Listings
             </span>
-            <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">
+            <div className="text-xl sm:text-3xl font-semibold text-neutral-950 truncate">
               {metrics.availableCount} / {metrics.totalListings}
             </div>
-            <p className="text-[11px] text-neutral-500">Live on marketplace</p>
+            <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Live on marketplace</p>
           </div>
 
-          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-5 space-y-1">
-            <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
-              Product Categories
+          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-4 sm:p-5 space-y-1">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+              Categories
             </span>
-            <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">
+            <div className="text-xl sm:text-3xl font-semibold text-neutral-950 truncate">
               {categories.length}
             </div>
-            <p className="text-[11px] text-neutral-500">Across catalog</p>
+            <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Across catalog</p>
           </div>
 
-          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-5 space-y-1">
-            <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+          <div className="bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 p-4 sm:p-5 space-y-1">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
               Webhook Health
             </span>
-            <div className="text-2xl sm:text-3xl font-semibold text-neutral-950 flex items-center gap-2">
+            <div className="text-xl sm:text-3xl font-semibold text-neutral-950 flex items-center gap-1.5 truncate">
               <span>{metrics.syncHealthScore}%</span>
             </div>
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">
               {metrics.totalSyncLogsCount} sync events
             </p>
           </div>
@@ -1213,7 +1213,7 @@ export default function VendorDashboardPage() {
         </div>
 
         {/* INVENTORY LISTINGS TABLE */}
-        <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/80 p-4 sm:p-8 space-y-6 shadow-xs">
           
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-neutral-100 pb-4">
             <div>
@@ -1227,7 +1227,7 @@ export default function VendorDashboardPage() {
 
             {/* Search & Filter Controls */}
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto font-mono text-xs">
-              <div className="relative flex-1 min-w-[180px]">
+              <div className="relative flex-1 min-w-[160px]">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
@@ -1262,95 +1262,146 @@ export default function VendorDashboardPage() {
             </div>
           </div>
 
-          {/* Product Listings Table */}
+          {/* Product Listings: Mobile Cards (<sm) & Desktop Table (>=sm) */}
           {filteredSlots.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="border-b border-neutral-200/80 text-neutral-500 font-medium">
-                  <tr>
-                    <th className="py-3 px-4">Product Info</th>
-                    <th className="py-3 px-4">Vendor Store</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Price</th>
-                    <th className="py-3 px-4">Stock</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100 font-sans">
-                  {filteredSlots.map((slot) => (
-                    <tr
-                      key={slot.id}
-                      onClick={() => setSelectedSlot(slot)}
-                      className="hover:bg-neutral-50 cursor-pointer transition group"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          {slot.images && slot.images[0] ? (
-                            <img
-                              src={slot.images[0]}
-                              alt={slot.title}
-                              className="w-10 h-10 rounded-lg object-cover bg-[#F5F5F7] shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-[9px] font-mono text-neutral-400">
-                              NO IMG
-                            </div>
-                          )}
-                          <div>
-                            <h4 className="font-medium text-neutral-900 group-hover:text-black line-clamp-1">
-                              {slot.title}
-                            </h4>
-                            <span className="font-mono text-[10px] text-neutral-400">SKU: {slot.sku}</span>
-                          </div>
+            <div>
+              {/* Mobile Card List (< sm) */}
+              <div className="sm:hidden space-y-2.5">
+                {filteredSlots.map((slot) => (
+                  <div
+                    key={slot.id}
+                    onClick={() => setSelectedSlot(slot)}
+                    className="p-3 rounded-2xl bg-neutral-50/70 border border-neutral-200/80 flex items-center justify-between gap-3 cursor-pointer hover:bg-neutral-100/80 transition"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {slot.images && slot.images[0] ? (
+                        <img
+                          src={slot.images[0]}
+                          alt={slot.title}
+                          className="w-12 h-12 rounded-xl object-cover bg-white shrink-0 border border-neutral-200/60"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-neutral-200 flex items-center justify-center text-[9px] font-mono text-neutral-500 shrink-0">
+                          NO IMG
                         </div>
-                      </td>
+                      )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="font-mono text-[10px] text-neutral-500 truncate max-w-[120px]">{slot.merchant.name}</span>
+                          <span className="status-pill text-[8px] py-0 px-1.5">{slot.status}</span>
+                        </div>
+                        <h4 className="font-medium text-xs text-neutral-950 truncate">{slot.title}</h4>
+                        <div className="flex items-center gap-2 mt-0.5 font-mono text-xs">
+                          <span className="font-semibold text-neutral-900">{formatCurrency(slot.price, slot.currencyCode || "INR")}</span>
+                          <span className="text-[10px] text-neutral-500">• Stock: {slot.inventoryQuantity}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                      <td className="py-3 px-4 font-mono text-neutral-700">
-                        {slot.merchant.name}
-                      </td>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSlot(slot);
+                      }}
+                      className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-700 shrink-0 cursor-pointer shadow-2xs"
+                      title="View specifications"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-                      <td className="py-3 px-4">
-                        <span className="status-pill text-[10px]">
-                          {slot.category}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 font-mono font-semibold text-neutral-950">
-                        {formatCurrency(slot.price, slot.currencyCode || "INR")}
-                      </td>
-
-                      <td className="py-3 px-4 font-mono">
-                        {slot.inventoryQuantity <= 0 && !slot.isUnknownQuantity ? (
-                          <span className="text-red-600 font-semibold">Out of Stock</span>
-                        ) : (
-                          <span className="text-emerald-700 font-medium">In Stock</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span className="status-pill text-[10px]">
-                          {slot.status}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSlot(slot);
-                          }}
-                          className="pill-btn-secondary px-3 py-1 text-[11px] font-medium inline-flex items-center gap-1"
-                        >
-                          <Eye className="w-3 h-3" />
-                          <span>Specs</span>
-                        </button>
-                      </td>
+              {/* Desktop Table (>= sm) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="min-w-[640px] w-full text-left text-xs font-mono">
+                  <thead className="border-b border-neutral-200/80 text-neutral-500 font-medium">
+                    <tr>
+                      <th className="py-3 px-4">Product Info</th>
+                      <th className="py-3 px-4">Vendor Store</th>
+                      <th className="py-3 px-4">Category</th>
+                      <th className="py-3 px-4">Price</th>
+                      <th className="py-3 px-4">Stock</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100 font-sans">
+                    {filteredSlots.map((slot) => (
+                      <tr
+                        key={slot.id}
+                        onClick={() => setSelectedSlot(slot)}
+                        className="hover:bg-neutral-50 cursor-pointer transition group"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            {slot.images && slot.images[0] ? (
+                              <img
+                                src={slot.images[0]}
+                                alt={slot.title}
+                                className="w-10 h-10 rounded-lg object-cover bg-[#F5F5F7] shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-[9px] font-mono text-neutral-400">
+                                NO IMG
+                              </div>
+                            )}
+                            <div>
+                              <h4 className="font-medium text-neutral-900 group-hover:text-black line-clamp-1">
+                                {slot.title}
+                              </h4>
+                              <span className="font-mono text-[10px] text-neutral-400">SKU: {slot.sku}</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4 font-mono text-neutral-700">
+                          {slot.merchant.name}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="status-pill text-[10px]">
+                            {slot.category}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 font-mono font-semibold text-neutral-950">
+                          {formatCurrency(slot.price, slot.currencyCode || "INR")}
+                        </td>
+
+                        <td className="py-3 px-4 font-mono">
+                          {slot.inventoryQuantity <= 0 && !slot.isUnknownQuantity ? (
+                            <span className="text-red-600 font-semibold">Out of Stock</span>
+                          ) : (
+                            <span className="text-emerald-700 font-medium">In Stock</span>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="status-pill text-[10px]">
+                            {slot.status}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSlot(slot);
+                            }}
+                            className="pill-btn-secondary px-3 py-1 text-[11px] font-medium inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Specs</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="p-12 rounded-2xl bg-[#F8F9FA] text-center space-y-2 font-mono">
@@ -1433,7 +1484,7 @@ export default function VendorDashboardPage() {
                     <label className="block font-mono text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-2">
                       Select Ad Format *
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setAdForm({ ...adForm, type: "IMAGE_AD" })}

@@ -76,13 +76,13 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="relative w-full max-w-lg bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-2xl z-10 my-8 overflow-hidden"
+            className="relative w-full max-w-lg bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-8 shadow-2xl z-10 my-6 sm:my-8 overflow-hidden"
           >
             {/* Close Button */}
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
               title="Close modal"
             >
               <X className="w-4 h-4" />
@@ -138,7 +138,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                   />
                 </div>
 
@@ -153,7 +153,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                   />
                 </div>
 
@@ -166,7 +166,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                     placeholder="shpat_xxxxxxxxxxxxxxxxxxxx"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                   />
                 </div>
 
@@ -179,7 +179,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                     placeholder="+91 9876543210"
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                   />
                 </div>
 
@@ -187,7 +187,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                   <button
                     type="button"
                     onClick={onClose}
-                    className="pill-btn-secondary px-4 py-2.5 text-xs font-medium"
+                    className="pill-btn-secondary flex-1 sm:flex-initial px-4 py-2.5 text-xs font-medium cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -195,7 +195,7 @@ export function ConnectStoreModal({ isOpen, onClose, onConnect }: ConnectStoreMo
                   <button
                     type="submit"
                     disabled={isSubmitting || !domain || !passcode}
-                    className="pill-btn-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center gap-2 disabled:opacity-40"
+                    className="pill-btn-primary flex-1 sm:flex-initial px-6 py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

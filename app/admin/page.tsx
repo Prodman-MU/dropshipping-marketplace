@@ -715,8 +715,8 @@ export default function AdminPage() {
   // ACCESS CONTROL GATE (LOGIN)
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white text-[#111111] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-3xl border border-neutral-200/80 p-8 sm:p-10 shadow-xl space-y-6 text-center">
+      <div className="min-h-screen bg-white text-[#111111] flex items-center justify-center p-3 sm:p-4">
+        <div className="w-full max-w-md bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-10 shadow-xl space-y-6 text-center">
           
           <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto text-neutral-800">
             <Lock className="w-5 h-5" />
@@ -977,29 +977,29 @@ export default function AdminPage() {
       
       {/* Admin Top Navigation Bar */}
       <header className="sticky top-0 z-40 w-full glass-header transition-all">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-18 gap-4">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-18 gap-3 sm:gap-4">
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="/"
-                className="w-9 h-9 rounded-full border border-neutral-200/80 bg-white hover:bg-neutral-100 flex items-center justify-center text-neutral-800 hover:text-black transition shadow-xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-neutral-200/80 bg-white hover:bg-neutral-100 flex items-center justify-center text-neutral-800 hover:text-black transition shadow-xs cursor-pointer shrink-0"
                 title="Return to Public Website"
               >
                 <ArrowLeft className="w-4 h-4 stroke-[2]" />
               </Link>
               <div>
-                <h1 className="text-sm sm:text-base font-semibold text-neutral-950 flex items-center gap-2">
+                <h1 className="text-sm sm:text-base font-semibold text-neutral-950 flex items-center gap-1.5 sm:gap-2">
                   <span>Admin Desk</span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-medium rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600">
+                  <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-medium rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600">
                     PROTECTED
                   </span>
                 </h1>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex items-center gap-1.5 p-1 rounded-full bg-neutral-100">
+            {/* Desktop Navigation Tabs (Hidden on Mobile) */}
+            <div className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-neutral-100">
               <button
                 type="button"
                 onClick={() => setAdminTab("STORES")}
@@ -1045,11 +1045,11 @@ export default function AdminPage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="pill-btn-secondary px-3.5 py-1.5 text-xs font-medium cursor-pointer"
+                className="pill-btn-secondary px-3 sm:px-3.5 py-1.5 text-xs font-medium cursor-pointer"
               >
                 Logout
               </button>
@@ -1058,6 +1058,53 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      {/* Mobile Sub-Nav Tab Bar (< md) */}
+      <div className="flex md:hidden items-center justify-between p-1 rounded-2xl bg-neutral-100 mx-3 sm:mx-4 mt-3 mb-1 gap-1">
+        <button
+          type="button"
+          onClick={() => setAdminTab("STORES")}
+          className={`flex-1 py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            adminTab === "STORES"
+              ? "bg-white text-black shadow-xs font-semibold"
+              : "text-neutral-600 hover:text-black"
+          }`}
+        >
+          <Store className="w-3.5 h-3.5" />
+          <span>Stores</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setAdminTab("HERO_BANNERS")}
+          className={`flex-1 py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1 transition cursor-pointer ${
+            adminTab === "HERO_BANNERS"
+              ? "bg-white text-black shadow-xs font-semibold"
+              : "text-neutral-600 hover:text-black"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <span>Hero Ads</span>
+          {adRequests.filter((a) => a.status === "PENDING").length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[9px] font-mono font-bold">
+              {adRequests.filter((a) => a.status === "PENDING").length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setAdminTab("SETTINGS")}
+          className={`flex-1 py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            adminTab === "SETTINGS"
+              ? "bg-white text-black shadow-xs font-semibold"
+              : "text-neutral-600 hover:text-black"
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Settings</span>
+        </button>
+      </div>
 
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
@@ -1130,88 +1177,88 @@ export default function AdminPage() {
         {adminTab === "STORES" && (
           <>
             {/* Metrics Banner */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
-                <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
                   Pending Approval
                 </span>
-                <div className="text-2xl sm:text-3xl font-semibold text-neutral-950 flex items-center gap-2">
+                <div className="text-xl sm:text-3xl font-semibold text-neutral-950 flex items-center gap-2">
                   <span>{pendingCount}</span>
                   {pendingCount > 0 && (
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                   )}
                 </div>
-                <p className="text-[11px] text-neutral-500">Requires admin review</p>
+                <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Requires review</p>
               </div>
 
-              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
-                <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+              <div className="p-3.5 sm:p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
                   Approved Stores
                 </span>
-                <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">{activeCount}</div>
-                <p className="text-[11px] text-neutral-500">Live on public marketplace</p>
+                <div className="text-xl sm:text-3xl font-semibold text-neutral-950">{activeCount}</div>
+                <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Live on marketplace</p>
               </div>
 
-              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
-                <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+              <div className="p-3.5 sm:p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
                   Rejected Stores
                 </span>
-                <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">{rejectedCount}</div>
-                <p className="text-[11px] text-neutral-500">Disabled integrations</p>
+                <div className="text-xl sm:text-3xl font-semibold text-neutral-950">{rejectedCount}</div>
+                <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Disabled stores</p>
               </div>
 
-              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
-                <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
+              <div className="p-3.5 sm:p-5 bg-[#F8F9FA] rounded-2xl border border-neutral-200/70 space-y-1">
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block">
                   Total Linked Stores
                 </span>
-                <div className="text-2xl sm:text-3xl font-semibold text-neutral-950">{merchants.length}</div>
-                <p className="text-[11px] text-neutral-500">Connected merchant accounts</p>
+                <div className="text-xl sm:text-3xl font-semibold text-neutral-950">{merchants.length}</div>
+                <p className="text-[10px] sm:text-[11px] text-neutral-500 truncate">Connected accounts</p>
               </div>
             </div>
 
             {/* Status Filter Tabs & Link Action */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200/70 pb-4">
-              <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200/70 pb-4">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full sm:w-auto">
                 {[
-                  { id: "PENDING", label: "Pending Approval", count: pendingCount },
-                  { id: "ACTIVE", label: "Active Stores", count: activeCount },
-                  { id: "REJECTED", label: "Rejected Stores", count: rejectedCount },
+                  { id: "PENDING", label: "Pending", count: pendingCount },
+                  { id: "ACTIVE", label: "Active", count: activeCount },
+                  { id: "REJECTED", label: "Rejected", count: rejectedCount },
                   { id: "ALL", label: "All Stores", count: merchants.length },
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveFilter(tab.id as any)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
+                    className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition cursor-pointer shrink-0 ${
                       activeFilter === tab.id
                         ? "bg-black text-white"
                         : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                     }`}
                   >
                     <span>{tab.label}</span>
-                    <span className="ml-1.5 opacity-75">({tab.count})</span>
+                    <span className="ml-1.5 opacity-75 font-mono">({tab.count})</span>
                   </button>
                 ))}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                 <button
                   type="button"
                   onClick={handleSyncAllStores}
                   disabled={isSyncingAll}
-                  className="pill-btn-secondary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 disabled:opacity-50"
+                  className="pill-btn-secondary flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                   title="Daily live sync: Pulls latest products from all active Shopify stores"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncingAll ? "animate-spin" : ""}`} />
-                  <span>{isSyncingAll ? "Syncing All..." : "Sync All Catalogs"}</span>
+                  <span>{isSyncingAll ? "Syncing..." : "Sync All"}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setIsConnectModalOpen(true)}
-                  className="pill-btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5"
+                  className="pill-btn-primary flex-1 sm:flex-initial px-3 sm:px-3.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <Store className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Link Store</span>
                 </button>
               </div>

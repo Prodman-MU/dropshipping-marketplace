@@ -25,6 +25,7 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, .editorial-heading {
@@ -150,3 +151,23 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Mobile Safe Area Insets & Helpers */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+.top-safe {
+  top: env(safe-area-inset-top, 0px);
+}
+
+/* Prevent accidental 300ms delay on touch interactions */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+

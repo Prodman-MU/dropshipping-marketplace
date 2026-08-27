@@ -257,6 +257,7 @@ export default function MarketplaceHomePage() {
       <Header
         activeVendorCount={activeMerchants.length}
         totalSyncedProducts={filteredSlots.length}
+        onOpenStoreStatus={() => setIsMissingStoreModalOpen(true)}
       />
 
       {/* Apple x MR PORTER Editorial Hero Carousel */}
@@ -288,29 +289,29 @@ export default function MarketplaceHomePage() {
               <button
                 type="button"
                 onClick={() => handleViewModeChange("vendor")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 sm:py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                   viewMode === "vendor"
-                    ? "bg-white text-black shadow-xs"
+                    ? "bg-white text-black shadow-xs font-semibold"
                     : "text-neutral-600 hover:text-black"
                 }`}
                 title="Group by Store"
               >
                 <Store className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">By Store</span>
+                <span>Stores</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleViewModeChange("grid")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 sm:py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-white text-black shadow-xs"
+                    ? "bg-white text-black shadow-xs font-semibold"
                     : "text-neutral-600 hover:text-black"
                 }`}
                 title="Grid View"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Grid</span>
+                <span>Grid</span>
               </button>
             </div>
 
@@ -373,7 +374,13 @@ export default function MarketplaceHomePage() {
                       Prev
                     </button>
 
-                    <div className="flex items-center gap-1">
+                    {/* Compact page indicator on mobile */}
+                    <div className="flex sm:hidden items-center px-2 text-xs font-mono font-medium text-neutral-800">
+                      Page {currentPage} of {totalPages}
+                    </div>
+
+                    {/* Full numbered buttons on sm: and up */}
+                    <div className="hidden sm:flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
                         <button
                           key={pg}

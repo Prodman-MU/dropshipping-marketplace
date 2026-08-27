@@ -68,14 +68,14 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
     <section className="relative bg-white py-4 sm:py-8 overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Central Hero Frame - Off-white editorial card with consistent fixed height */}
+        {/* Central Hero Frame - Off-white editorial card with consistent adaptive height */}
         <div 
-          className="relative bg-[#F8F9FA] rounded-2xl sm:rounded-3xl border border-neutral-200/70 p-4 sm:p-8 md:p-10 h-[440px] sm:h-[480px] md:h-[520px] flex flex-col justify-between overflow-hidden shadow-xs"
+          className="relative bg-[#F8F9FA] rounded-2xl sm:rounded-3xl border border-neutral-200/70 p-4 sm:p-8 md:p-10 min-h-[460px] sm:min-h-[480px] md:h-[520px] flex flex-col justify-between overflow-hidden shadow-xs"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           
-          {/* Main Carousel Slide Area with stable full-height viewport */}
+          {/* Main Carousel Slide Area with stable viewport */}
           <div className="relative z-20 w-full flex-1 flex flex-col items-center justify-center my-auto py-1 overflow-hidden">
             <AnimatePresence mode="wait">
               {activeSlide.type === "svg" ? (
@@ -105,7 +105,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full min-h-[240px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden group bg-neutral-900"
+                  className="w-full h-full min-h-[260px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden group bg-neutral-900"
                 >
                   <Image
                     src={activeSlide.mediaSrc || "/assets/wp1959356-mob-psycho-100-wallpapers.jpg"}
@@ -115,21 +115,21 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     sizes="100vw"
                     className="object-cover group-hover:scale-103 transition-transform duration-700 ease-out"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
 
                   {/* Ad Overlay Text */}
-                  <div className="absolute bottom-6 left-6 right-6 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-left">
-                    <div className="space-y-1.5 max-w-xl">
-                      <span className="status-pill bg-white text-black border-none text-[10px]">
+                  <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 text-left">
+                    <div className="space-y-1 sm:space-y-1.5 max-w-xl">
+                      <span className="status-pill bg-white text-black border-none text-[9px] sm:text-[10px]">
                         FEATURED COLLECTION
                       </span>
                       {activeSlide.title && (
-                        <h2 className="font-editorial text-2xl sm:text-4xl text-white font-normal leading-tight">
+                        <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-white font-normal leading-tight line-clamp-2">
                           {activeSlide.title}
                         </h2>
                       )}
                       {activeSlide.subtitle && (
-                        <p className="text-xs sm:text-sm text-neutral-300 font-normal line-clamp-2">
+                        <p className="text-[11px] sm:text-sm text-neutral-300 font-normal line-clamp-2">
                           {activeSlide.subtitle}
                         </p>
                       )}
@@ -138,7 +138,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     {activeSlide.ctaText && (
                       <a
                         href={activeSlide.ctaLink || "#product-catalog"}
-                        className="pill-btn-primary bg-white text-black hover:bg-neutral-100 px-5 py-2.5 text-xs font-medium uppercase tracking-wider shrink-0"
+                        className="pill-btn-primary bg-white text-black hover:bg-neutral-100 px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-medium uppercase tracking-wider shrink-0 w-fit"
                       >
                         {activeSlide.ctaText}
                       </a>
@@ -153,7 +153,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full min-h-[240px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden bg-black"
+                  className="w-full h-full min-h-[260px] max-h-[340px] sm:max-h-[380px] md:max-h-[400px] relative rounded-xl sm:rounded-2xl border border-neutral-200/80 overflow-hidden bg-black"
                 >
                   <video
                     autoPlay
@@ -163,20 +163,20 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     className="w-full h-full object-cover"
                     src={activeSlide.mediaSrc || "/assets/masters_union_dropshipping_v1.mp4"}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
-                  <div className="absolute bottom-6 left-6 right-6 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-left">
-                    <div className="space-y-1.5 max-w-xl">
-                      <span className="status-pill bg-white text-black border-none text-[10px]">
+                  <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 text-left">
+                    <div className="space-y-1 sm:space-y-1.5 max-w-xl">
+                      <span className="status-pill bg-white text-black border-none text-[9px] sm:text-[10px]">
                         VIDEO SHOWCASE
                       </span>
                       {activeSlide.title && (
-                        <h2 className="font-editorial text-2xl sm:text-4xl text-white font-normal leading-tight">
+                        <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-white font-normal leading-tight line-clamp-2">
                           {activeSlide.title}
                         </h2>
                       )}
                       {activeSlide.subtitle && (
-                        <p className="text-xs sm:text-sm text-neutral-300 font-normal line-clamp-2">
+                        <p className="text-[11px] sm:text-sm text-neutral-300 font-normal line-clamp-2">
                           {activeSlide.subtitle}
                         </p>
                       )}
@@ -185,7 +185,7 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     {activeSlide.ctaText && (
                       <a
                         href={activeSlide.ctaLink || "#product-catalog"}
-                        className="pill-btn-primary bg-white text-black hover:bg-neutral-100 px-5 py-2.5 text-xs font-medium uppercase tracking-wider shrink-0"
+                        className="pill-btn-primary bg-white text-black hover:bg-neutral-100 px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-medium uppercase tracking-wider shrink-0 w-fit"
                       >
                         {activeSlide.ctaText}
                       </a>
@@ -200,9 +200,9 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10 my-auto"
+                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 md:gap-10 my-auto"
                 >
-                  <div className="relative w-full md:w-1/2 h-44 sm:h-64 md:h-72 rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-200/80 shadow-xs shrink-0">
+                  <div className="relative w-full md:w-1/2 h-36 sm:h-56 md:h-72 rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-200/80 shadow-xs shrink-0">
                     <video
                       autoPlay
                       loop
@@ -213,24 +213,24 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     />
                   </div>
 
-                  <div className="w-full md:w-1/2 text-left space-y-3 sm:space-y-4">
-                    <span className="font-mono text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
+                  <div className="w-full md:w-1/2 text-left space-y-2 sm:space-y-4">
+                    <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
                       FEATURED CAMPAIGN
                     </span>
 
-                    <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight">
+                    <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight line-clamp-2">
                       {activeSlide.title || "Curated Video Spotlight"}
                     </h2>
 
-                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-3">
+                    <p className="text-[11px] sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-2 sm:line-clamp-3">
                       {activeSlide.subtitle || "Direct dropshipping showcase curated from our verified supplier network."}
                     </p>
 
                     {activeSlide.ctaText && (
-                      <div className="pt-1">
+                      <div className="pt-0.5 sm:pt-1">
                         <a
                           href={activeSlide.ctaLink || "#product-catalog"}
-                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
+                          className="pill-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
                         >
                           <span>{activeSlide.ctaText}</span>
                           <ArrowRight className="w-4 h-4" />
@@ -247,9 +247,9 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10 my-auto"
+                  className="w-full h-full flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 md:gap-10 my-auto"
                 >
-                  <div className="relative w-full md:w-1/2 h-44 sm:h-64 md:h-72 rounded-2xl overflow-hidden bg-[#F5F5F7] border border-neutral-200/80 shadow-xs shrink-0">
+                  <div className="relative w-full md:w-1/2 h-36 sm:h-56 md:h-72 rounded-xl sm:rounded-2xl overflow-hidden bg-[#F5F5F7] border border-neutral-200/80 shadow-xs shrink-0">
                     <Image
                       src={activeSlide.mediaSrc || "/assets/wp1959356-mob-psycho-100-wallpapers.jpg"}
                       alt={activeSlide.title || "Featured Showcase"}
@@ -260,24 +260,24 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
                     />
                   </div>
 
-                  <div className="w-full md:w-1/2 text-left space-y-3 sm:space-y-4">
-                    <span className="font-mono text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
+                  <div className="w-full md:w-1/2 text-left space-y-2 sm:space-y-4">
+                    <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-neutral-500 uppercase">
                       EDITORIAL SELECTION
                     </span>
 
-                    <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight">
+                    <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-neutral-950 font-normal leading-tight line-clamp-2">
                       {activeSlide.title || "The Archive Collection"}
                     </h2>
 
-                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-3">
+                    <p className="text-[11px] sm:text-sm text-neutral-600 leading-relaxed font-normal line-clamp-2 sm:line-clamp-3">
                       {activeSlide.subtitle || "Curated merchandise directly sourced for Masters Union student merchants."}
                     </p>
 
                     {activeSlide.ctaText && (
-                      <div className="pt-1">
+                      <div className="pt-0.5 sm:pt-1">
                         <a
                           href={activeSlide.ctaLink || "#product-catalog"}
-                          className="pill-btn-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
+                          className="pill-btn-primary px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-medium uppercase tracking-wider flex items-center gap-2 w-fit"
                         >
                           <span>{activeSlide.ctaText}</span>
                           <ArrowRight className="w-4 h-4" />
@@ -292,9 +292,9 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
 
           {/* Bottom Progress & Slide Switcher (Apple Style) */}
           {slides.length > 1 && (
-            <div className="relative z-20 w-full pt-4 border-t border-neutral-200/60 flex items-center justify-between">
+            <div className="relative z-20 w-full pt-3 sm:pt-4 border-t border-neutral-200/60 flex items-center justify-between">
               {/* Subtle Progress Bar */}
-              <div className="w-24 sm:w-32 h-0.5 bg-neutral-200 rounded-full overflow-hidden">
+              <div className="w-20 sm:w-32 h-0.5 bg-neutral-200 rounded-full overflow-hidden">
                 <motion.div
                   key={`progress-${activeIndex}-${isPaused}`}
                   initial={{ width: "0%" }}
@@ -305,33 +305,35 @@ export function Hero({ isVideoEnabled, onToggleVideo }: HeroProps) {
               </div>
 
               {/* Minimal Navigation Arrows & Dots */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                   {slides.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentIndex(idx)}
-                      className={`h-1.5 rounded-full transition-all ${
-                        activeIndex === idx
-                          ? "w-6 bg-neutral-900"
-                          : "w-1.5 bg-neutral-300 hover:bg-neutral-500"
-                      }`}
+                      className="p-1 sm:p-1.5 cursor-pointer"
                       title={`Go to Slide ${idx + 1}`}
-                    />
+                    >
+                      <span className={`block h-1.5 rounded-full transition-all ${
+                        activeIndex === idx
+                          ? "w-5 sm:w-6 bg-neutral-900"
+                          : "w-1.5 bg-neutral-300 hover:bg-neutral-500"
+                      }`} />
+                    </button>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1 ml-2">
+                <div className="flex items-center gap-1 ml-1 sm:ml-2">
                   <button
                     onClick={prevSlide}
-                    className="w-7 h-7 rounded-full bg-white border border-neutral-200 hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-black transition"
+                    className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-white border border-neutral-200 hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-black transition cursor-pointer"
                     title="Previous Slide"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={nextSlide}
-                    className="w-7 h-7 rounded-full bg-white border border-neutral-200 hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-black transition"
+                    className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-white border border-neutral-200 hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-black transition cursor-pointer"
                     title="Next Slide"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />

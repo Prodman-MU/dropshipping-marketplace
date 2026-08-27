@@ -127,20 +127,20 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
         >
           
           {/* Header Bar */}
-          <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between gap-4 shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="font-mono text-[11px] font-semibold text-neutral-500 uppercase tracking-widest truncate">
+          <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-neutral-100 flex items-center justify-between gap-2 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-widest truncate max-w-[130px] sm:max-w-none">
                 {currentSlot.merchant.name} // {currentSlot.category}
               </span>
             </div>
 
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               {isOutOfStock ? (
-                <span className="status-pill bg-neutral-900 text-white border-neutral-900">
+                <span className="status-pill bg-neutral-900 text-white border-neutral-900 text-[9px] sm:text-[10px]">
                   SOLD OUT
                 </span>
               ) : (
-                <span className="status-pill bg-neutral-100 text-neutral-800 border-neutral-200">
+                <span className="status-pill bg-neutral-100 text-neutral-800 border-neutral-200 text-[9px] sm:text-[10px]">
                   AVAILABLE
                 </span>
               )}
@@ -148,10 +148,10 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
               <Link
                 href={getProductPageUrl(currentSlot)}
                 target="_blank"
-                className="pill-btn-secondary px-3 py-1.5 text-xs font-medium flex items-center gap-1"
+                className="pill-btn-secondary px-2.5 sm:px-3 py-1.5 text-xs font-medium flex items-center gap-1"
                 title="Open dedicated product page"
               >
-                <span>Full Page</span>
+                <span className="hidden sm:inline">Full Page</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500" />
               </Link>
 
@@ -167,7 +167,7 @@ export function ListingDrawer({ slot: initialSlot, onClose, onSelectRelatedSlot 
           </div>
 
           {/* Modal Content Split */}
-          <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-white">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-white pb-safe">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
               {/* LEFT COLUMN: Gallery Viewport (6 cols) */}

@@ -228,7 +228,7 @@ export default function UnifiedProductDetailPage() {
       />
 
       {/* Main PDP Container */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-12">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 lg:pb-10 space-y-12">
         {/* 2-Column Product Gallery & Details Split */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
@@ -284,13 +284,13 @@ export default function UnifiedProductDetailPage() {
 
             {/* Thumbnail Strip */}
             {images.length > 1 && (
-              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-2">
+              <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-2">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition cursor-pointer ${
+                    className={`w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border-2 shrink-0 transition cursor-pointer ${
                       selectedImageIndex === idx
                         ? "border-black scale-102 shadow-xs"
                         : "border-transparent opacity-60 hover:opacity-100 bg-[#F5F5F7]"
@@ -543,7 +543,7 @@ export default function UnifiedProductDetailPage() {
       </main>
 
       {/* Mobile Sticky Bottom Checkout Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-neutral-200/80 p-3 px-4 flex items-center justify-between gap-3 shadow-lg">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/80 p-3 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0">
           <span className="text-[10px] text-neutral-400 uppercase block font-mono">
             Wholesale Price
@@ -557,14 +557,14 @@ export default function UnifiedProductDetailPage() {
           href={slot.productUrl || `https://${slot.merchant.myshopifyDomain}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="pill-btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider cursor-pointer"
+          className="pill-btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider cursor-pointer shadow-sm"
         >
           Checkout
         </a>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-200/70 bg-white mt-16 py-8 text-center font-mono text-[11px] text-neutral-400 uppercase tracking-wider">
+      <footer className="border-t border-neutral-200/70 bg-white mt-16 py-8 pb-28 lg:pb-8 text-center font-mono text-[11px] text-neutral-400 uppercase tracking-wider">
         © {siteSettings.dropshippingYear} {siteSettings.siteTitle} — ARCHIVAL DROPSHIPPING MARKETPLACE
       </footer>
     </div>

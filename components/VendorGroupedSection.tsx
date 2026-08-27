@@ -73,12 +73,12 @@ export function VendorGroupedSection({
         </div>
 
         {/* Right Side: Action Pills */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
           <a
             href={storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="pill-btn-secondary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5"
+            className="pill-btn-secondary flex-1 sm:flex-initial px-3.5 py-2 sm:py-1.5 text-xs font-medium flex items-center justify-center gap-1.5"
             title={`Open ${merchant.myshopifyDomain} in new tab`}
           >
             <span>Visit Storefront</span>
@@ -88,7 +88,7 @@ export function VendorGroupedSection({
           <button
             type="button"
             onClick={() => onFilterStore(merchant.id)}
-            className="pill-btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+            className="pill-btn-primary flex-1 sm:flex-initial px-3.5 py-2 sm:py-1.5 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
             title="Filter catalog to only show products from this store"
           >
             <Filter className="w-3 h-3" />

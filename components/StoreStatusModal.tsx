@@ -113,14 +113,14 @@ export function StoreStatusModal({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.96, opacity: 0, y: 10 }}
           transition={{ type: "spring", damping: 28, stiffness: 280 }}
-          className="relative bg-white rounded-3xl border border-neutral-200/80 max-w-xl w-full p-6 sm:p-8 shadow-2xl z-10 my-8 overflow-hidden"
+          className="relative bg-white rounded-3xl border border-neutral-200/80 max-w-xl w-full p-5 sm:p-8 shadow-2xl z-10 my-6 sm:my-8 overflow-hidden"
         >
           
           {/* Close Button */}
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-6 right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
+            className="absolute top-5 right-5 sm:top-6 sm:right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -174,7 +174,7 @@ export function StoreStatusModal({
                   placeholder="Enter store name or domain..."
                   value={searchDomain}
                   onChange={(e) => setSearchDomain(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none transition"
                 />
               </div>
 
@@ -281,7 +281,7 @@ export function StoreStatusModal({
                   placeholder="mybrand.myshopify.com"
                   value={newDomain}
                   onChange={(e) => setNewDomain(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export function StoreStatusModal({
                   placeholder="Create vendor login passcode"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                 />
               </div>
 
@@ -309,7 +309,7 @@ export function StoreStatusModal({
                   placeholder="+91 9876543210"
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                 />
               </div>
 
@@ -322,22 +322,22 @@ export function StoreStatusModal({
                   placeholder="shpat_xxxxxxxx"
                   value={accessToken}
                   onChange={(e) => setAccessToken(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-xs text-neutral-900 focus:outline-none transition"
+                  className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-transparent focus:border-black focus:bg-white text-base sm:text-xs text-neutral-900 focus:outline-none transition"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-3 border-t border-neutral-100">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-neutral-100">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="pill-btn-secondary px-4 py-2.5 text-xs font-medium"
+                  className="pill-btn-secondary flex-1 sm:flex-initial px-4 py-2.5 text-xs font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newDomain.trim() || !passcode.trim()}
-                  className="pill-btn-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider disabled:opacity-40"
+                  className="pill-btn-primary flex-1 sm:flex-initial px-6 py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Store"}
                 </button>

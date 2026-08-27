@@ -67,25 +67,25 @@ export function ListingCard({ slot, onSelect }: ListingCardProps) {
           )}
 
           {/* Minimalist Top Status & Discount Badges */}
-          <div className="absolute top-2.5 inset-x-2.5 z-10 flex items-center justify-between pointer-events-none">
-            <div>
+          <div className="absolute top-2 sm:top-2.5 inset-x-2 sm:inset-x-2.5 z-10 flex items-center justify-between gap-1 pointer-events-none">
+            <div className="min-w-0 truncate">
               {isOutOfStock ? (
-                <span className="px-2 py-0.5 rounded-full bg-neutral-900 text-white font-mono text-[9px] font-semibold uppercase tracking-wider">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-neutral-900 text-white font-mono text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider">
                   SOLD OUT
                 </span>
               ) : slot.compareAtPrice && slot.compareAtPrice > slot.price ? (
-                <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs border border-neutral-200/80 text-neutral-900 font-mono text-[9px] font-semibold uppercase tracking-wider shadow-2xs">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs border border-neutral-200/80 text-neutral-900 font-mono text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider shadow-2xs">
                   CURATED DROP
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs border border-neutral-200/80 text-neutral-700 font-mono text-[9px] font-semibold uppercase tracking-wider shadow-2xs">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs border border-neutral-200/80 text-neutral-700 font-mono text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider shadow-2xs">
                   ARCHIVE
                 </span>
               )}
             </div>
 
             {discountPercent > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[9px] font-semibold uppercase tracking-wider shadow-xs">
+              <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider shadow-xs shrink-0">
                 -{discountPercent}%
               </span>
             )}
