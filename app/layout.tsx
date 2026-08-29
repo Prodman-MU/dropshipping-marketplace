@@ -12,6 +12,7 @@
 
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
+import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
 import "./globals.css";
 
 // Configure body sans-serif font
@@ -69,7 +70,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-white text-[#111111] font-sans selection:bg-[#111111] selection:text-white">
-        {children}
+        <AnalyticsProvider>{children}</AnalyticsProvider>
       </body>
     </html>
   );

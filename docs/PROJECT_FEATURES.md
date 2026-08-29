@@ -17,6 +17,7 @@
 | **6. Multi-Tenant Vendor Security** | Prevents spam via mandatory `PENDING` moderation state; protects store data via store-isolated passcodes (`authorizedStoreId`). | Store-scoped auth session tokens, `vendorPasscode` column in `merchants` table, IDOR API validation guards. |
 | **7. Transactional Email & Admin OTP 2FA** | Guards administrative actions via dynamic passcodes + 10-minute single-use email OTP verification. | Nodemailer / SMTP transport dispatch (`/api/auth/admin/send-otp`), local Inbucket mailbox (`:54324`), `admin_otps` table. |
 | **8. Stream-Level Webhook Ingestion** | Prevents webhook signature rejection by validating HMAC digests against raw wire bytes (`req.text()`). | `POST /api/webhooks/shopify` preserving raw body stream before `JSON.parse()`. |
+| **9. Product Analytics & Session Replay** | Captures pageviews, user journeys, funnel metrics, and heatmaps without degrading render speed. | `PostHogProvider.tsx`, `ClarityProvider.tsx`, `AnalyticsProvider.tsx`, `lib/analytics.ts`. |
 
 ---
 
@@ -99,4 +100,27 @@
   - `POST /api/auth/admin/verify-otp`: Validates code against active database OTPs (`used = false && expiresAt > now`) and marks token as used.
 - **Local Mailbox Simulation**: In local development (`NODE_ENV !== 'production'`), emails are routed to the local Supabase Inbucket mailbox container (`http://127.0.0.1:54324`), enabling offline email testing without real SMTP credentials.
 - **Database Model**: `AdminOtp` in `prisma/schema.prisma` (`id`, `email`, `otp`, `expiresAt`, `used`, `createdAt`).
+
+---
+
+## 9. Product Analytics & Session Replay (PostHog & Microsoft Clarity)
+
+### Product Manager Perspective
+- **User Insights**: Captures deep buyer behavior, B2B lead generation CTA clicks (WhatsApp inquiries), vendor catalog filtration journeys, and session replays.
+- **Privacy & Safety**: PostHog is configured with `person_profiles: 'identified_only'` and automatic pageview tracking is synced with Next.js App Router route transitions. Microsoft Clarity records heatmaps and rage clicks to diagnose UI friction without capturing sensitive credentials.
+- **Zero-Latency Degradation**: Scripts initialize asynchronously on client hydration, ensuring zero blockage of First Contentful Paint (FCP) and gallery asset rendering.
+
+### Developer Perspective
+- **Component Files**:
+  - [`components/providers/PostHogProvider.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/providers/PostHogProvider.tsx): Initializes PostHog JS SDK client, tracks App Router navigation changes (`usePathname`, `useSearchParams` wrapped in `<Suspense>`).
+  - [`components/providers/ClarityProvider.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/providers/ClarityProvider.tsx): Injects and initializes `@microsoft/clarity` with client-side guard.
+  - [`components/providers/AnalyticsProvider.tsx`](file:///d:/lab/projects/dropshipping-marketplace/components/providers/AnalyticsProvider.tsx): Unified wrapper nested in [`app/layout.tsx`](file:///d:/lab/projects/dropshipping-marketplace/app/layout.tsx).
+  - [`lib/analytics.ts`](file:///d:/lab/projects/dropshipping-marketplace/lib/analytics.ts): Type-safe utility methods (`trackEvent`, `identifyUser`, `resetUserIdentity`).
+- **Reverse Proxy**:
+  - [`next.config.ts`](file:///d:/lab/projects/dropshipping-marketplace/next.config.ts): Rewrites `/ingest/static/:path*` to `https://us-assets.i.posthog.com/static/:path*` and `/ingest/:path*` to `https://us.i.posthog.com/:path*` with `skipTrailingSlashRedirect: true`.
+  - Routes PostHog telemetry through the marketplace application origin (`/ingest`), ensuring 100% telemetry capture immune to browser ad-blockers and privacy shields.
+- **Environment Variables**:
+  - `NEXT_PUBLIC_POSTHOG_KEY`
+  - `NEXT_PUBLIC_POSTHOG_HOST` (defaults to `https://us.i.posthog.com`)
+  - `NEXT_PUBLIC_CLARITY_PROJECT_ID`
 
